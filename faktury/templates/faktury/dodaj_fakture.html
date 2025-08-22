@@ -248,6 +248,32 @@
                 </td>
               </tr>
             {% endfor %}
+            <!-- FIXED: Empty form template moved inside tbody and hidden -->
+            <tr id="empty-form" class="pozycja-form" style="display: none;">
+              <td>
+                  {{ pozycje_formset.empty_form.nazwa|as_crispy_field }}
+                  <label class="form-label mt-2">Produkt:</label>
+                    <select class="form-select produkt-select">
+                      <option value="">---------</option>
+                      {% for produkt in produkty %}
+                      <option value="{{ produkt.pk }}">{{ produkt.nazwa }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+              <td class="rabat-col">{{ pozycje_formset.empty_form.rabat|as_crispy_field }}</td>
+              <td class="rabat-col">{{ pozycje_formset.empty_form.rabat_typ|as_crispy_field }}</td>
+              <td>{{ pozycje_formset.empty_form.ilosc|as_crispy_field }}</td>
+              <td>{{ pozycje_formset.empty_form.jednostka|as_crispy_field }}</td>
+              <td>{{ pozycje_formset.empty_form.cena_netto|as_crispy_field }}</td>
+              <td>{{ pozycje_formset.empty_form.vat|as_crispy_field }}</td>
+              <td class="wartosc-netto-col">0.00</td>
+              <td class="wartosc-brutto-col">0.00</td>
+                <td>
+                  <button type="button" class="btn btn-danger btn-sm usun-pozycje">Usuń</button>
+                  {{ pozycje_formset.empty_form.id }}
+                  {{ pozycje_formset.empty_form.DELETE }}
+                </td>
+            </tr>
           </tbody>
           <tfoot id="faktura-tfoot">
             <!-- (Wiersze podsumowania - bez zmian) -->
@@ -331,37 +357,7 @@
 </div>
 
 
-<!-- Ukryty szablon dla pozycji faktury (POZA widoczną tabelą) -->
-<table style="display: none;">
-  <tr id="empty-form" class="pozycja-form">
-    <td>
-        {{ pozycje_formset.empty_form.nazwa|as_crispy_field }}
-        <label class="form-label mt-2">Produkt:</label>
-          <select class="form-select produkt-select">
-            <option value="">---------</option>
-            {% for produkt in produkty %}
-            <option value="{{ produkt.pk }}">{{ produkt.nazwa }}</option>
-            {% endfor %}
-          </select>
-        </td>
-    <td class="rabat-col">{{ pozycje_formset.empty_form.rabat|as_crispy_field }}</td>
-    <td class="rabat-col">{{ pozycje_formset.empty_form.rabat_typ|as_crispy_field }}</td>
-    <td>{{ pozycje_formset.empty_form.ilosc|as_crispy_field }}</td>
-    <td>{{ pozycje_formset.empty_form.jednostka|as_crispy_field }}</td>
-    <td>{{ pozycje_formset.empty_form.cena_netto|as_crispy_field }}</td>
-    <td>{{ pozycje_formset.empty_form.vat|as_crispy_field }}</td>
-    <td class="wartosc-netto-col">0.00</td>
-    <td class="wartosc-brutto-col">0.00</td>
-      <td>
-        <button type="button" class="btn btn-danger btn-sm usun-pozycje">Usuń</button>
-        {{ pozycje_formset.empty_form.id }}
-        {{ pozycje_formset.empty_form.DELETE }}
-      </td>
-  </tr>
-</table>
-
-
-<!-- Modal - dodawanie produktu (bez zmian) -->
+  <!-- Modal - dodawanie produktu (bez zmian) -->
 <div class="modal fade" id="dodajProduktModal" tabindex="-1" aria-labelledby="dodajProduktModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">

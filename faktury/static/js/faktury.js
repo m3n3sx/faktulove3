@@ -20,11 +20,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const miejscowoscInput = document.querySelector('#id_nabywca_miejscowosc');
     const krajInput = document.querySelector('#id_nabywca_kraj');
     
-    // Pozycje Faktury
+    // FIXED: Pozycje Faktury - use correct container ID
     const ukryjRabatButton = document.querySelector('#ukryj-rabat');
     const addButton = document.querySelector("#add-pozycja");
     const totalForms = document.querySelector("#id_pozycje-TOTAL_FORMS");
-    const container = document.querySelector("tbody");
+    const container = document.querySelector("#faktura-pozycje"); // FIXED: Use correct ID
     
     // Użyj querySelectorAll *raz*, na początku
     let pozycjaForm = document.querySelectorAll(".pozycja-form");
@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displayErrorMessage(message) {
+        console.error(message);
         alert(message);
     }
 
@@ -108,9 +109,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Helper function to create a new row.
+    // FIXED: Helper function to create a new row with proper structure
     function createRow() {
         const totalFormsElement = document.getElementById('id_pozycje-TOTAL_FORMS');
+        if (!totalFormsElement) {
+            console.error('TOTAL_FORMS element not found');
+            return null;
+        }
+        
         const newIndex = parseInt(totalFormsElement.value);
         const emptyFormElement = document.getElementById('empty-form');
         
@@ -119,34 +125,49 @@ document.addEventListener('DOMContentLoaded', function() {
             return null;
         }
         
-        const emptyForm = emptyFormElement.outerHTML;
-        const newRowHTML = emptyForm
-            .replace(/__prefix__/g, newIndex)
-            .replace(/pozycje-\d+-/g, `pozycje-${newIndex}-`);
-      
-        const tr = document.createElement('tr');
-        tr.classList.add('pozycja-form');
-        tr.innerHTML = newRowHTML;
-      
-        // Inicjalizacja event listeners dla nowego wiersza
-        addFormListeners(tr);
-        addProduktSelectionListener(tr);
+        // Clone the empty form element
+        const emptyForm = emptyFormElement.cloneNode(true);
+        emptyForm.id = ''; // Remove the ID to avoid duplicates
+        emptyForm.style.display = ''; // Make sure it's visible
         
-        // Dodaj przycisk usuwania
-        const deleteBtn = tr.querySelector('.usun-pozycje');
+        // Update all the form field names and IDs
+        const inputs = emptyForm.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.name) {
+                input.name = input.name.replace('__prefix__', newIndex);
+            }
+            if (input.id) {
+                input.id = input.id.replace('__prefix__', newIndex);
+            }
+        });
+        
+        // Update labels
+        const labels = emptyForm.querySelectorAll('label');
+        labels.forEach(label => {
+            if (label.htmlFor) {
+                label.htmlFor = label.htmlFor.replace('__prefix__', newIndex);
+            }
+        });
+        
+        // Initialize event listeners for the new row
+        addFormListeners(emptyForm);
+        addProduktSelectionListener(emptyForm);
+        
+        // Add delete button functionality
+        const deleteBtn = emptyForm.querySelector('.usun-pozycje');
         if (deleteBtn) {
             deleteBtn.addEventListener('click', function() {
-                const deleteCheckbox = tr.querySelector('input[name$="-DELETE"]');
+                const deleteCheckbox = emptyForm.querySelector('input[name$="-DELETE"]');
                 if (deleteCheckbox) {
                     deleteCheckbox.checked = true;
-                    tr.style.display = 'none';
+                    emptyForm.style.display = 'none';
                     updateTotals();
                 }
             });
         }
       
         totalFormsElement.value = newIndex + 1;
-        return tr;
+        return emptyForm;
     }
 
     // -------------------------------------------------------------
@@ -172,22 +193,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function addPozycjaForm() {
         try {
+            if (!container) {
+                displayErrorMessage("Kontener dla pozycji faktury nie został znaleziony");
+                return;
+            }
+            
             let newForm = createRow();
             if (!newForm) {
                 displayErrorMessage("Nie można utworzyć nowego wiersza");
                 return;
             }
             
-            container.append(newForm);
+            container.appendChild(newForm);
             
             // Wyczyść wartości wejściowe w nowym formularzu
-            let inputs = newForm.querySelectorAll('input');
+            let inputs = newForm.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"])');
             inputs.forEach(input => {
-                if (input.type !== 'checkbox') {
-                    input.value = '';
-                } else {
-                    input.checked = false;
-                }
+                input.value = '';
             });
 
             let selects = newForm.querySelectorAll('select');
@@ -195,13 +217,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 select.selectedIndex = 0;
             });
 
-            addFormListeners(newForm);
-            addProduktSelectionListener(newForm);
+            // Reset calculated values
+            const nettoCol = newForm.querySelector('.wartosc-netto-col');
+            const bruttoCol = newForm.querySelector('.wartosc-brutto-col');
+            if (nettoCol) nettoCol.textContent = '0.00';
+            if (bruttoCol) bruttoCol.textContent = '0.00';
+
             updateTotals();
+            console.log('New position added successfully');
 
         } catch (error) {
             console.error("Error adding position form:", error);
-            displayErrorMessage("Wystąpił błąd podczas dodawania pozycji faktury.");
+            displayErrorMessage("Wystąpił błąd podczas dodawania pozycji faktury: " + error.message);
         }
     }
 
@@ -210,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fields = [
             'input[name$="ilosc"]',
             'input[name$="cena_netto"]',
-            'select[name$="vat"]',  // FIXED: Zmienione z input na select
+            'select[name$="vat"]',  // FIXED: VAT is select field
             'input[name$="rabat"]',
             'select[name$="rabat_typ"]',
         ];
@@ -218,15 +245,15 @@ document.addEventListener('DOMContentLoaded', function() {
         fields.forEach(selector => {
             const elements = form.querySelectorAll(selector);
             elements.forEach(element => {
-                // Usuń istniejące listenery aby uniknąć duplikacji
+                // Remove existing listeners to prevent duplicates
                 element.removeEventListener('change', handleFieldChange);
                 element.removeEventListener('keyup', handleFieldChange);
                 element.removeEventListener('input', handleFieldChange);
                 
-                // Dodaj nowe listenery
+                // Add new listeners
                 element.addEventListener('change', handleFieldChange);
                 element.addEventListener('keyup', handleFieldChange);
-                element.addEventListener('input', handleFieldChange);  // ADDED: For real-time input
+                element.addEventListener('input', handleFieldChange);  // For real-time input
             });
         });
     }
@@ -246,8 +273,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const nazwaInput = form.querySelector('input[name$="nazwa"]');
         const cenaNettoInput = form.querySelector('input[name$="cena_netto"]');
-        const vatSelect = form.querySelector('select[name$="vat"]');  // FIXED: Zmienione na select
-        const jednostkaInput = form.querySelector('input[name$="jednostka"]');
+        const vatSelect = form.querySelector('select[name$="vat"]');
+        const jednostkaField = form.querySelector('[name$="jednostka"]'); // FIXED: Can be input or select
     
         // Remove existing listener to prevent duplicates
         produktSelect.removeEventListener('change', produktSelect._changeHandler);
@@ -256,16 +283,16 @@ document.addEventListener('DOMContentLoaded', function() {
         produktSelect._changeHandler = function() {
             const selectedProduktId = this.value;
             if (!selectedProduktId) {
-                // Resetowanie pól, jeśli nie wybrano produktu
+                // Reset fields when no product selected
                 if (nazwaInput) nazwaInput.value = '';
                 if (cenaNettoInput) cenaNettoInput.value = '';
                 if (vatSelect) vatSelect.value = '';
-                if (jednostkaInput) jednostkaInput.value = '';
+                if (jednostkaField) jednostkaField.value = '';
                 updateRowValues(null, form);
                 return;
             }
     
-            // Wyślij zapytanie do API
+            // Send API request
             fetch(`/pobierz_dane_produktu/?id=${selectedProduktId}`)
                 .then(response => {
                     if (!response.ok) {
@@ -279,13 +306,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         return;
                     }
     
-                    // Aktualizacja pól formularza
+                    // Update form fields
                     if (nazwaInput) nazwaInput.value = data.nazwa || '';
                     if (cenaNettoInput) cenaNettoInput.value = data.cena_netto || '';
                     if (vatSelect) vatSelect.value = data.vat || '';
-                    if (jednostkaInput) jednostkaInput.value = data.jednostka || '';
+                    if (jednostkaField) jednostkaField.value = data.jednostka || '';
                     
-                    // FIXED: Trigger calculation after setting values
+                    // Trigger calculation after setting values
                     updateRowValues(null, form);
                 })
                 .catch(error => {
@@ -297,25 +324,11 @@ document.addEventListener('DOMContentLoaded', function() {
         produktSelect.addEventListener('change', produktSelect._changeHandler);
     }
 
-    // FIXED: Funkcja pomocnicza do ustawiania wartości pól
-    function setFieldValue(form, fieldName, value) {
-        const field = form.querySelector(`[name$="${fieldName}"]`);
-        if (!field) return;
-
-        if (field.tagName === 'SELECT') {
-            field.value = value;
-        } else if (field.type === 'checkbox') {
-            field.checked = !!value;
-        } else {
-            field.value = value;
-        }
-    }
-
     // FIXED: Improved updateRowValues function with better error handling
     function updateRowValues(event, form) {
         try {
             // Handle case where event is null (when called from product selection)
-            const row = event ? event.target.closest('.pozycja-form') : form.closest('.pozycja-form');
+            const row = event ? event.target.closest('.pozycja-form') : form.closest('.pozycja-form') || form;
             if (!row) return;
             
             // Skip deleted rows
@@ -326,13 +339,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
             // Get field values with fallbacks
             const iloscInput = row.querySelector('input[name$="ilosc"]');
-            const cenaNetto = row.querySelector('input[name$="cena_netto"]');
-            const vatSelect = row.querySelector('select[name$="vat"]');  // FIXED: select instead of input
+            const cenaNettoInput = row.querySelector('input[name$="cena_netto"]');
+            const vatSelect = row.querySelector('select[name$="vat"]');
             const rabatInput = row.querySelector('input[name$="rabat"]');
             const rabatTypSelect = row.querySelector('select[name$="rabat_typ"]');
             
             const ilosc = parseFloat(iloscInput?.value) || 0;
-            const cena_netto = parseFloat(cenaNetto?.value) || 0;
+            const cena_netto = parseFloat(cenaNettoInput?.value) || 0;
             const vat = vatSelect?.value === 'zw' ? 0 : parseFloat(vatSelect?.value) || 0;
             const rabat = parseFloat(rabatInput?.value) || 0;
             const rabat_typ = rabatTypSelect?.value || 'procent';
@@ -374,9 +387,9 @@ document.addEventListener('DOMContentLoaded', function() {
             let sumaBrutto = 0;
 
             document.querySelectorAll('.pozycja-form').forEach(row => {
-                // Skip deleted rows
+                // Skip deleted rows and hidden rows
                 const deleteInput = row.querySelector('input[type="checkbox"][name$="DELETE"]');
-                if (deleteInput && deleteInput.checked) {
+                if ((deleteInput && deleteInput.checked) || row.style.display === 'none') {
                     return;
                 }
 
@@ -384,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const cenaNettoInput = row.querySelector('input[name$="cena_netto"]');
                 const rabatInput = row.querySelector('input[name$="rabat"]');
                 const rabatTypSelect = row.querySelector('select[name$="rabat_typ"]');
-                const vatSelect = row.querySelector('select[name$="vat"]');  // FIXED: select instead of input
+                const vatSelect = row.querySelector('select[name$="vat"]');
 
                 const ilosc = parseFloat(iloscInput?.value) || 0;
                 const cena_netto = parseFloat(cenaNettoInput?.value) || 0;
@@ -439,8 +452,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Dodaj listenery do *istniejących* formularzy
     if (pozycjaForm.length > 0) {
         pozycjaForm.forEach(form => {
-            addFormListeners(form);
-            addProduktSelectionListener(form);
+            // Skip the empty form template
+            if (form.id !== 'empty-form') {
+                addFormListeners(form);
+                addProduktSelectionListener(form);
+            }
         });
         updateTotals();
     }
@@ -538,15 +554,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // -------------------------------------------------------------
-    // 6. Ukryj rabat
+    // 6. FIXED: Ukryj rabat functionality
     // -------------------------------------------------------------
 
     if (ukryjRabatButton) {
         ukryjRabatButton.addEventListener('click', function() {
+            // Toggle rabat columns
             document.querySelectorAll('.rabat-col').forEach(col => {
                 col.style.display = col.style.display === 'none' ? '' : 'none';
             });
 
+            // Toggle summary rows if they exist
             const sumaPrzedRabatem = document.querySelector('.suma-przed-rabatem');
             const sumaPoRabacie = document.querySelector('.suma-po-rabacie');
             
@@ -557,8 +575,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 sumaPoRabacie.style.display = sumaPoRabacie.style.display === 'none' ? '' : 'none';
             }
             
-            updateTotals();
+            // Update button text
             this.innerText = this.innerText === "Ukryj rabat" ? "Pokaż rabat" : "Ukryj rabat";
+            
+            updateTotals();
         });
     }
 
@@ -580,5 +600,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    console.log('Faktury.js loaded successfully - FIXED VERSION');
+    console.log('Faktury.js loaded successfully - FIXED VERSION with proper container handling');
 });

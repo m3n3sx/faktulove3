@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Faktura {{ faktura.numer }}</title>
+    <style>
+        body { font-family: sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 5px; }
+        th { text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Faktura VAT nr {{ faktura.numer }}</h1> 
+    <p>Data wystawienia: {{ faktura.data_wystawienia|date:"Y-m-d" }}</p>
+    <p>Data sprzedaży: {{ faktura.data_sprzedazy|date:"Y-m-d" }}</p>
+    <p>Miejsce wystawienia: {{ faktura.miejsce_wystawienia }}</p>
+
+    <h2>Sprzedawca</h2>
+    <p>{{ faktura.sprzedawca.nazwa }}</p>
+    <p>NIP: {{ faktura.sprzedawca.nip }}</p>
+    <p>{{ faktura.sprzedawca.ulica }} {{ faktura.sprzedawca.numer_domu }}{% if faktura.sprzedawca.numer_mieszkania %}/{{ faktura.sprzedawca.numer_mieszkania }}{% endif %}</p>
+    <p>{{ faktura.sprzedawca.kod_pocztowy }} {{ faktura.sprzedawca.miejscowosc }}</p>
+
+    <h2>Nabywca</h2>
+     <p>{{ faktura.nabywca.nazwa }}</p>
+    {% if faktura.nabywca.nip %}
+        <p>NIP: {{ faktura.nabywca.nip }}</p>
+    {% endif %}
+    <p>{{ faktura.nabywca.ulica }} {{ faktura.nabywca.numer_domu }}{% if faktura.nabywca.numer_mieszkania %}/{{ faktura.nabywca.numer_mieszkania }}{% endif %}</p>
+    <p>{{ faktura.nabywca.kod_pocztowy }} {{ faktura.nabywca.miejscowosc }}</p>
+
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                 <th>Ilość</th>
+                <th>Jednostka</th>
+                <th>Cena netto</th>
+                {% if not faktura.zwolnienie_z_vat %}
+                    <th>VAT</th>
+                    <th>Wartość VAT</th>
+                {% endif %}
+                <th>Wartość netto</th>
+                <th>Wartość brutto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pozycja in faktura.pozycjafaktury_set.all %}
+            <tr>
+                <td>{{ pozycja.nazwa }}</td>
+                <td>{{ pozycja.ilosc }}</td>
+                <td>{{ pozycja.jednostka }}</td>
+                <td>{{ pozycja.cena_netto }}</td>
+                <td>{{ pozycja.vat }}</td>
+                <td>{{ pozycja.wartosc_vat }}</td>
+                <td>{{ pozycja.wartosc_netto }}</td>
+                <td>{{ pozycja.wartosc_brutto }}</td>
+              </tr>
+            {% endfor %}
+        </tbody>
+         <tfoot>
+            <tr>
+                <td colspan="{% if not faktura.zwolnienie_z_vat %}6{% else %}5{% endif %}">Suma netto:</td>
+                <td>{{ faktura.suma_netto }}</td>
+                <td></td>
+            </tr>
+             {% if not faktura.zwolnienie_z_vat %}
+                <tr>
+                    <td colspan="6">Suma VAT:</td>
+                    <td></td>
+                    <td>{{ faktura.suma_vat }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <td colspan="{% if not faktura.zwolnienie_z_vat %}6{% else %}5{% endif %}">Suma brutto:</td>
+                 <td></td>
+                <td>{{ faktura.suma_brutto }}</td>
+            </tr>
+        </tfoot>
+    </table>
+    {% if faktura.zwolnienie_z_vat %}
+        <p>Zwolnienie z VAT: {{faktura.get_powod_zwolnienia_display}}</p>
+    {% endif %}
+
+    <p>Sposób płatności: {{ faktura.get_sposob_platnosci_display }}</p>
+    <p>Termin płatności: {{ faktura.termin_platnosci|date:"Y-m-d" }}</p>
+    <p>Status: {{ faktura.get_status_display }} </p>
+    <p>Kwota opłacona: {{faktura.kwota_oplacona}}</p>
+    <p>Waluta: {{faktura.waluta}}</p>
+    {% if faktura.uwagi %}
+     <p>Uwagi: {{faktura.uwagi}}</p>
+    {% endif %}
+    <p>Wystawca: {{faktura.wystawca}}</p>
+
+</body>
+</html>

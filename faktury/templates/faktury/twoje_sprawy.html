@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}
+{% load i18n %}
+
+{% csrf_token %}
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+  <h6 class="fw-semibold mb-0">Twoje sprawy!</h6>
+  <ul class="d-flex align-items-center gap-2">
+    <li class="fw-medium">
+      <a href="/" class="d-flex align-items-center gap-1 hover-text-primary">
+        <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+        Panel
+      </a>
+    </li>
+    <li>-</li>
+    <li class="fw-medium">Twoje sprawy</li>
+  </ul>
+</div>
+
+<div class="row gy-4">
+    <div class="col-xxl-3 col-lg-4">
+        <div class="card h-100 p-0">
+            <div class="card-body p-24">
+                <button onclick="window.location.href='{% url 'dodaj_zadanie_uzytkownika' %}';" type="button" class="btn btn-primary text-sm btn-sm px-12 py-12 w-100 radius-8 d-flex align-items-center gap-2 mb-32" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    <iconify-icon icon="fa6-regular:square-plus" class="icon text-lg line-height-1"></iconify-icon>
+                    Dodaj nowe zadanie
+                </button>
+
+                <div class="mt-32">
+                    
+                    {% regroup zadania by termin_wykonania as zadania_pogrupowane %}
+                    {% for grupa in zadania_pogrupowane %}
+
+                    {% for zadanie in grupa.list %}
+                    <div class="event-item d-flex align-items-center justify-content-between gap-4 pb-16 mb-16 border border-start-0 border-end-0 border-top-0">
+                        <div class="">
+                            <div class="d-flex align-items-center gap-10">
+                                <span class="w-12-px h-12-px bg-success-600 rounded-circle fw-medium"></span>
+                                <span class="text-secondary-light">
+                                    {% if grupa.grouper == today %}
+                                    Dzisiaj
+                                    {% elif grupa.grouper == tomorrow %}
+                                    Jutro
+                                    {% else %}
+                                    {{ zadanie.termin_wykonania|date:"Y-m-d" }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <span class="text-primary-light fw-semibold text-md mt-4">{{ zadanie.tytul }}<br />{% if zadanie.faktura %}
+                                <span class="text-sm">Powiązana faktura: <a href="{% url 'szczegoly_faktury' pk=zadanie.faktura.pk %}">{{ zadanie.faktura.numer }}</a>
+                            {% endif %}</span></span>
+                        </div>
+                        <div class="dropdown">
+                            <button type="button" data-bs-toggle="dropdown" aria-expanded="false"> 
+                            <iconify-icon icon="entypo:dots-three-vertical" class="icon text-secondary-light"></iconify-icon> 
+                            </button>
+                            <ul class="dropdown-menu p-12 border bg-base shadow">
+                                <li>
+                                    <form method="post" action="{% url 'oznacz_zadanie_uzytkownika' pk=zadanie.pk %}">
+                                        {% csrf_token %}
+                                    <button type="submit" class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-success-200 text-hover-success-900 d-flex align-items-center gap-10" data-bs-toggle="modal" data-bs-target="#exampleModalView">
+                                        <iconify-icon icon="hugeicons:checkmark-square-04" class="icon text-lg line-height-1"></iconify-icon>
+                                        Wykonane
+                                    </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <button onclick="window.location.href='{% url 'edytuj_zadanie_uzytkownika' pk=zadanie.pk %}';" type="button" class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10" data-bs-toggle="modal" data-bs-target="#exampleModalEdit">
+                                        <iconify-icon icon="lucide:edit" class="icon text-lg line-height-1"></iconify-icon>
+                                        Edytuj
+                                    </button>
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'usun_zadanie_uzytkownika' pk=zadanie.pk %}" style="display: inline;">
+                                        {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('Czy na pewno chcesz usunąć to zadanie?')" class="delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10" data-bs-toggle="modal" data-bs-target="#exampleModalDelete">
+                                        <iconify-icon icon="fluent:delete-24-regular" class="icon text-lg line-height-1"></iconify-icon>
+                                        Usuń
+                                    </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                    
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-9 col-lg-8">
+        <div class="card h-100 p-0">
+            <div class="card-body p-24">
+                <div id='wrap'>
+                    <div id='calendarfv'></div>
+                    <div style='clear:both'></div>
+                </div>
+
+                <div class="row mt-50">
+                    <!-- Kolumna 1: Płatności -->
+                    <div class="col-md-6">
+                      <h6>Płatności</h6>
+                      {% for faktura in upcoming_invoices %} 
+                        <div class="event-item d-flex align-items-center justify-content-between gap-4 pb-16 mb-16 border border-start-0 border-end-0 border-top-0">
+                            <div class="">
+                                <div class="d-flex align-items-center gap-10">
+                                    {% if faktura.typ_faktury == 'sprzedaz' %}
+                                    <span class="w-12-px h-12-px bg-warning-600 rounded-circle fw-medium"></span>
+                                    {% else %}
+                                    <span class="w-12-px h-12-px bg-danger-600 rounded-circle fw-medium"></span>
+                                    {% endif %}
+                                    <span class="text-secondary-light">
+                                        {{ faktura.termin_platnosci|date:"Y-m-d" }}                                  
+                                    </span>
+                                </div>
+                                <span class="text-primary-light fw-semibold text-md mt-4">
+                                    Faktura: <a href="{% url 'szczegoly_faktury' pk=faktura.pk %}">{{ faktura.numer }}</a><br />
+                                    {% if faktura.termin_platnosci < today %}
+                                    <a href="{% url 'wyslij_przypomnienie' pk=faktura.pk %}" class="btn btn-sm btn-warning">Wyślij przypomnienie</a>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  
+                    <!-- Kolumna 2: Zaległe -->
+                    <div class="col-md-6">
+                      <h6>Zaległe</h6>
+                      {% for faktura in overdue_invoices %} 
+                        <div class="event-item d-flex align-items-center justify-content-between gap-4 pb-16 mb-16 border border-start-0 border-end-0 border-top-0">
+                            <div class="">
+                                <div class="d-flex align-items-center gap-10">
+                                    {% if faktura.typ_faktury == 'sprzedaz' %}
+                                    <span class="w-12-px h-12-px bg-danger-600 rounded-circle fw-medium"></span>
+                                    {% else %}
+                                    <span class="w-12-px h-12-px bg-danger-600 rounded-circle fw-medium"></span>
+                                    {% endif %}
+                                    <span class="text-secondary-light">
+                                        {{ faktura.termin_platnosci|date:"Y-m-d" }}                                  
+                                    </span>
+                                </div>
+                                <span class="text-primary-light fw-semibold text-md mt-4">
+                                    Faktura: <a href="{% url 'szczegoly_faktury' pk=faktura.pk %}">{{ faktura.numer }}</a><br />
+                                    {% if faktura.termin_platnosci < today %}
+                                    <a href="{% url 'wyslij_przypomnienie' pk=faktura.pk %}" class="btn btn-sm btn-warning">Wyślij przypomnienie</a>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+      
+      // Sprawdź, czy kalendarz już został zainicjalizowany, aby uniknąć duplikacji
+      if (document.getElementById('calendarfv').dataset.initialized) return;
+      document.getElementById('calendarfv').dataset.initialized = "true";
+  
+      console.log("FullCalendar inicjalizowany...");
+  
+      var calendar = $('#calendarfv').fullCalendar({
+        header: {
+          left: 'title',
+          center: 'agendaDay,agendaWeek,month',
+          right: 'prev,next today'
+        },
+        locale: 'pl',
+        events: "{% url 'get_events' %}",  // URL do API Django
+        editable: true,
+        firstDay: 1,  // 1 = Poniedziałek, 0 = Niedziela
+        selectable: true,
+        defaultView: 'month',
+        axisFormat: 'h:mm',
+        columnFormat: {
+          month: 'ddd',    // Mon
+          week: 'ddd d',   // Mon 7
+          day: 'dddd M/d', // Monday 9/7
+          agendaDay: 'dddd d'
+        },
+        titleFormat: {
+          month: 'MMMM yyyy', // Wrzesień 2024
+          week: "MMMM yyyy",
+          day: 'MMMM yyyy'
+        },
+        allDaySlot: false,
+        selectHelper: true,
+        select: function (startDate, endDate, allDay) {
+          if (!allDay) {
+            swal({
+              input: 'text',
+              title: 'Event title:',
+              showCancelButton: true
+            }).then((result) => {
+              swal.resetDefaults();
+              console.log("result: " + result);
+              if (result) {
+                calendar.fullCalendar('renderEvent',
+                  {
+                    title: result,
+                    start: startDate,
+                    end: endDate,
+                    allDay: allDay
+                  },
+                  true // make the event "stick"
+                ); 
+                swal({
+                  type: 'success',
+                  title: 'Agended!',
+                  html: 'Event title: ' + result
+                }); 
+              } else {
+                swal({
+                  type: 'warning',
+                  title: 'Not Agended!',
+                  html: 'Title is empty! '
+                })       
+              }
+              calendar.fullCalendar('unselect');
+            });
+          }                 
+        },
+        droppable: true,
+        drop: function(date, allDay) {
+          var originalEventObject = $(this).data('eventObject');
+          var copiedEventObject = $.extend({}, originalEventObject);
+          copiedEventObject.start = date;
+          copiedEventObject.allDay = allDay;
+          $('#calendar').fullCalendar('renderEvent', copiedEventObject, true);
+          if ($('#drop-remove').is(':checked')) {
+            $(this).remove();
+          }
+        }
+      });
+  
+    });
+  </script>  
+
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+    <h1>{{ zespol.nazwa }}</h1>
+    <p>{{ zespol.opis }}</p>
+
+    <h2>Członkowie</h2>
+   <ul>
+    {% for czlonek in czlonkowie %}
+        <li>
+            Imię: {{ czlonek.imie }}, Nazwisko: {{ czlonek.nazwisko }}, Rola: {{ czlonek.rola }}
+        </li>
+    {% endfor %}
+</ul>
+     <h2>Wyślij wiadomość</h2>
+
+        <div id="wiadomoscFormContainer" style="display: none;"> <!- Ukryty formularz na start -->
+    <form method="post" action="{% url 'wyslij_wiadomosc' zespol.pk %}">
+        {% csrf_token %}
+        {{ wiadomosc_form|crispy }}
+        <button type="submit" class="btn btn-primary">Wyślij wiadomość</button>
+    </form>
+</div>
+<button id="pokazWiadomoscFormBtn" class="btn btn-success">Wyślij wiadomość</button> <!- Przycisk pokazujący formularz -->
+
+    <h2>Wiadomości</h2>
+    <ul>
+    {% for wiadomosc in zespol.wiadomosci.all %}
+        <li>
+            <p><strong>{{ wiadomosc.temat }}</strong> (od: {{ wiadomosc.nadawca }}) - {{ wiadomosc.data_wyslania }}</p>  <-- Change here
+            <p>{{ wiadomosc.tresc|linebreaksbr }}</p>
+            <hr>
+        </li>
+        {% empty %}
+         <li>Brak wiadomości w tym zespole.</li>
+    {% endfor %}
+    </ul>
+
+
+    <h2>Zadania</h2>
+    <a href="{% url 'dodaj_zadanie' zespol.pk %}" class="btn btn-success">Dodaj zadanie</a>
+    <ul>
+    {% for zadanie in zespol.zadania.all %}
+       <li>
+            {{ zadanie.tytul }} (Termin: {{ zadanie.termin_wykonania|date:"Y-m-d" }}) - Status: {{ zadanie.get_status_display }} - Priorytet: {{ zadanie.get_priorytet_display }}
+            <a href="{% url 'edytuj_zadanie' zadanie.pk %}" class="btn btn-sm btn-outline-success"> Edytuj</a>
+            <a href="{% url 'usun_zadanie' zadanie_id=zadanie.pk %}" class="btn btn-sm btn-outline-danger">Usuń</a> {# Pass zadanie_id now #}
+
+           {% if zadanie.przypisane_do %}
+	                <p>Przypisane do: 
+	                {% if zadanie.przypisane_do.user %}  {# Check if zadanie.przypisane_do.user is not None #}
+	                    {{ zadanie.przypisane_do.user.get_full_name|default:zadanie.przypisane_do.user.username }}
+	                {% else %}
+	                    Profil członka zespołu (konto nieutworzone) {# Or some other placeholder text #}
+	                {% endif %}
+	                </p> 
+	            {% else %}
+	                 <p>Nieprzypisane</p>
+	            {% endif %}
+        </li>
+
+    {% empty %}
+        <li>Brak zadań.</li>
+    {% endfor %}
+    </ul>
+     <a href="{% url 'edytuj_zespol' zespol.pk %}" class="btn btn-warning">Edytuj Zespół</a>
+     <a href="{% url 'usun_zespol' zespol.pk %}" class="btn btn-danger">Usuń Zespół</a>
+    <a href="{% url 'lista_zespolow' %}" class="btn btn-secondary">Powrót</a>
+{% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const pokazWiadomoscFormBtn = document.getElementById('pokazWiadomoscFormBtn');
+        const wiadomoscFormContainer = document.getElementById('wiadomoscFormContainer');
+
+        pokazWiadomoscFormBtn.addEventListener('click', function() {
+            wiadomoscFormContainer.style.display = 'block'; // Pokaż formularz
+            pokazWiadomoscFormBtn.style.display = 'none'; // Ukryj przycisk
+        });
+    });
+</script>

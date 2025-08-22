@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Zespoły</h1>
+    <a href="{% url 'dodaj_zespol' %}" class="btn btn-success">Dodaj Zespół</a>
+    <ul>
+        {% for zespol in zespoly %}
+            <li><a href="{% url 'szczegoly_zespolu' zespol.pk %}">{{ zespol.nazwa }}</a></li>
+        {% empty %}
+            <li>Brak zespołów.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

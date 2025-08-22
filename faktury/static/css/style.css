@@ -1,0 +1,118 @@
+/* Style dla kontenera kalendarza */
+#calendar-container {
+    width: 100%; /* Szerokość kalendarza */
+    max-width: 1200px; /* Maksymalna szerokość (opcjonalnie) */
+    margin: 0 auto;  /* Wyśrodkowanie w poziomie */
+    font-family: sans-serif; /* Przykładowa czcionka */
+}
+
+/* Style dla tabeli kalendarza */
+#calendar-container table {
+    width: 100%;
+    border-collapse: collapse; /* Usuń odstępy między komórkami */
+    table-layout: fixed; /* Równomierny rozkład kolumn */
+}
+
+/* Nagłówek tabeli (rok i miesiąc) */
+#calendar-container thead th {
+    text-align: center;
+    padding: 10px;
+    background-color: #f0f0f0; /* Jasnoszare tło */
+    font-weight: bold;
+    border: 1px solid #ddd; /* Cienkie obramowanie */
+}
+
+/* Nagłówki dni tygodnia */
+#calendar-container th {
+    padding: 5px;
+    text-align: center;
+    background-color: #eee;
+    border: 1px solid #ddd;
+    font-weight: normal; /* Mniej pogrubione niż nagłówek miesiąca */
+}
+
+/* Komórki dni */
+#calendar-container td {
+    height: 100px;  /* Stała wysokość komórek */
+    padding: 5px;
+    border: 1px solid #ddd;
+    vertical-align: top;  /* Zawartość przy górnej krawędzi */
+    cursor: pointer; /* Zmień kursor na "łapkę" */
+}
+
+/* Dzisiejszy dzień */
+#calendar-container td.today {
+    background-color: #e0f7fa; /* Jasnoniebieskie tło */
+}
+/* Dni z innego miesiąca (puste komórki) */
+#calendar-container td:empty {
+    background-color: #f9f9f9; /* Inny kolor dla pustych komórek */
+}
+
+/* Zdarzenia (faktury/zadania) */
+#calendar-container td span {
+    display: block; /* Każdy wpis w nowej linii */
+    margin-bottom: 3px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.8em; /* Mniejsza czcionka */
+}
+
+/* Kolory dla zdarzeń (możesz dostosować) */
+#calendar-container td span[style*="color: blue;"] { /* Faktury sprzedaży */
+    background-color: rgba(0, 0, 255, 0.1); /* Jasnoniebieskie tło */
+    border: 1px solid rgba(0, 0, 255, 0.4);
+}
+
+#calendar-container td span[style*="color: red;"] { /* Faktury kosztowe */
+    background-color: rgba(255, 0, 0, 0.1); /* Jasnoczerwone tło */
+    border: 1px solid rgba(255, 0, 0, 0.4);
+}
+#calendar-container td span[style*="color: green;"] { /* Zadania*/
+    background-color: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.4);
+}
+
+/* Hover dla komórek (opcjonalnie) */
+#calendar-container td:hover {
+    background-color: #e6f7ff;  /* Delikatne podświetlenie */
+}
+
+.notification-bell {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+.notification-container {
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    max-width: 300px;
+    z-index: 1000;
+}
+
+.notification {
+    background: white;
+    border-left: 4px solid #4CAF50;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+    padding: 15px;
+    animation: slideIn 0.3s ease-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.notification-close {
+    cursor: pointer;
+    margin-left: 10px;
+    color: #666;
+}

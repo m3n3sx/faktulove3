@@ -1,0 +1,23 @@
+{# notifications.html #}
+{% extends 'base.html' %}
+
+{% block content %}
+  <div>
+    <h2>Powiadomienia ({{ notifications_count }})</h2>
+    <ul>
+      {% for notification in notifications %}
+        {# Przykładowe oznaczenie kolorem – jeśli w wiadomości znajduje się "Przeterminowana", nadajemy klasę "danger" #}
+        <li class="{% if 'Przeterminowana' in notification.message %}danger{% endif %}">
+          <a href="{{ notification.link }}">{{ notification.message }}</a>
+          
+          {# Formularz do usunięcia powiadomienia #}
+          <form method="POST" action="{% url 'delete_notification' notification.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Usuń</button>
+          </form>
+          <span class="time">{{ notification.time }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}

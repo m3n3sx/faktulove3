@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Usuń Fakturę</h1>
+
+    <p>Czy na pewno chcesz usunąć fakturę nr {{ faktura.numer }}?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Tak, Usuń</button>
+        <a href="{% url 'panel_uzytkownika' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+
+{% endblock %}

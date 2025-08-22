@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Wyślij Fakturę {{ faktura.numer }}</h1>
+
+    <p>Wysyłanie faktury do: <strong>{{ faktura.nabywca.nazwa }}</strong></p>
+
+    <form method="post" action="{% url 'wyslij_fakture' pk=faktura.pk %}">  
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Wyślij</button>
+        <a href="{% url 'szczegoly_faktury' pk=faktura.pk %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+{% endblock %}

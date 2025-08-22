@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Usuń Partnerstwo</h1>
+
+    <p>Czy na pewno chcesz usunąć partnerstwo z firmą
+        {% if partnerstwo.firma1.user == request.user %}
+            {{ partnerstwo.firma2.nazwa }}
+        {% else %}
+            {{ partnerstwo.firma1.nazwa }}
+        {% endif %}?
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Tak, Usuń</button>
+        <a href="{% url 'lista_partnerstw' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dowód Wpłaty (KP) {{ faktura.numer }}</title>
+    <style>
+        body { font-family: sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 5px; }
+        th { text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Dowód Wpłaty (KP) nr {{ faktura.numer }}</h1>
+    <p>Data wystawienia: {{ faktura.data_wystawienia|date:"Y-m-d" }}</p>
+    <p>Data płatności: {{ faktura.data_sprzedazy|date:"Y-m-d" }}</p>
+    <p>Miejsce wystawienia: {{ faktura.miejsce_wystawienia }}</p>
+
+    <h2>Przelew:</h2>
+    <p>Forma płatności: {{ faktura.get_sposob_platnosci_display }}</p>
+    <p>Numer konta: {{ faktura.numer_konta_bankowego }}</p>
+    <p>Tytuł przelewu: {{ faktura.tytul_przelewu }}</p>
+    <p>Kwota opłacona: {{ faktura.kwota_oplacona }} {{ faktura.waluta }}</p>
+
+    <h2>Sprzedawca</h2>
+    <p>{{ faktura.sprzedawca.nazwa }}</p>
+    <p>NIP: {{ faktura.sprzedawca.nip }}</p>
+    <p>{{ faktura.sprzedawca.ulica }} {{ faktura.sprzedawca.numer_domu }}{% if faktura.sprzedawca.numer_mieszkania %}/{{ faktura.sprzedawca.numer_mieszkania }}{% endif %}</p>
+    <p>{{ faktura.sprzedawca.kod_pocztowy }} {{ faktura.sprzedawca.miejscowosc }}</p>
+
+    <h2>Nabywca</h2>
+    <p>{{ faktura.nabywca.nazwa }}</p>
+    {% if faktura.nabywca.nip %}
+        <p>NIP: {{ faktura.nabywca.nip }}</p>
+    {% endif %}
+    <p>{{ faktura.nabywca.ulica }} {{ faktura.nabywca.numer_domu }}{% if faktura.nabywca.numer_mieszkania %}/{{ faktura.nabywca.numer_mieszkania }}{% endif %}</p>
+    <p>{{ faktura.nabywca.kod_pocztowy }} {{ faktura.nabywca.miejscowosc }}</p>
+
+    <h2>Opis transakcji</h2>
+    <p>{{ faktura.uwagi }}</p>
+
+    <h2>Podpis elektroniczny</h2>
+    <p>Sprawny podpis: _________________</p>
+    <p>Data: {{ faktura.data_wystawienia|date:"Y-m-d" }}</p>
+
+    <h2>Rozrachunek:</h2>
+    <p>Kwota净to: {{ faktura.suma_netto }}</p>
+    <p>VAT: {{ faktura.suma_vat }}</p>
+    <p>Kwota brutto: {{ faktura.suma_brutto }}</p>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Dodaj fakturę z obrazu</h1>
+
+<form method="post" enctype="multipart/form-data">  {% comment %} enctype is crucial! {% endcomment %}
+    {% csrf_token %}
+    <input type="file" name="obraz_faktury" accept="image/*" required>  <button type="submit" class="btn btn-primary">Prześlij i przetwórz</button>
+</form>
+
+{% endblock %}

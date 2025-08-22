@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Usuń Zadanie</h1>
+    <p>Czy na pewno chcesz usunąć zadanie: <strong>{{ zadanie.tytul }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Usuń</button>
+        <a href="{% url 'twoje_sprawy' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+{% endblock %}

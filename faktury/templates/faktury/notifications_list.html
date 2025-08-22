@@ -1,0 +1,10 @@
+{% for notification in notifications %}
+  <div class="notification">
+    <p>{{ notification.message }}</p>
+    <a href="{{ notification.link }}">Zobacz szczegóły</a>
+    <form method="POST" action="{% url 'mark_as_read' notification.id %}">
+      {% csrf_token %}
+      <button type="submit">Oznacz jako przeczytane</button>
+    </form>
+  </div>
+{% endfor %}

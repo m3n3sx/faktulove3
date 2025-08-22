@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+    <h2>{% trans "Lista Partnerstw" %}</h2>
+
+    <h3>{% trans "Twoi Partnerzy" %} (firma1)</h3>
+    <ul>
+    {% for partnerstwo in partnerstwa1 %}
+        <li>
+             {{ partnerstwo.firma2.nazwa }} (NIP: {{ partnerstwo.firma2.nip }})
+            <a href="{% url 'usun_partnerstwo' partnerstwo.pk %}">{% trans "Usuń" %}</a>
+        </li>
+    {% empty %}
+        <li>{% trans "Nie masz jeszcze żadnych partnerów (jako firma1)." %}</li>
+    {% endfor %}
+    </ul>
+
+    <h3>{% trans "Twoi Partnerzy" %} (firma2)</h3>
+    <ul>
+        {% for partnerstwo in partnerstwa2 %}
+            <li>
+                {{ partnerstwo.firma1.nazwa }} (NIP: {{ partnerstwo.firma1.nip }})
+                <a href="{% url 'usun_partnerstwo' partnerstwo.pk %}">{% trans "Usuń" %}</a>
+            </li>
+        {% empty %}
+            <li>{% trans "Nie masz jeszcze żadnych partnerów (jako firma2)." %}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'dodaj_partnerstwo' %}">{% trans "Dodaj Partnera" %}</a>  {# Corrected URL name #}
+{% endblock %}

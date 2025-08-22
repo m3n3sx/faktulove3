@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Moje Zadania</h1>
+
+    <ul>
+        {% for zadanie in zadania %}
+            <li>
+                <a href="{% url 'szczegoly_zadania_uzytkownika' pk=zadanie.pk %}"> {{ zadanie.tytul }}</a>
+
+            </li>
+        {% empty %}
+            <li>Brak zadań.</li>
+        {% endfor %}
+    </ul>
+     <a href="{% url 'dodaj_zadanie_uzytkownika' %}" class="btn btn-primary">Dodaj Zadanie</a>
+
+{% endblock %}

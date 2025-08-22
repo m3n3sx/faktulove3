@@ -1,0 +1,891 @@
+{% extends 'faktury/enhanced/base_enhanced.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }} - FaktuLove{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'enhanced:lista_dokumentow' %}">Dokumenty</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-file-invoice me-2 text-primary"></i>
+                    {{ title }}
+                </h4>
+                <span class="badge bg-primary document-type">{{ typ_dokumentu }}</span>
+            </div>
+            
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Sekcja podstawowych informacji -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informacje podstawowe
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <label for="{{ form.typ_dokumentu.id_for_label }}" class="form-label required">{{ form.typ_dokumentu.label }}</label>
+                            {{ form.typ_dokumentu|add_class:"form-select" }}
+                            {% if form.typ_dokumentu.errors %}
+                                <div class="form-error">{{ form.typ_dokumentu.errors.0 }}</div>
+                            {% endif %}
+                            {% if form.typ_dokumentu.help_text %}
+                                <div class="help-text">{{ form.typ_dokumentu.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <label class="form-label">Numeracja faktury</label>
+                            <div class="form-check mb-2">
+                                {{ form.auto_numer|add_class:"form-check-input" }}
+                                <label for="{{ form.auto_numer.id_for_label }}" class="form-check-label">
+                                    {{ form.auto_numer.label }}
+                                </label>
+                            </div>
+                            {% if not form.auto_numer.value %}
+                            <div id="wlasny-numer-group">
+                                {{ form.wlasny_numer|add_class:"form-control" }}
+                                {% if form.wlasny_numer.errors %}
+                                    <div class="form-error">{{ form.wlasny_numer.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <label for="{{ form.miejsce_wystawienia.id_for_label }}" class="form-label required">{{ form.miejsce_wystawienia.label }}</label>
+                            {{ form.miejsce_wystawienia|add_class:"form-control" }}
+                            {% if form.miejsce_wystawienia.errors %}
+                                <div class="form-error">{{ form.miejsce_wystawienia.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Sekcja dat -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-calendar me-2"></i>
+                                Daty
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="{{ form.data_wystawienia.id_for_label }}" class="form-label required">{{ form.data_wystawienia.label }}</label>
+                            {{ form.data_wystawienia|add_class:"form-control" }}
+                            {% if form.data_wystawienia.errors %}
+                                <div class="form-error">{{ form.data_wystawienia.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="{{ form.data_sprzedazy.id_for_label }}" class="form-label required">{{ form.data_sprzedazy.label }}</label>
+                            {{ form.data_sprzedazy|add_class:"form-control" }}
+                            {% if form.data_sprzedazy.errors %}
+                                <div class="form-error">{{ form.data_sprzedazy.errors.0 }}</div>
+                            {% endif %}
+                            {% if form.data_sprzedazy.help_text %}
+                                <div class="help-text">{{ form.data_sprzedazy.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="{{ form.dni_platnosci.id_for_label }}" class="form-label">{{ form.dni_platnosci.label }}</label>
+                            {{ form.dni_platnosci|add_class:"form-control" }}
+                            {% if form.dni_platnosci.errors %}
+                                <div class="form-error">{{ form.dni_platnosci.errors.0 }}</div>
+                            {% endif %}
+                            {% if form.dni_platnosci.help_text %}
+                                <div class="help-text">{{ form.dni_platnosci.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="{{ form.termin_platnosci.id_for_label }}" class="form-label required">{{ form.termin_platnosci.label }}</label>
+                            {{ form.termin_platnosci|add_class:"form-control" }}
+                            {% if form.termin_platnosci.errors %}
+                                <div class="form-error">{{ form.termin_platnosci.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Sekcja kontrahentów -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-handshake me-2"></i>
+                                Strony transakcji
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.sprzedawca.id_for_label }}" class="form-label required">{{ form.sprzedawca.label }}</label>
+                            {{ form.sprzedawca|add_class:"form-select" }}
+                            {% if form.sprzedawca.errors %}
+                                <div class="form-error">{{ form.sprzedawca.errors.0 }}</div>
+                            {% endif %}
+                            <div class="help-text">Twoja firma (automatycznie wybrana)</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.nabywca.id_for_label }}" class="form-label required">{{ form.nabywca.label }}</label>
+                            <div class="input-group">
+                                {{ form.nabywca|add_class:"form-select" }}
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#kontrahentModal">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            {% if form.nabywca.errors %}
+                                <div class="form-error">{{ form.nabywca.errors.0 }}</div>
+                            {% endif %}
+                            <div class="help-text">Wybierz kontrahenta lub dodaj nowego</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sekcja płatności -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Płatność
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="{{ form.sposob_platnosci.id_for_label }}" class="form-label">{{ form.sposob_platnosci.label }}</label>
+                            {{ form.sposob_platnosci|add_class:"form-select" }}
+                            {% if form.sposob_platnosci.errors %}
+                                <div class="form-error">{{ form.sposob_platnosci.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="{{ form.waluta.id_for_label }}" class="form-label">{{ form.waluta.label }}</label>
+                            {{ form.waluta|add_class:"form-select" }}
+                            {% if form.waluta.errors %}
+                                <div class="form-error">{{ form.waluta.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                            {{ form.status|add_class:"form-select" }}
+                            {% if form.status.errors %}
+                                <div class="form-error">{{ form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12 mb-3" id="konto-bankowe-group" style="display: none;">
+                            <label for="{{ form.numer_konta_bankowego.id_for_label }}" class="form-label">{{ form.numer_konta_bankowego.label }}</label>
+                            {{ form.numer_konta_bankowego|add_class:"form-control" }}
+                            {% if form.numer_konta_bankowego.errors %}
+                                <div class="form-error">{{ form.numer_konta_bankowego.errors.0 }}</div>
+                            {% endif %}
+                            {% if form.numer_konta_bankowego.help_text %}
+                                <div class="help-text">{{ form.numer_konta_bankowego.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12 mb-3" id="tytul-przelewu-group" style="display: none;">
+                            <label for="{{ form.tytul_przelewu.id_for_label }}" class="form-label">{{ form.tytul_przelewu.label }}</label>
+                            {{ form.tytul_przelewu|add_class:"form-control" }}
+                            {% if form.tytul_przelewu.errors %}
+                                <div class="form-error">{{ form.tytul_przelewu.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Sekcja VAT -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-percentage me-2"></i>
+                                VAT i zwolnienia
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                {{ form.zwolnienie_z_vat|add_class:"form-check-input" }}
+                                <label for="{{ form.zwolnienie_z_vat.id_for_label }}" class="form-check-label">
+                                    {{ form.zwolnienie_z_vat.label }}
+                                </label>
+                            </div>
+                            {% if form.zwolnienie_z_vat.help_text %}
+                                <div class="help-text">{{ form.zwolnienie_z_vat.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3" id="powod-zwolnienia-group" style="display: none;">
+                            <label for="{{ form.powod_zwolnienia.id_for_label }}" class="form-label">{{ form.powod_zwolnienia.label }}</label>
+                            {{ form.powod_zwolnienia|add_class:"form-select" }}
+                            {% if form.powod_zwolnienia.errors %}
+                                <div class="form-error">{{ form.powod_zwolnienia.errors.0 }}</div>
+                            {% endif %}
+                            {% if form.powod_zwolnienia.help_text %}
+                                <div class="help-text">{{ form.powod_zwolnienia.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check">
+                                        {{ form.vat_margin|add_class:"form-check-input" }}
+                                        <label for="{{ form.vat_margin.id_for_label }}" class="form-check-label">
+                                            {{ form.vat_margin.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.vat_margin.help_text %}
+                                        <div class="help-text">{{ form.vat_margin.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check">
+                                        {{ form.odwrotne_obciazenie|add_class:"form-check-input" }}
+                                        <label for="{{ form.odwrotne_obciazenie.id_for_label }}" class="form-check-label">
+                                            {{ form.odwrotne_obciazenie.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.odwrotne_obciazenie.help_text %}
+                                        <div class="help-text">{{ form.odwrotne_obciazenie.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sekcja pozycji faktury -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-list me-2"></i>
+                                Pozycje faktury
+                                <button type="button" class="btn btn-sm btn-success float-end" id="add-position">
+                                    <i class="fas fa-plus me-1"></i>Dodaj pozycję
+                                </button>
+                            </h5>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="positions-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 5%;">Lp.</th>
+                                            <th style="width: 35%;">Nazwa towaru/usługi</th>
+                                            <th style="width: 10%;">Ilość</th>
+                                            <th style="width: 10%;">Jednostka</th>
+                                            <th style="width: 15%;">Cena netto</th>
+                                            <th style="width: 10%;">VAT</th>
+                                            <th style="width: 10%;">Rabat</th>
+                                            <th style="width: 5%;">Usuń</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="positions-tbody">
+                                        {{ formset.management_form }}
+                                        {% for form in formset %}
+                                        <tr class="position-row">
+                                            <td class="position-number">{{ forloop.counter }}</td>
+                                            <td>
+                                                {{ form.nazwa|add_class:"form-control form-control-sm" }}
+                                                {% if form.nazwa.errors %}
+                                                    <div class="form-error">{{ form.nazwa.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ form.ilosc|add_class:"form-control form-control-sm currency-input" }}
+                                                {% if form.ilosc.errors %}
+                                                    <div class="form-error">{{ form.ilosc.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ form.jednostka|add_class:"form-select form-select-sm" }}
+                                                {% if form.jednostka.errors %}
+                                                    <div class="form-error">{{ form.jednostka.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ form.cena_netto|add_class:"form-control form-control-sm currency-input" }}
+                                                {% if form.cena_netto.errors %}
+                                                    <div class="form-error">{{ form.cena_netto.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ form.vat|add_class:"form-select form-select-sm" }}
+                                                {% if form.vat.errors %}
+                                                    <div class="form-error">{{ form.vat.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    {{ form.rabat|add_class:"form-control currency-input" }}
+                                                    {{ form.rabat_typ|add_class:"form-select" }}
+                                                </div>
+                                                {% if form.rabat.errors %}
+                                                    <div class="form-error">{{ form.rabat.errors.0 }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {{ form.DELETE|add_class:"form-check-input" }}
+                                                {% for hidden in form.hidden_fields %}
+                                                    {{ hidden }}
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-secondary">
+                                            <td colspan="5" class="text-end"><strong>Razem:</strong></td>
+                                            <td id="total-vat"><strong>-</strong></td>
+                                            <td id="total-brutto"><strong>-</strong></td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sekcja dodatkowych informacji -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-info me-2"></i>
+                                Informacje dodatkowe
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.wystawca.id_for_label }}" class="form-label">{{ form.wystawca.label }}</label>
+                            {{ form.wystawca|add_class:"form-control" }}
+                            {% if form.wystawca.help_text %}
+                                <div class="help-text">{{ form.wystawca.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.odbiorca.id_for_label }}" class="form-label">{{ form.odbiorca.label }}</label>
+                            {{ form.odbiorca|add_class:"form-control" }}
+                            {% if form.odbiorca.help_text %}
+                                <div class="help-text">{{ form.odbiorca.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.uwagi.id_for_label }}" class="form-label">{{ form.uwagi.label }}</label>
+                            {{ form.uwagi|add_class:"form-control" }}
+                            {% if form.uwagi.help_text %}
+                                <div class="help-text">{{ form.uwagi.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if form.powod_korekty %}
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.powod_korekty.id_for_label }}" class="form-label required">{{ form.powod_korekty.label }}</label>
+                            {{ form.powod_korekty|add_class:"form-control" }}
+                            {% if form.powod_korekty.errors %}
+                                <div class="form-error">{{ form.powod_korekty.errors.0 }}</div>
+                            {% endif %}
+                            {% if form.powod_korekty.help_text %}
+                                <div class="help-text">{{ form.powod_korekty.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Przyciski akcji -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'enhanced:lista_dokumentow' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Anuluj
+                                </a>
+                                
+                                <div>
+                                    <button type="submit" name="action" value="save_draft" class="btn btn-outline-primary me-2">
+                                        <i class="fas fa-save me-1"></i>Zapisz jako projekt
+                                    </button>
+                                    <button type="submit" name="action" value="save_issue" class="btn btn-primary">
+                                        <i class="fas fa-check me-1"></i>Wystaw {{ typ_dokumentu }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal dodawania kontrahenta -->
+<div class="modal fade" id="kontrahentModal" tabindex="-1" aria-labelledby="kontrahentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="kontrahentModalLabel">
+                    <i class="fas fa-user-plus me-2"></i>Dodaj nowego kontrahenta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="kontrahent-form">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="kontrahent-nazwa" class="form-label required">Nazwa firmy</label>
+                            <input type="text" class="form-control" id="kontrahent-nazwa" name="nazwa" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="kontrahent-nip" class="form-label">NIP</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="kontrahent-nip" name="nip" placeholder="0000000000">
+                                <button type="button" class="btn btn-outline-secondary" id="gus-search-btn">
+                                    <i class="fas fa-search"></i> GUS
+                                </button>
+                            </div>
+                            <div class="form-text">Wpisz NIP i kliknij GUS aby pobrać dane z rejestru</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="kontrahent-regon" class="form-label">REGON</label>
+                            <input type="text" class="form-control" id="kontrahent-regon" name="regon">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="kontrahent-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="kontrahent-email" name="email">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="kontrahent-adres" class="form-label">Adres</label>
+                            <input type="text" class="form-control" id="kontrahent-adres" name="adres">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="kontrahent-kod" class="form-label">Kod pocztowy</label>
+                            <input type="text" class="form-control" id="kontrahent-kod" name="kod_pocztowy" placeholder="00-000">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="kontrahent-miasto" class="form-label">Miasto</label>
+                            <input type="text" class="form-control" id="kontrahent-miasto" name="miasto">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="kontrahent-telefon" class="form-label">Telefon</label>
+                            <input type="text" class="form-control" id="kontrahent-telefon" name="telefon">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-primary" id="save-kontrahent">
+                    <i class="fas fa-save me-1"></i>Zapisz kontrahenta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Global formset management
+    let formsetIndex = parseInt($('#id_pozycje-TOTAL_FORMS').val()) || 0;
+    
+    // =====================================================
+    // SECTION 1: Form Field Management 
+    // =====================================================
+    
+    // Show/hide payment fields based on payment method
+    function togglePaymentFields() {
+        const paymentMethod = $('#{{ form.sposob_platnosci.id_for_label }}').val();
+        
+        if (paymentMethod === 'przelew') {
+            $('#konto-bankowe-group, #tytul-przelewu-group').show();
+        } else {
+            $('#konto-bankowe-group, #tytul-przelewu-group').hide();
+        }
+    }
+    
+    // Show/hide VAT exemption reason
+    function toggleVatExemption() {
+        const isExempt = $('#{{ form.zwolnienie_z_vat.id_for_label }}').is(':checked');
+        
+        if (isExempt) {
+            $('#powod-zwolnienia-group').show();
+        } else {
+            $('#powod-zwolnienia-group').hide();
+        }
+    }
+    
+    // Show/hide custom number field
+    function toggleCustomNumber() {
+        const autoNumber = $('#{{ form.auto_numer.id_for_label }}').is(':checked');
+        
+        if (autoNumber) {
+            $('#wlasny-numer-group').hide();
+        } else {
+            $('#wlasny-numer-group').show();
+        }
+    }
+    
+    // Calculate payment term from days
+    function calculatePaymentTerm() {
+        const issueDate = $('#{{ form.data_wystawienia.id_for_label }}').val();
+        const days = parseInt($('#{{ form.dni_platnosci.id_for_label }}').val()) || 0;
+        
+        if (issueDate && days > 0) {
+            const date = new Date(issueDate);
+            date.setDate(date.getDate() + days);
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            
+            $('#{{ form.termin_platnosci.id_for_label }}').val(`${year}-${month}-${day}`);
+        }
+    }
+    
+    // =====================================================
+    // SECTION 2: Position Management (Dodawanie pozycji)
+    // =====================================================
+    
+    // Add new position - FIXED VERSION
+    function addNewPosition() {
+        const tbody = $('#positions-tbody');
+        const totalForms = $('#id_pozycje-TOTAL_FORMS');
+        const formCount = parseInt(totalForms.val());
+        
+        // Create new row HTML
+        const newRowHtml = `
+        <tr class="position-row">
+            <td class="position-number">${formCount + 1}</td>
+            <td>
+                <input type="text" name="pozycje-${formCount}-nazwa" id="id_pozycje-${formCount}-nazwa" class="form-control form-control-sm" required>
+            </td>
+            <td>
+                <input type="number" name="pozycje-${formCount}-ilosc" id="id_pozycje-${formCount}-ilosc" class="form-control form-control-sm currency-input" step="0.01" min="0" value="1.00" required>
+            </td>
+            <td>
+                <select name="pozycje-${formCount}-jednostka" id="id_pozycje-${formCount}-jednostka" class="form-select form-select-sm" required>
+                    <option value="szt">szt</option>
+                    <option value="kg">kg</option>
+                    <option value="m">m</option>
+                    <option value="m2">m²</option>
+                    <option value="m3">m³</option>
+                    <option value="godz">godz</option>
+                    <option value="usł">usł</option>
+                    <option value="komplet">komplet</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" name="pozycje-${formCount}-cena_netto" id="id_pozycje-${formCount}-cena_netto" class="form-control form-control-sm currency-input" step="0.01" min="0" required>
+            </td>
+            <td>
+                <select name="pozycje-${formCount}-vat" id="id_pozycje-${formCount}-vat" class="form-select form-select-sm" required>
+                    <option value="23">23%</option>
+                    <option value="8">8%</option>
+                    <option value="5">5%</option>
+                    <option value="0">0%</option>
+                    <option value="zw">zw</option>
+                    <option value="np">np</option>
+                </select>
+            </td>
+            <td>
+                <div class="input-group input-group-sm">
+                    <input type="number" name="pozycje-${formCount}-rabat" id="id_pozycje-${formCount}-rabat" class="form-control currency-input" step="0.01" min="0">
+                    <select name="pozycje-${formCount}-rabat_typ" id="id_pozycje-${formCount}-rabat_typ" class="form-select">
+                        <option value="procent">%</option>
+                        <option value="kwota">PLN</option>
+                    </select>
+                </div>
+            </td>
+            <td class="text-center">
+                <input type="checkbox" name="pozycje-${formCount}-DELETE" id="id_pozycje-${formCount}-DELETE" class="form-check-input">
+                <input type="hidden" name="pozycje-${formCount}-id" id="id_pozycje-${formCount}-id">
+            </td>
+        </tr>`;
+        
+        // Add new row
+        tbody.append(newRowHtml);
+        
+        // Update form count
+        totalForms.val(formCount + 1);
+        formsetIndex = formCount + 1;
+        
+        // Update row numbers
+        updateRowNumbers();
+        
+        // Recalculate totals
+        calculateTotals();
+        
+        console.log('New position added. Total positions:', formCount + 1);
+    }
+    
+    // Remove position
+    function removePosition(row) {
+        const deleteCheckbox = row.find('input[name$="-DELETE"]');
+        
+        if (deleteCheckbox.is(':checked')) {
+            row.hide();
+            row.addClass('deleted');
+        } else {
+            row.show();
+            row.removeClass('deleted');
+        }
+        
+        updateRowNumbers();
+        calculateTotals();
+    }
+    
+    // Update row numbers
+    function updateRowNumbers() {
+        let visibleRowCount = 1;
+        $('.position-row:visible:not(.deleted)').each(function() {
+            $(this).find('.position-number').text(visibleRowCount);
+            visibleRowCount++;
+        });
+    }
+    
+    // =====================================================
+    // SECTION 3: Calculations (Przeliczanie kwot)
+    // =====================================================
+    
+    // Calculate individual position
+    function calculatePosition(row) {
+        const ilosc = parseFloat(row.find('input[name$="-ilosc"]').val()) || 0;
+        const cenaNetto = parseFloat(row.find('input[name$="-cena_netto"]').val()) || 0;
+        const vatRate = row.find('select[name$="-vat"]').val();
+        const rabat = parseFloat(row.find('input[name$="-rabat"]').val()) || 0;
+        const rabatTyp = row.find('select[name$="-rabat_typ"]').val();
+        
+        let wartoscNetto = ilosc * cenaNetto;
+        
+        // Apply discount
+        if (rabat > 0) {
+            if (rabatTyp === 'procent') {
+                wartoscNetto = wartoscNetto * (1 - rabat / 100);
+            } else {
+                wartoscNetto = wartoscNetto - rabat;
+            }
+        }
+        
+        // Calculate VAT
+        let kwotaVat = 0;
+        if (vatRate && vatRate !== 'zw' && vatRate !== 'np' && vatRate !== 'oo') {
+            kwotaVat = wartoscNetto * (parseFloat(vatRate) / 100);
+        }
+        
+        const wartoscBrutto = wartoscNetto + kwotaVat;
+        
+        return {
+            netto: wartoscNetto,
+            vat: kwotaVat,
+            brutto: wartoscBrutto
+        };
+    }
+    
+    // Calculate totals - FIXED VERSION
+    function calculateTotals() {
+        let totalNetto = 0;
+        let totalVat = 0;
+        let totalBrutto = 0;
+        
+        $('.position-row:visible:not(.deleted)').each(function() {
+            const calculation = calculatePosition($(this));
+            totalNetto += calculation.netto;
+            totalVat += calculation.vat;
+            totalBrutto += calculation.brutto;
+        });
+        
+        // Update totals display
+        $('#total-vat').html(`<strong>${formatCurrency(totalVat)}</strong>`);
+        $('#total-brutto').html(`<strong>${formatCurrency(totalBrutto)}</strong>`);
+        
+        console.log('Totals calculated:', {netto: totalNetto, vat: totalVat, brutto: totalBrutto});
+    }
+    
+    // =====================================================
+    // SECTION 4: GUS Integration (Pobieranie danych z GUS)
+    // =====================================================
+    
+    // GUS data search
+    function searchGusData(nip) {
+        if (!nip || nip.length !== 10) {
+            showToast('Wprowadź poprawny 10-cyfrowy NIP', 'warning');
+            return;
+        }
+        
+        showLoading('#gus-search-btn');
+        
+        $.ajax({
+            url: '/api/get-company-data/',
+            method: 'POST',
+            data: {
+                'nip': nip,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            success: function(data) {
+                if (data.success) {
+                    // Fill form with GUS data
+                    $('#kontrahent-nazwa').val(data.data.nazwa || '');
+                    $('#kontrahent-regon').val(data.data.regon || '');
+                    $('#kontrahent-adres').val(data.data.adres || '');
+                    $('#kontrahent-kod').val(data.data.kod_pocztowy || '');
+                    $('#kontrahent-miasto').val(data.data.miasto || '');
+                    
+                    showToast('Dane pobrane z rejestru GUS', 'success');
+                } else {
+                    showToast(data.error || 'Błąd pobierania danych z GUS', 'error');
+                }
+            },
+            error: function() {
+                showToast('Błąd połączenia z rejestrem GUS', 'error');
+            },
+            complete: function() {
+                hideLoading('#gus-search-btn');
+            }
+        });
+    }
+    
+    // Save new contractor
+    function saveNewContractor() {
+        const formData = {
+            nazwa: $('#kontrahent-nazwa').val(),
+            nip: $('#kontrahent-nip').val(),
+            regon: $('#kontrahent-regon').val(),
+            email: $('#kontrahent-email').val(),
+            adres: $('#kontrahent-adres').val(),
+            kod_pocztowy: $('#kontrahent-kod').val(),
+            miasto: $('#kontrahent-miasto').val(),
+            telefon: $('#kontrahent-telefon').val(),
+            csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+        };
+        
+        if (!formData.nazwa) {
+            showToast('Nazwa firmy jest wymagana', 'warning');
+            return;
+        }
+        
+        showLoading('#save-kontrahent');
+        
+        $.ajax({
+            url: '{% url "enhanced:api_kontrahenci_create" %}',
+            method: 'POST',
+            data: formData,
+            success: function(data) {
+                if (data.success) {
+                    // Add new option to select
+                    const newOption = new Option(data.kontrahent.nazwa, data.kontrahent.id, true, true);
+                    $('#{{ form.nabywca.id_for_label }}').append(newOption).trigger('change');
+                    
+                    // Close modal and reset form
+                    $('#kontrahentModal').modal('hide');
+                    $('#kontrahent-form')[0].reset();
+                    
+                    showToast('Kontrahent został dodany', 'success');
+                } else {
+                    showToast(data.error || 'Błąd dodawania kontrahenta', 'error');
+                }
+            },
+            error: function() {
+                showToast('Błąd serwera', 'error');
+            },
+            complete: function() {
+                hideLoading('#save-kontrahent');
+            }
+        });
+    }
+    
+    // =====================================================
+    // SECTION 5: Event Handlers (Nasłuchiwanie zdarzeń)
+    // =====================================================
+    
+    // Initialize event handlers
+    $('#{{ form.sposob_platnosci.id_for_label }}').on('change', togglePaymentFields);
+    $('#{{ form.zwolnienie_z_vat.id_for_label }}').on('change', toggleVatExemption);
+    $('#{{ form.auto_numer.id_for_label }}').on('change', toggleCustomNumber);
+    $('#{{ form.data_wystawienia.id_for_label }}, #{{ form.dni_platnosci.id_for_label }}').on('change', calculatePaymentTerm);
+    
+    // Position management
+    $('#add-position').on('click', function(e) {
+        e.preventDefault();
+        addNewPosition();
+    });
+    
+    $(document).on('change', 'input[name$="-DELETE"]', function() {
+        removePosition($(this).closest('tr'));
+    });
+    
+    // Recalculate on input change
+    $(document).on('input change', 'input[name$="-ilosc"], input[name$="-cena_netto"], select[name$="-vat"], input[name$="-rabat"], select[name$="-rabat_typ"]', function() {
+        calculateTotals();
+    });
+    
+    // GUS integration
+    $('#gus-search-btn').on('click', function() {
+        const nip = $('#kontrahent-nip').val().replace(/[^0-9]/g, '');
+        searchGusData(nip);
+    });
+    
+    // Save contractor
+    $('#save-kontrahent').on('click', function() {
+        saveNewContractor();
+    });
+    
+    // Format NIP input
+    $('#kontrahent-nip').on('input', function() {
+        let value = $(this).val().replace(/[^0-9]/g, '');
+        if (value.length > 10) {
+            value = value.substring(0, 10);
+        }
+        $(this).val(value);
+    });
+    
+    // =====================================================
+    // SECTION 6: Initialization (Inicjalizacja)
+    // =====================================================
+    
+    // Initialize states
+    togglePaymentFields();
+    toggleVatExemption();
+    toggleCustomNumber();
+    calculateTotals();
+    
+    // Set current date if empty
+    if (!$('#{{ form.data_wystawienia.id_for_label }}').val()) {
+        const today = new Date().toISOString().split('T')[0];
+        $('#{{ form.data_wystawienia.id_for_label }}').val(today);
+    }
+    
+    if (!$('#{{ form.data_sprzedazy.id_for_label }}').val()) {
+        const today = new Date().toISOString().split('T')[0];
+        $('#{{ form.data_sprzedazy.id_for_label }}').val(today);
+    }
+    
+    // Calculate initial payment term
+    calculatePaymentTerm();
+    
+    console.log('Enhanced Invoice Form initialized successfully');
+});
+</script>
+{% endblock %}

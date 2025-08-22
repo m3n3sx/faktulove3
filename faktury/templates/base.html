@@ -1,0 +1,127 @@
+<!-- meta tags and other links -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <title>FaktuLove.pl Test</title>
+  {% load static %}
+  {% load i18n %}
+
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"> <!- Dodaj CSS Toastify -->
+  {% block extra_head %}{% endblock %}
+  <link rel="icon" type="image/png" href="{% static 'assets/images/logo-icon.png' %}" sizes="16x16">
+  <!-- remix icon font css  -->
+  <link rel="stylesheet" href="{% static 'assets/css/remixicon.css' %}">
+  <!-- BootStrap css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/bootstrap.min.css' %}">
+  <!-- Data Table css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/dataTables.min.css' %}">
+  <!-- Text Editor css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/editor-katex.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/lib/editor.atom-one-dark.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/lib/editor.quill.snow.css' %}">
+  <!-- Date picker css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/flatpickr.min.css' %}">
+  <!-- Calendar css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/full-calendar.css' %}">
+  <!-- Vector Map css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/jquery-jvectormap-2.0.5.css' %}">
+  <!-- Popup css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/magnific-popup.css' %}">
+  <!-- Slick Slider css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/slick.css' %}">
+  <!-- prism css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/prism.css' %}">
+  <!-- file upload css -->
+  <link rel="stylesheet" href="{% static 'assets/css/lib/file-upload.css' %}">
+  
+  <link rel="stylesheet" href="{% static 'assets/css/lib/audioplayer.css' %}">
+  <!-- main css -->
+  <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+</head>
+  <body>
+    <style>
+      .notification-badge {
+          position: relative;
+          top: -10px;
+          right: -10px;
+          background: red;
+          color: white;
+          border-radius: 50%;
+          padding: 3px 8px;
+          font-size: 12px;
+      }
+  </style>
+  <div id="new-notifications" class="notification-list"></div>
+  <style>
+  .notification-list {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+  </style>
+  <div class="notification-bell" style="position: fixed; bottom: 20px; right: 20px;">
+      <i class="fas fa-bell fa-2x"></i>
+      <span id="notification-counter" class="notification-badge">0</span>
+  </div>
+  
+{% include "partials/base/navi-sidebar.html" %}
+
+<main class="dashboard-main">
+
+{% include "partials/base/navi-header.html" %}
+
+<div class="dashboard-main-body">
+{% block content %}
+{% endblock %}
+</div>
+  </div>
+
+{% include "partials/base/footer.html" %}
+
+</main>
+  
+  <!-- jQuery library js -->
+  <script src="{% static 'assets/js/lib/jquery-3.7.1.min.js' %}"></script>
+  <!-- Bootstrap js -->
+  <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+  <!-- Data Table js -->
+  <script src="{% static 'assets/js/lib/dataTables.min.js' %}"></script>
+  <!-- Iconify Font js -->
+  <script src="{% static 'assets/js/lib/iconify-icon.min.js' %}"></script>
+  <!-- jQuery UI js -->
+  <script src="{% static 'assets/js/lib/jquery-ui.min.js' %}"></script>
+  <!-- Vector Map js -->
+  <script src="{% static 'assets/js/lib/jquery-jvectormap-2.0.5.min.js' %}"></script>
+  <script src="{% static 'assets/js/lib/jquery-jvectormap-world-mill-en.js' %}"></script>
+  <!-- Popup js -->
+  <script src="{% static 'assets/js/lib/magnifc-popup.min.js' %}"></script>
+  <!-- Slick Slider js -->
+  <script src="{% static 'assets/js/lib/slick.min.js' %}"></script>
+  <!-- prism js -->
+  <script src="{% static 'assets/js/lib/prism.js' %}"></script>
+  <!-- file upload js -->
+  <script src="{% static 'assets/js/lib/file-upload.js' %}"></script>
+  <!-- audioplayer -->
+  <script src="{% static 'assets/js/lib/audioplayer.js' %}"></script>
+  
+  <!-- main js -->
+  <script src="{% static 'assets/js/app.js' %}"></script>
+  <script src="{% static 'assets/js/full-calendar-fv.js' %}"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script>
+  let table = new DataTable('#dataTable');
+</script>
+
+</body>
+</html>

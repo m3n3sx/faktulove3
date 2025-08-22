@@ -1,0 +1,426 @@
+{% extends "superadmin/base.html" %}
+{% load humanize %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'superadmin:user_management' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Users
+    </a>
+    {% if user_obj != request.user %}
+        <a href="{% url 'superadmin:user_reset_password' user_obj.id %}" class="btn btn-outline-danger">
+            <i class="bi bi-key"></i> Reset Password
+        </a>
+        <button type="button" class="btn btn-outline-warning" 
+                onclick="toggleUserStatus({{ user_obj.id }}, '{{ user_obj.username }}', {{ user_obj.is_active|yesno:'true,false' }})">
+            <i class="bi bi-toggle-{% if user_obj.is_active %}on{% else %}off{% endif %}"></i> 
+            {% if user_obj.is_active %}Deactivate{% else %}Activate{% endif %}
+        </button>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- User Overview -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-circle"></i> User Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2 text-center">
+                        <div class="user-avatar" style="width: 80px; height: 80px; font-size: 2rem;">
+                            {{ user_obj.username.0|upper }}
+                        </div>
+                    </div>
+                    <div class="col-md-10">
+                        <h4>{{ user_obj.username }}</h4>
+                        {% if user_obj.first_name or user_obj.last_name %}
+                            <p class="text-muted mb-1">{{ user_obj.first_name }} {{ user_obj.last_name }}</p>
+                        {% endif %}
+                        {% if user_obj.email %}
+                            <p class="mb-1">
+                                <i class="bi bi-envelope"></i> 
+                                <a href="mailto:{{ user_obj.email }}">{{ user_obj.email }}</a>
+                            </p>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            {% if user_obj.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                            {% if user_obj.is_superuser %}
+                                <span class="badge bg-danger">Superuser</span>
+                            {% elif user_obj.is_staff %}
+                                <span class="badge bg-warning">Staff</span>
+                            {% endif %}
+                            {% if user_obj == request.user %}
+                                <span class="badge bg-info">Current User</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Account Details</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Username:</strong></td>
+                                <td>{{ user_obj.username }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ user_obj.email|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>First Name:</strong></td>
+                                <td>{{ user_obj.first_name|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Name:</strong></td>
+                                <td>{{ user_obj.last_name|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date Joined:</strong></td>
+                                <td>
+                                    {{ user_obj.date_joined|date:"d.m.Y H:i" }}
+                                    <small class="text-muted">({{ user_obj.date_joined|naturaltime }})</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Login:</strong></td>
+                                <td>
+                                    {% if user_obj.last_login %}
+                                        {{ user_obj.last_login|date:"d.m.Y H:i" }}
+                                        <small class="text-muted">({{ user_obj.last_login|naturaltime }})</small>
+                                    {% else %}
+                                        <span class="text-muted">Never logged in</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Permissions</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Active:</strong></td>
+                                <td>
+                                    {% if user_obj.is_active %}
+                                        <i class="bi bi-check-circle text-success"></i> Yes
+                                    {% else %}
+                                        <i class="bi bi-x-circle text-danger"></i> No
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Staff Status:</strong></td>
+                                <td>
+                                    {% if user_obj.is_staff %}
+                                        <i class="bi bi-check-circle text-success"></i> Yes
+                                    {% else %}
+                                        <i class="bi bi-x-circle text-secondary"></i> No
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Superuser:</strong></td>
+                                <td>
+                                    {% if user_obj.is_superuser %}
+                                        <i class="bi bi-shield-check text-danger"></i> Yes
+                                    {% else %}
+                                        <i class="bi bi-x-circle text-secondary"></i> No
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        {% if profile %}
+                            <h6 class="mt-3">Profile Information</h6>
+                            <table class="table table-sm">
+                                {% if profile.telefon %}
+                                    <tr>
+                                        <td><strong>Phone:</strong></td>
+                                        <td>{{ profile.telefon }}</td>
+                                    </tr>
+                                {% endif %}
+                                {% if profile.avatar %}
+                                    <tr>
+                                        <td><strong>Avatar:</strong></td>
+                                        <td><span class="badge bg-success">Uploaded</span></td>
+                                    </tr>
+                                {% endif %}
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> User Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="stat-number text-primary">{{ user_stats.invoices.total }}</div>
+                            <div class="stat-label">Total Invoices</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-number text-success">{{ user_stats.contractors }}</div>
+                            <div class="stat-label">Contractors</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="stat-number text-info">{{ user_stats.products }}</div>
+                            <div class="stat-label">Products</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-number text-warning">{{ user_stats.partnerships }}</div>
+                            <div class="stat-label">Partnerships</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6>Invoice Breakdown</h6>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Sales Invoices:</span>
+                    <span class="badge bg-success">{{ user_stats.invoices.sales }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Cost Invoices:</span>
+                    <span class="badge bg-info">{{ user_stats.invoices.costs }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Company Information -->
+{% if company %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Company Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>{{ company.nazwa }}</h6>
+                        <p class="text-muted mb-3">{{ company.rodzaj_dzialalnosci|default:"No description" }}</p>
+                        
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>NIP:</strong></td>
+                                <td>{{ company.nip|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>REGON:</strong></td>
+                                <td>{{ company.regon|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Address:</strong></td>
+                                <td>
+                                    {{ company.ulica }} {{ company.numer_domu }}{% if company.numer_mieszkania %}/{{ company.numer_mieszkania }}{% endif %}<br>
+                                    {{ company.kod_pocztowy }} {{ company.miejscowosc }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Business Details</h6>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Has NIP:</span>
+                            {% if company.nip %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Has REGON:</span>
+                            {% if company.regon %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Has Logo:</span>
+                            {% if company.logo %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if company.nip %}
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="testGUSForCompany('{{ company.nip }}')">
+                                    <i class="bi bi-cloud-check"></i> Test GUS API
+                                </button>
+                                <div id="gusTestResult" class="mt-2"></div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> Recent Invoices</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for invoice in recent_invoices %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold">{{ invoice.numer }}</div>
+                                    <small class="text-muted">{{ invoice.sprzedawca.nazwa|truncatechars:30 }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge {% if invoice.typ_faktury == 'sprzedaz' %}bg-success{% else %}bg-info{% endif %}">
+                                        {{ invoice.get_typ_faktury_display }}
+                                    </span>
+                                    <div class="small text-muted">{{ invoice.data_wystawienia|date:"d.m.Y" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted">No recent invoices</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-people"></i> Recent Contractors</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for contractor in recent_contractors %}
+                        <div class="list-group-item">
+                            <div class="fw-bold">{{ contractor.nazwa|truncatechars:30 }}</div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    {% if contractor.nip %}NIP: {{ contractor.nip }}{% else %}No NIP{% endif %}
+                                </small>
+                                <div>
+                                    {% if contractor.czy_firma %}
+                                        <span class="badge bg-primary">Company</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Individual</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted">No recent contractors</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleUserStatus(userId, username, isActive) {
+    const action = isActive ? 'deactivate' : 'activate';
+    const confirmMessage = `Are you sure you want to ${action} user "${username}"?`;
+    
+    if (confirm(confirmMessage)) {
+        fetch(`/superadmin/users/${userId}/toggle-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                // Reload page to update status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showMessage(data.error || 'Error updating user status', 'danger');
+            }
+        })
+        .catch(error => {
+            showMessage('Error: ' + error.message, 'danger');
+        });
+    }
+}
+
+function testGUSForCompany(nip) {
+    const resultDiv = document.getElementById('gusTestResult');
+    
+    resultDiv.innerHTML = '<div class="small text-muted"><div class="spinner-custom" style="width: 16px; height: 16px;"></div> Testing...</div>';
+    
+    fetch('/superadmin/api/gus-test/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nip: nip })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success py-2 small">
+                    <i class="bi bi-check-circle"></i> GUS data matches
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-warning py-2 small">
+                    <i class="bi bi-exclamation-triangle"></i> ${data.message || data.error}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger py-2 small">
+                <i class="bi bi-x-circle"></i> Test failed
+            </div>
+        `;
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% csrf_token %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <h1>Powiadomienia</h1>
+    <!-- Nowe powiadomienia -->
+    <div id="new-notifications" class="mb-4">
+        <h4>Nowe powiadomienia</h4>
+        <div class="list-group">
+            {% for notification in notifications %}
+                {% if notification.status != 'READ' %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">{{ notification.title }}</h5>
+                        <p class="mb-1 text-muted">{{ notification.content }}</p>
+                        <small class="text-muted">{{ notification.timestamp|timesince }} temu</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary mark-as-read" data-id="{{ notification.id }}">
+                            Oznacz jako przeczytane
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Starsze powiadomienia -->
+    <div id="old-notifications">
+        <h4>Przeczytane powiadomienia</h4>
+        <div class="list-group">
+            {% for notification in read_notifications %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">{{ notification.title }}</h5>
+                        <p class="mb-1 text-muted">{{ notification.content }}</p>
+                        <small class="text-muted">{{ notification.timestamp|timesince }} temu</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-danger delete-notification" data-id="{{ notification.id }}">
+                            Usuń
+                        </button>
+                    </div>
+                </div>
+                
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Function to get the csrf token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const csrftoken = getCookie('csrftoken');
+
+    // Oznaczanie powiadomień jako przeczytane
+    document.querySelectorAll('.mark-as-read').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            fetch(`/notifications/mark_as_read/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the notification element from DOM
+                    const notificationElem = this.closest('.list-group-item');
+                    if (notificationElem) {
+                        notificationElem.remove();
+                    }
+                }
+            });
+        });
+    });
+
+    // Usuwanie powiadomień
+    document.querySelectorAll('.delete-notification').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            fetch(`/notifications/delete/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the notification element from DOM
+                    const notificationElem = this.closest('.list-group-item');
+                    if (notificationElem) {
+                        notificationElem.remove();
+                    }
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
+

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="mb-4">
+        <h2>{{ message.temat }}</h2>
+        <small class="text-muted">{{ message.data_wyslania|date:"d-m-Y H:i" }}</small>
+    </div>
+    
+    <div class="card mb-3">
+        <div class="card-body">
+            <p>{{ message.tresc|linebreaks }}</p>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'lista_wiadomosci' %}" class="btn btn-secondary">Powrót</a>
+        <!-- Przycisk Odpowiedz obok przycisku Powrót -->
+        <a href="{% url 'odp_wiadomosc' message.pk %}" class="btn btn-primary">Odpowiedz</a>
+    </div>
+</div>
+{% endblock %}

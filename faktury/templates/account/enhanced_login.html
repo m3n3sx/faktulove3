@@ -1,0 +1,236 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+{% load socialaccount %}
+
+{% block head_title %}{% trans "Logowanie" %}{% endblock %}
+
+{% block body %}
+<section class="auth bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="{% static 'assets/images/auth/login-img.png' %}" alt="FaktuLove Login">
+            <div class="text-center mt-24">
+                <h4 class="text-white fw-bold">Witaj ponownie!</h4>
+                <p class="text-white-75">Zaloguj się do swojego konta FaktuLove</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <!-- Header -->
+            <div class="text-center">
+                <a href="/" class="mb-40 max-w-290-px">
+                    <img src="{% static 'assets/images/logo.png' %}" alt="FaktuLove">
+                </a>
+                <h5 class="mb-12">Zaloguj się</h5>
+                <p class="mb-32 text-secondary-light text-lg">
+                    Wprowadź swoje dane aby kontynuować
+                </p>
+            </div>
+
+            <!-- Login Form -->
+            <form method="post" action="{% url 'account_login' %}" id="loginForm">
+                {% csrf_token %}
+
+                <!-- Error Messages -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-24">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Email/Username Field -->
+                <div class="icon-field mb-16">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="mage:email"></iconify-icon>
+                    </span>
+                    {{ form.login|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Email lub nazwa użytkownika" }}
+                </div>
+                {% if form.login.errors %}
+                <div class="text-danger mb-8 text-sm">{{ form.login.errors.0 }}</div>
+                {% endif %}
+
+                <!-- Password Field -->
+                <div class="position-relative mb-20">
+                    <div class="icon-field">
+                        <span class="icon top-50 translate-middle-y">
+                            <iconify-icon icon="solar:lock-password-outline"></iconify-icon>
+                        </span>
+                        {{ form.password|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Hasło" }}
+                    </div>
+                    <span class="toggle-password ri-eye-line cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light" data-toggle="#id_password"></span>
+                </div>
+                {% if form.password.errors %}
+                <div class="text-danger mb-8 text-sm">{{ form.password.errors.0 }}</div>
+                {% endif %}
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="d-flex align-items-center justify-content-between mb-24">
+                    {% if form.remember %}
+                    <div class="form-check style-check d-flex align-items-center">
+                        {{ form.remember|add_class:"form-check-input border border-neutral-300" }}
+                        <label class="form-check-label ps-8" for="{{ form.remember.id_for_label }}">
+                            Zapamiętaj mnie
+                        </label>
+                    </div>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+                    
+                    <a href="{% url 'account_reset_password' %}" class="text-primary-600 fw-medium text-sm">
+                        Zapomniałeś hasła?
+                    </a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32" id="loginBtn">
+                    <span class="spinner-border spinner-border-sm me-8 d-none" id="loadingSpinner"></span>
+                    Zaloguj się
+                </button>
+            </form>
+
+            <!-- Separator -->
+            <div class="mt-32 center-border-horizontal text-center">
+                <span class="bg-base z-1 px-4">lub zaloguj się przez</span>
+            </div>
+
+            <!-- Social Login -->
+            <div class="mt-32 d-flex align-items-center gap-3">
+                {% if providers %}
+                    {% for provider in providers %}
+                        {% if provider.id == "google" %}
+                        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-light text-secondary-light border-neutral-200 bg-neutral-50 hover-text-primary-600 hover-bg-primary-50 hover-border-primary-200 flex-fill">
+                            <iconify-icon icon="logos:google-icon" class="text-xl"></iconify-icon>
+                            Google
+                        </a>
+                        {% endif %}
+                        {% if provider.id == "facebook" %}
+                        <a href="{% provider_login_url 'facebook' %}" class="btn btn-outline-light text-secondary-light border-neutral-200 bg-neutral-50 hover-text-primary-600 hover-bg-primary-50 hover-border-primary-200 flex-fill">
+                            <iconify-icon icon="logos:facebook" class="text-xl"></iconify-icon>
+                            Facebook
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Register Link -->
+            <div class="mt-32 text-center text-sm">
+                <p class="mb-0">
+                    Nie masz konta? 
+                    <a href="{% url 'account_signup' %}" class="text-primary-600 fw-semibold">Zarejestruj się</a>
+                </p>
+            </div>
+
+            <!-- Email Verification Notice -->
+            {% if user.is_authenticated and not user.emailaddress_set.filter.verified %}
+            <div class="alert alert-warning mt-24">
+                <div class="d-flex align-items-center">
+                    <iconify-icon icon="mage:email-warning" class="text-warning me-8"></iconify-icon>
+                    <div class="flex-grow-1">
+                        <strong>Potwierdź swój adres email</strong>
+                        <p class="mb-0 text-sm">Sprawdź swoją skrzynkę i kliknij link potwierdzający.</p>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-warning" id="resendConfirmation">
+                        Wyślij ponownie
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Login Enhancement Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const resendBtn = document.getElementById('resendConfirmation');
+
+    // Form submission
+    if (form) {
+        form.addEventListener('submit', function() {
+            loginBtn.disabled = true;
+            loadingSpinner.classList.remove('d-none');
+        });
+    }
+
+    // Password toggle functionality
+    document.querySelectorAll('.toggle-password').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-toggle');
+            const target = document.querySelector(targetId);
+            
+            if (target.type === 'password') {
+                target.type = 'text';
+                this.classList.remove('ri-eye-line');
+                this.classList.add('ri-eye-off-line');
+            } else {
+                target.type = 'password';
+                this.classList.remove('ri-eye-off-line');
+                this.classList.add('ri-eye-line');
+            }
+        });
+    });
+
+    // Resend confirmation email
+    if (resendBtn) {
+        resendBtn.addEventListener('click', function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-8"></span>Wysyłanie...';
+
+            fetch('{% url "resend_confirmation_email" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    btn.innerHTML = 'Wysłano!';
+                    btn.classList.remove('btn-outline-warning');
+                    btn.classList.add('btn-success');
+                } else {
+                    btn.innerHTML = 'Błąd';
+                    btn.classList.remove('btn-outline-warning');
+                    btn.classList.add('btn-danger');
+                }
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Wyślij ponownie';
+                    btn.className = 'btn btn-sm btn-outline-warning';
+                }, 3000);
+            })
+            .catch(error => {
+                btn.innerHTML = 'Błąd';
+                btn.classList.add('btn-danger');
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Wyślij ponownie';
+                    btn.className = 'btn btn-sm btn-outline-warning';
+                }, 3000);
+            });
+        });
+    }
+
+    // Auto-focus on first empty field
+    const loginField = document.getElementById('id_login');
+    const passwordField = document.getElementById('id_password');
+    
+    if (loginField && !loginField.value) {
+        loginField.focus();
+    } else if (passwordField && !passwordField.value) {
+        passwordField.focus();
+    }
+});
+</script>
+{% endblock body %}

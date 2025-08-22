@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Dodaj partnerstwo</h2>
+
+{% if messages %}
+<div class="alert alert-danger">
+    {% for message in messages %}
+    <div>{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label>Twoja firma:</label>
+        <input type="text" class="form-control" value="{{ firma.nazwa }}" readonly>
+    </div>
+    
+    {{ form.as_p }}
+    
+    <button type="submit" class="btn btn-primary">Dodaj partnerstwo</button>
+    <a href="{% url 'lista_partnerstw' %}" class="btn btn-secondary">Anuluj</a>
+</form>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Wiadomości</h2>
+    
+    <div class="mb-4">
+        <a href="{% url 'wyslij_wiadomosc' %}" class="btn btn-primary">Nowa wiadomość</a>
+        {% if request.user.is_staff %}
+        <a href="{% url 'wyslij_systemowa' %}" class="btn btn-secondary">Wiadomość systemowa</a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Od partnerów</h3>
+            {% for w in partner_wiadomosci %}
+            <div class="card mb-3 {% if not w.przeczytana %}border-primary{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ w.temat }}</h5>
+                    <p class="text-muted">Od: {{ w.nadawca.firma.nazwa }}</p>
+                    <p>{{ w.tresc|truncatechars:100 }}</p>
+                    <div class="mt-3">
+                        <a href="{% url 'odp_wiadomosc' w.id %}" class="btn btn-sm btn-outline-secondary">Odpowiedz na wiadomość</a>
+                    </div>
+                    <div class="card-footer mt-2">
+                        <a href="{% url 'szczegoly_wiadomosci' w.id %}" class="btn btn-sm btn-outline-primary">Czytaj</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p>Brak wiadomości</p>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+            <h3>Systemowe</h3>
+            {% for w in system_wiadomosci %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ w.temat }}</h5>
+                    <p>{{ w.tresc|truncatechars:100 }}</p>
+                    <div class="mt-3">
+                        <a href="{% url 'odp_wiadomosc' w.id %}" class="btn btn-sm btn-outline-secondary">Odpowiedz na wiadomość</a>
+                    </div>
+                    <div class="card-footer mt-2">
+                        <a href="{% url 'szczegoly_wiadomosci' w.id %}" class="btn btn-sm btn-outline-secondary">Czytaj</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+    <h6 class="fw-semibold mb-0">Edytuj kontrahenta</h6>
+    <ul class="d-flex align-items-center gap-2">
+      <li class="fw-medium">
+        <a href="/" class="d-flex align-items-center gap-1 hover-text-primary">
+          <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+          Panel użytkownika
+        </a>
+      </li>
+      <li>-</li>
+      <li class="fw-medium">Edytuj kontrahenta</li>
+    </ul>
+  </div>
+
+  <div class="row gy-4" data-protonpass-form="">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Dane osoby</h5>
+        </div> 
+        <div class="card-body">
+          <div class="row mb-24 gy-3 align-items-center">
+            <label class="form-label mb-0 col-sm-2">Imię i nazwisko</label>
+            <div class="col-sm-10">
+              <div class="icon-field">
+                <span class="icon">
+                  <iconify-icon icon="f7:person"></iconify-icon>
+                </span>
+                <input type="text" name="#0" class="form-control" placeholder="Podaj imie i nazwisko">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-24 gy-3 align-items-center">
+            <label class="form-label mb-0 col-sm-2">NIP</label>
+            <div class="col-sm-10">
+              <div class="icon-field">
+                <span class="icon">
+                  <iconify-icon icon="icon-park-outline:document-folder"></iconify-icon>
+                </span>
+                <input type="text" name="#0" class="form-control" placeholder="Podaj numer NIP">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-24 gy-3 align-items-center">
+            <label class="form-label mb-0 col-sm-2">Regon</label>
+            <div class="col-sm-10">
+              <div class="icon-field">
+                <span class="icon">
+                  <iconify-icon icon="icon-park-outline:document-folder"></iconify-icon>
+                </span>
+                <input type="text" name="#0" class="form-control" placeholder="Podaj REGON">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-24 gy-3 align-items-center">
+            <label class="form-label mb-0 col-sm-2">Ulica</label>
+            <div class="col-sm-10">
+              <div class="icon-field">
+                <span class="icon">
+                  <iconify-icon icon="solar:streets-map-point-broken"></iconify-icon>
+                </span>
+                <input type="text" name="#0" class="form-control" placeholder="Podaj ulicę" style="background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-24 gy-3 align-items-center">
+            <label class="form-label mb-0 col-sm-2">Numer domu</label>
+            <div class="col-sm-10">
+              <div class="icon-field">
+                <span class="icon">
+                  <iconify-icon icon="solar:streets-map-point-broken"></iconify-icon>
+                </span>
+                <input type="text" name="#0" class="form-control" placeholder="Podaj numer domu" style="background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-24 gy-3 align-items-center">
+            <label class="form-label mb-0 col-sm-2">Numer lokalu</label>
+            <div class="col-sm-10">
+              <div class="icon-field">
+                <span class="icon">
+                  <iconify-icon icon="solar:streets-map-point-broken"></iconify-icon>
+                </span>
+                <input type="text" name="#0" class="form-control" placeholder="Podaj numer lokalu" style="background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-24 gy-3 align-items-center">
+            <label class="form-label mb-0 col-sm-2">Kraj</label>
+            <div class="col-sm-10">
+              <div class="icon-field">
+                <span class="icon">
+                  <iconify-icon icon="solar:map-arrow-square-broken"></iconify-icon>
+                </span>
+                <input type="text" name="#0" class="form-control" placeholder="Wybierz kraj z listy" style="background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary-600">Submit</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Powiązana firma</h5>
+          </div> 
+          <div class="card-body">
+            <div class="row mb-24 gy-3 align-items-center">
+              <label class="form-label mb-0 col-sm-2">First Name</label>
+              <div class="col-sm-10">
+                <div class="icon-field">
+                  <span class="icon">
+                    <iconify-icon icon="f7:person"></iconify-icon>
+                  </span>
+                  <input type="text" name="#0" class="form-control" placeholder="Enter First Name">
+                </div>
+              </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+              <label class="form-label mb-0 col-sm-2">Last Name</label>
+              <div class="col-sm-10">
+                <div class="icon-field">
+                  <span class="icon">
+                    <iconify-icon icon="f7:person"></iconify-icon>
+                  </span>
+                  <input type="text" name="#0" class="form-control" placeholder="Enter Last Name">
+                </div>
+              </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+              <label class="form-label mb-0 col-sm-2">Email</label>
+              <div class="col-sm-10">
+                <div class="icon-field">
+                  <span class="icon">
+                    <iconify-icon icon="mage:email"></iconify-icon>
+                  </span>
+                  <input type="email" name="#0" class="form-control" placeholder="Enter Email">
+                </div>
+              </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+              <label class="form-label mb-0 col-sm-2">Phone</label>
+              <div class="col-sm-10">
+                <div class="icon-field">
+                  <span class="icon">
+                    <iconify-icon icon="solar:phone-calling-linear"></iconify-icon>
+                  </span>
+                  <input type="text" name="#0" class="form-control" placeholder="+1 (555) 000-0000" style="background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;" autocomplete="off">
+                </div>
+              </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+              <label class="form-label mb-0 col-sm-2">Password</label>
+              <div class="col-sm-10">
+                <div class="icon-field">
+                  <span class="icon">
+                    <iconify-icon icon="solar:lock-password-outline"></iconify-icon>
+                  </span>
+                  <input type="password" name="#0" class="form-control" placeholder="*******" style="background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;" autocomplete="off">
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary-600">Submit</button>
+          </div>
+        </div>
+      </div>
+  </div>
+
+    <h1>Edytuj Kontrahenta</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Zapisz Zmiany</button>
+         <a href="{% url 'panel_uzytkownika' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+{% endblock %}

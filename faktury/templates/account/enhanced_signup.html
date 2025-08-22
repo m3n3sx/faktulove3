@@ -1,0 +1,365 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+{% load socialaccount %}
+
+{% block head_title %}{% trans "Rejestracja" %}{% endblock %}
+
+{% block body %}
+<section class="auth bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="{% static 'assets/images/auth/signup-img.png' %}" alt="Rejestracja FaktuLove">
+            <div class="text-center mt-24">
+                <h4 class="text-white fw-bold">Dołącz do FaktuLove</h4>
+                <p class="text-white-75">Nowoczesne fakturowanie dla Twojego biznesu</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <!-- Header -->
+            <div class="text-center">
+                <a href="/" class="mb-40 max-w-290-px">
+                    <img src="{% static 'assets/images/logo.png' %}" alt="FaktuLove">
+                </a>
+                <h5 class="mb-12">Utwórz konto</h5>
+                <p class="mb-32 text-secondary-light text-lg">
+                    Rozpocznij fakturowanie w kilka minut
+                </p>
+            </div>
+
+            <!-- Registration Form -->
+            <form method="post" id="registrationForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Error Messages -->
+                {% if form.non_field_errors or profile_form.non_field_errors %}
+                <div class="alert alert-danger mb-24">
+                    {{ form.non_field_errors }}
+                    {{ profile_form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- User Information -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- First Name -->
+                        <div class="icon-field mb-16">
+                            <span class="icon top-50 translate-middle-y">
+                                <iconify-icon icon="mage:user"></iconify-icon>
+                            </span>
+                            {{ profile_form.imie|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Imię" }}
+                        </div>
+                        {% if profile_form.imie.errors %}
+                        <div class="text-danger mb-8 text-sm">{{ profile_form.imie.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Last Name -->
+                        <div class="icon-field mb-16">
+                            <span class="icon top-50 translate-middle-y">
+                                <iconify-icon icon="mage:user"></iconify-icon>
+                            </span>
+                            {{ profile_form.nazwisko|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Nazwisko" }}
+                        </div>
+                        {% if profile_form.nazwisko.errors %}
+                        <div class="text-danger mb-8 text-sm">{{ profile_form.nazwisko.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Username -->
+                <div class="icon-field mb-16">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="mage:user-check"></iconify-icon>
+                    </span>
+                    {{ form.username|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Nazwa użytkownika" }}
+                    <div id="username-feedback" class="text-sm mt-4"></div>
+                </div>
+                {% if form.username.errors %}
+                <div class="text-danger mb-8 text-sm">{{ form.username.errors.0 }}</div>
+                {% endif %}
+
+                <!-- Email -->
+                <div class="icon-field mb-16">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="mage:email"></iconify-icon>
+                    </span>
+                    {{ form.email|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Adres email" }}
+                    <div id="email-feedback" class="text-sm mt-4"></div>
+                </div>
+                {% if form.email.errors %}
+                <div class="text-danger mb-8 text-sm">{{ form.email.errors.0 }}</div>
+                {% endif %}
+
+                <!-- Phone -->
+                <div class="icon-field mb-16">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="mage:phone"></iconify-icon>
+                    </span>
+                    {{ profile_form.telefon|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Numer telefonu (opcjonalnie)" }}
+                </div>
+
+                <!-- Password -->
+                <div class="position-relative mb-16">
+                    <div class="icon-field">
+                        <span class="icon top-50 translate-middle-y">
+                            <iconify-icon icon="solar:lock-password-outline"></iconify-icon>
+                        </span>
+                        {{ form.password1|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Hasło" }}
+                    </div>
+                    <span class="toggle-password ri-eye-line cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light" data-toggle="#id_password1"></span>
+                </div>
+                {% if form.password1.errors %}
+                <div class="text-danger mb-8 text-sm">{{ form.password1.errors.0 }}</div>
+                {% endif %}
+                
+                <!-- Password Requirements -->
+                <div class="mb-16">
+                    <div class="text-sm text-secondary-light">
+                        Hasło musi zawierać:
+                        <ul class="list-unstyled ps-16 mt-8">
+                            <li id="length-check" class="text-danger"><i class="ri-close-line"></i> Co najmniej 8 znaków</li>
+                            <li id="lowercase-check" class="text-danger"><i class="ri-close-line"></i> Małą literę</li>
+                            <li id="uppercase-check" class="text-danger"><i class="ri-close-line"></i> Wielką literę</li>
+                            <li id="number-check" class="text-danger"><i class="ri-close-line"></i> Cyfrę</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="position-relative mb-20">
+                    <div class="icon-field">
+                        <span class="icon top-50 translate-middle-y">
+                            <iconify-icon icon="solar:lock-password-outline"></iconify-icon>
+                        </span>
+                        {{ form.password2|add_class:"form-control h-56-px bg-neutral-50 radius-12"|attr:"placeholder:Potwierdź hasło" }}
+                    </div>
+                    <span class="toggle-password ri-eye-line cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light" data-toggle="#id_password2"></span>
+                </div>
+                {% if form.password2.errors %}
+                <div class="text-danger mb-8 text-sm">{{ form.password2.errors.0 }}</div>
+                {% endif %}
+
+                <!-- Terms and Conditions -->
+                <div class="form-check style-check d-flex align-items-start mb-24">
+                    <input class="form-check-input border border-neutral-300 mt-4" type="checkbox" value="" id="terms" required>
+                    <label class="form-check-label ps-8 text-sm" for="terms">
+                        Akceptuję <a href="#" class="text-primary-600 fw-medium">Regulamin</a> 
+                        i <a href="#" class="text-primary-600 fw-medium">Politykę Prywatności</a>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32" id="submitBtn">
+                    <span class="spinner-border spinner-border-sm me-8 d-none" id="loadingSpinner"></span>
+                    Utwórz konto
+                </button>
+            </form>
+
+            <!-- Separator -->
+            <div class="mt-32 center-border-horizontal text-center">
+                <span class="bg-base z-1 px-4">lub zarejestruj się przez</span>
+            </div>
+
+            <!-- Social Login -->
+            <div class="mt-32 d-flex align-items-center gap-3">
+                {% if providers %}
+                    {% for provider in providers %}
+                        {% if provider.id == "google" %}
+                        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-light text-secondary-light border-neutral-200 bg-neutral-50 hover-text-primary-600 hover-bg-primary-50 hover-border-primary-200 flex-fill">
+                            <iconify-icon icon="logos:google-icon" class="text-xl"></iconify-icon>
+                            Google
+                        </a>
+                        {% endif %}
+                        {% if provider.id == "facebook" %}
+                        <a href="{% provider_login_url 'facebook' %}" class="btn btn-outline-light text-secondary-light border-neutral-200 bg-neutral-50 hover-text-primary-600 hover-bg-primary-50 hover-border-primary-200 flex-fill">
+                            <iconify-icon icon="logos:facebook" class="text-xl"></iconify-icon>
+                            Facebook
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Login Link -->
+            <div class="mt-32 text-center text-sm">
+                <p class="mb-0">
+                    Masz już konto? 
+                    <a href="{% url 'account_login' %}" class="text-primary-600 fw-semibold">Zaloguj się</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- JavaScript for form validation and UX enhancements -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registrationForm');
+    const usernameInput = document.getElementById('id_username');
+    const emailInput = document.getElementById('id_email');
+    const password1Input = document.getElementById('id_password1');
+    const password2Input = document.getElementById('id_password2');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+
+    // Password strength checker
+    if (password1Input) {
+        password1Input.addEventListener('input', function() {
+            const password = this.value;
+            
+            // Length check
+            const lengthCheck = document.getElementById('length-check');
+            if (password.length >= 8) {
+                lengthCheck.className = 'text-success';
+                lengthCheck.innerHTML = '<i class="ri-check-line"></i> Co najmniej 8 znaków';
+            } else {
+                lengthCheck.className = 'text-danger';
+                lengthCheck.innerHTML = '<i class="ri-close-line"></i> Co najmniej 8 znaków';
+            }
+            
+            // Lowercase check
+            const lowercaseCheck = document.getElementById('lowercase-check');
+            if (/[a-z]/.test(password)) {
+                lowercaseCheck.className = 'text-success';
+                lowercaseCheck.innerHTML = '<i class="ri-check-line"></i> Małą literę';
+            } else {
+                lowercaseCheck.className = 'text-danger';
+                lowercaseCheck.innerHTML = '<i class="ri-close-line"></i> Małą literę';
+            }
+            
+            // Uppercase check
+            const uppercaseCheck = document.getElementById('uppercase-check');
+            if (/[A-Z]/.test(password)) {
+                uppercaseCheck.className = 'text-success';
+                uppercaseCheck.innerHTML = '<i class="ri-check-line"></i> Wielką literę';
+            } else {
+                uppercaseCheck.className = 'text-danger';
+                uppercaseCheck.innerHTML = '<i class="ri-close-line"></i> Wielką literę';
+            }
+            
+            // Number check
+            const numberCheck = document.getElementById('number-check');
+            if (/\d/.test(password)) {
+                numberCheck.className = 'text-success';
+                numberCheck.innerHTML = '<i class="ri-check-line"></i> Cyfrę';
+            } else {
+                numberCheck.className = 'text-danger';
+                numberCheck.innerHTML = '<i class="ri-close-line"></i> Cyfrę';
+            }
+        });
+    }
+
+    // Email availability checker
+    let emailTimeout;
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            clearTimeout(emailTimeout);
+            const email = this.value.trim();
+            const feedback = document.getElementById('email-feedback');
+            
+            if (email.length > 3 && email.includes('@')) {
+                emailTimeout = setTimeout(() => {
+                    fetch('{% url "check_email_availability" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({email: email})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            feedback.className = 'text-success text-sm mt-4';
+                            feedback.innerHTML = '<i class="ri-check-line"></i> ' + data.message;
+                        } else {
+                            feedback.className = 'text-danger text-sm mt-4';
+                            feedback.innerHTML = '<i class="ri-close-line"></i> ' + data.message;
+                        }
+                    })
+                    .catch(error => {
+                        feedback.className = 'text-warning text-sm mt-4';
+                        feedback.innerHTML = '<i class="ri-error-warning-line"></i> Nie można sprawdzić dostępności';
+                    });
+                }, 500);
+            } else {
+                feedback.innerHTML = '';
+            }
+        });
+    }
+
+    // Username availability checker
+    let usernameTimeout;
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            clearTimeout(usernameTimeout);
+            const username = this.value.trim();
+            const feedback = document.getElementById('username-feedback');
+            
+            if (username.length >= 3) {
+                usernameTimeout = setTimeout(() => {
+                    fetch('{% url "check_username_availability" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({username: username})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            feedback.className = 'text-success text-sm mt-4';
+                            feedback.innerHTML = '<i class="ri-check-line"></i> ' + data.message;
+                        } else {
+                            feedback.className = 'text-danger text-sm mt-4';
+                            feedback.innerHTML = '<i class="ri-close-line"></i> ' + data.message;
+                        }
+                    })
+                    .catch(error => {
+                        feedback.className = 'text-warning text-sm mt-4';
+                        feedback.innerHTML = '<i class="ri-error-warning-line"></i> Nie można sprawdzić dostępności';
+                    });
+                }, 500);
+            } else if (username.length > 0) {
+                feedback.className = 'text-warning text-sm mt-4';
+                feedback.innerHTML = '<i class="ri-information-line"></i> Minimum 3 znaki';
+            } else {
+                feedback.innerHTML = '';
+            }
+        });
+    }
+
+    // Form submission
+    if (form) {
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            loadingSpinner.classList.remove('d-none');
+        });
+    }
+
+    // Password toggle functionality
+    document.querySelectorAll('.toggle-password').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-toggle');
+            const target = document.querySelector(targetId);
+            
+            if (target.type === 'password') {
+                target.type = 'text';
+                this.classList.remove('ri-eye-line');
+                this.classList.add('ri-eye-off-line');
+            } else {
+                target.type = 'password';
+                this.classList.remove('ri-eye-off-line');
+                this.classList.add('ri-eye-line');
+            }
+        });
+    });
+});
+</script>
+{% endblock body %}

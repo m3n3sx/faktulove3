@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ zadanie.tytul }}</h1>
+
+    <p><strong>Opis:</strong> {{ zadanie.opis|default:"Brak opisu"|linebreaksbr }}</p>
+    <p><strong>Termin wykonania:</strong> {{ zadanie.termin_wykonania|date:"Y-m-d" }}</p>
+    <p><strong>Status:</strong> {{ zadanie.get_status_display }}</p>
+    <p><strong>Utworzono:</strong> {{ zadanie.data_utworzenia }}</p>
+    <p><strong>Wykonane:</strong>
+    {% if zadanie.wykonane %}
+       Tak
+    {% else %}
+       Nie
+    {% endif %}</p>
+    <a href="{% url 'edytuj_zadanie_uzytkownika' pk=zadanie.pk %}" class="btn btn-primary">Edytuj</a>
+    <form method="post" action="{% url 'usun_zadanie_uzytkownika' pk=zadanie.pk %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Czy na pewno chcesz usunąć to zadanie?')">Usuń</button>
+    </form>
+    {% if not zadanie.wykonane %}
+        <form method="post" action="{% url 'oznacz_zadanie_uzytkownika' pk=zadanie.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">Oznacz jako wykonane</button>
+        </form>
+    {% endif %}
+
+    <a href="{% url 'twoje_sprawy' %}" class="btn btn-secondary">Powrót</a>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Informacje o firmie - {{ firma.nazwa }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-main-body">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <h6 class="fw-semibold mb-0">Informacje o firmie</h6>
+        <ul class="d-flex align-items-center gap-2">
+            <li class="fw-medium">
+                <a href="{% url 'company_dashboard' %}" class="d-flex align-items-center gap-1 hover-text-primary">
+                    <iconify-icon icon="solar:buildings-3-outline" class="icon text-lg"></iconify-icon>
+                    Dashboard Firmy
+                </a>
+            </li>
+            <li>-</li>
+            <li class="fw-medium">Informacje</li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-bold">Dane firmy</h6>
+                    <a href="{% url 'company_settings' %}" class="btn btn-primary btn-sm">
+                        <iconify-icon icon="solar:pen-outline" class="me-8"></iconify-icon>
+                        Edytuj
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="d-flex align-items-center gap-3">
+                                {% if firma.logo %}
+                                <div class="w-80-px h-80-px rounded-circle overflow-hidden">
+                                    <img src="{{ firma.logo.url }}" alt="{{ firma.nazwa }}" class="w-100 h-100 object-fit-cover">
+                                </div>
+                                {% else %}
+                                <div class="w-80-px h-80-px rounded-circle bg-primary-50 d-flex align-items-center justify-content-center">
+                                    <iconify-icon icon="solar:buildings-3-outline" class="text-primary text-3xl"></iconify-icon>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h5 class="mb-1">{{ firma.nazwa }}</h5>
+                                    <p class="text-secondary-light mb-0">{{ firma.forma_prawna|default:"Forma prawna nie określona" }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">Pełna nazwa firmy:</label>
+                                <p class="mb-0">{{ firma.nazwa }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">NIP:</label>
+                                <p class="mb-0">{{ firma.nip|default:"Nie podano" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">REGON:</label>
+                                <p class="mb-0">{{ firma.regon|default:"Nie podano" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">KRS:</label>
+                                <p class="mb-0">{{ firma.krs|default:"Nie podano" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">Adres:</label>
+                                <p class="mb-0">
+                                    {{ firma.ulica }}<br>
+                                    {{ firma.kod_pocztowy }} {{ firma.miasto }}
+                                    {% if firma.wojewodztwo %}, {{ firma.wojewodztwo }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">Telefon:</label>
+                                <p class="mb-0">
+                                    {% if firma.telefon %}
+                                        <a href="tel:{{ firma.telefon }}" class="text-decoration-none">{{ firma.telefon }}</a>
+                                    {% else %}
+                                        Nie podano
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">Email:</label>
+                                <p class="mb-0">
+                                    {% if firma.email %}
+                                        <a href="mailto:{{ firma.email }}" class="text-decoration-none">{{ firma.email }}</a>
+                                    {% else %}
+                                        Nie podano
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">Strona WWW:</label>
+                                <p class="mb-0">
+                                    {% if firma.strona_www %}
+                                        <a href="{{ firma.strona_www }}" target="_blank" class="text-decoration-none">
+                                            {{ firma.strona_www }}
+                                            <iconify-icon icon="solar:external-link-outline" class="ms-1"></iconify-icon>
+                                        </a>
+                                    {% else %}
+                                        Nie podano
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">Rodzaj działalności:</label>
+                                <p class="mb-0">{{ firma.rodzaj_dzialalnosci|default:"Nie określono" }}</p>
+                            </div>
+                        </div>
+
+                        {% if firma.opis %}
+                        <div class="col-12 mb-3">
+                            <div class="info-item">
+                                <label class="form-label fw-bold">Opis firmy:</label>
+                                <p class="mb-0">{{ firma.opis|linebreaks }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Banking Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h6 class="mb-0 fw-bold">Dane bankowe</h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-item mb-3">
+                        <label class="form-label fw-bold">Nazwa banku:</label>
+                        <p class="mb-0">{{ firma.bank|default:"Nie podano" }}</p>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="form-label fw-bold">Numer konta:</label>
+                        <p class="mb-0">
+                            {% if firma.numer_konta %}
+                                <code class="bg-light px-2 py-1 rounded">{{ firma.numer_konta }}</code>
+                            {% else %}
+                                Nie podano
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h6 class="mb-0 fw-bold">Informacje podatkowe</h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-item mb-3">
+                        <label class="form-label fw-bold">Płatnik VAT:</label>
+                        <p class="mb-0">
+                            {% if firma.vat_ue %}
+                                <span class="badge bg-success">Tak</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Nie</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="form-label fw-bold">Metoda kasowa:</label>
+                        <p class="mb-0">
+                            {% if firma.metoda_kasowa %}
+                                <span class="badge bg-info">Tak</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Nie</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h6 class="mb-0 fw-bold">Akcje</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'company_settings' %}" class="btn btn-primary">
+                            <iconify-icon icon="solar:settings-outline" class="me-8"></iconify-icon>
+                            Edytuj dane
+                        </a>
+                        <a href="{% url 'company_dashboard' %}" class="btn btn-outline-secondary">
+                            <iconify-icon icon="solar:chart-outline" class="me-8"></iconify-icon>
+                            Dashboard
+                        </a>
+                        <a href="{% url 'panel_uzytkownika' %}" class="btn btn-outline-info">
+                            <iconify-icon icon="solar:home-smile-angle-outline" class="me-8"></iconify-icon>
+                            Panel główny
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-item label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.info-item p {
+    color: #212529;
+    font-size: 1rem;
+}
+
+code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}

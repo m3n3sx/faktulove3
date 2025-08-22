@@ -1,0 +1,33 @@
+--- request.py.orig	2025-08-22 15:22:26.000000000 +0000
++++ request.py	2025-08-22 15:22:26.000000000 +0000
+@@ -1,6 +1,7 @@
+ from http import client
+ import json
+ import re
++from email.parser import Parser
+ from io import BytesIO
+ from itertools import chain
+ from urllib.parse import parse_qsl, quote, urlencode, urljoin, urlsplit
+@@ -101,9 +102,21 @@
+     def _get_scheme(self):
+         return self.environ.get('wsgi.url_scheme', '')
+ 
++    def _parse_content_type(self, content_type):
++        """Parse a Content-type header using email.parser.
++        Returns the main content-type and a dictionary of options.
++        """
++        if not content_type:
++            return '', {}
++        p = Parser()
++        msg = p.parsestr('Content-Type: ' + content_type)
++        maintype = msg.get_content_type()
++        params = dict(msg.get_params()[1:])  # [1:] to skip the maintype/subtype pair
++        return maintype, params
++
+     def _set_content_type_params(self, environ):
+         """Set content_type, content_params, and encoding."""
+-        self.content_type, self.content_params = cgi.parse_header(meta.get('CONTENT_TYPE', ''))
++        self.content_type, self.content_params = self._parse_content_type(environ.get('CONTENT_TYPE', ''))
+         if 'charset' in self.content_params:
+             try:
+                 self.encoding = self.content_params['charset']

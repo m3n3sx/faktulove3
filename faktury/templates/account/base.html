@@ -1,0 +1,273 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="pl" dir="ltr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block head_title %}{% endblock %} | FaktuLove</title>
+    <link rel="icon" type="image/png" href="{% static 'assets/images/favicon.png' %}" sizes="16x16">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/lib/remixicon.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/lib/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/lib/flatpickr.min.css' %}">
+    
+    <!-- Custom Auth Styles -->
+    <style>
+        .auth {
+            min-height: 100vh;
+        }
+        
+        .auth-left {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-left::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('{% static "assets/images/auth/auth-pattern.png" %}') repeat;
+            opacity: 0.1;
+        }
+        
+        .auth-left > div {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .auth-right {
+            background: var(--bs-body-bg);
+        }
+        
+        .icon-field {
+            position: relative;
+        }
+        
+        .icon-field .icon {
+            position: absolute;
+            left: 16px;
+            z-index: 1;
+            color: var(--bs-secondary);
+        }
+        
+        .icon-field .form-control {
+            padding-left: 48px;
+        }
+        
+        .center-border-horizontal {
+            position: relative;
+        }
+        
+        .center-border-horizontal::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: var(--bs-border-color);
+        }
+        
+        .center-border-horizontal span {
+            background: var(--bs-body-bg);
+            padding: 0 16px;
+        }
+        
+        .form-check.style-check .form-check-input {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .form-check.style-check .form-check-input:checked {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
+        
+        .btn.radius-12 {
+            border-radius: 12px;
+        }
+        
+        .h-56-px {
+            height: 56px;
+        }
+        
+        .bg-neutral-50 {
+            background-color: #f8f9fa;
+        }
+        
+        .text-secondary-light {
+            color: #6c757d;
+        }
+        
+        .text-white-75 {
+            color: rgba(255, 255, 255, 0.75);
+        }
+        
+        .max-w-464-px {
+            max-width: 464px;
+        }
+        
+        .max-w-290-px {
+            max-width: 290px;
+        }
+        
+        /* Animation for form elements */
+        .form-control {
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+        
+        .btn {
+            transition: all 0.3s ease;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+        
+        .alert-success {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: #0f5132;
+        }
+        
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #842029;
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #664d03;
+        }
+        
+        /* Loading spinner */
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
+        }
+        
+        /* Social login buttons */
+        .btn-outline-light:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 991.98px) {
+            .auth-left {
+                display: none !important;
+            }
+            
+            .auth-right {
+                padding: 32px 16px;
+            }
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+    
+    <!-- Scripts -->
+    <script src="{% static 'assets/js/lib/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/js/lib/iconify-icon.min.js' %}"></script>
+    
+    <!-- Common Authentication JavaScript -->
+    <script>
+        // Common utilities for authentication forms
+        window.AuthUtils = {
+            // Show loading state on button
+            showLoading: function(button, text = 'Ładowanie...') {
+                const spinner = '<span class="spinner-border spinner-border-sm me-8"></span>';
+                button.disabled = true;
+                button.innerHTML = spinner + text;
+            },
+            
+            // Hide loading state
+            hideLoading: function(button, originalText) {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            },
+            
+            // Show alert message
+            showAlert: function(message, type = 'info', container = null) {
+                const alertClass = type === 'error' ? 'danger' : type;
+                const icon = type === 'success' ? 'mage:check-circle' : 
+                           type === 'error' ? 'mage:close-circle' : 'mage:info-circle';
+                           
+                const alertHtml = `
+                    <div class="alert alert-${alertClass} mb-24 alert-dismissible fade show">
+                        <div class="d-flex align-items-center">
+                            <iconify-icon icon="${icon}" class="me-8"></iconify-icon>
+                            ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </div>
+                `;
+                
+                if (container) {
+                    container.insertAdjacentHTML('afterbegin', alertHtml);
+                } else {
+                    document.body.insertAdjacentHTML('afterbegin', alertHtml);
+                }
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    const alert = document.querySelector('.alert');
+                    if (alert) {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 5000);
+            },
+            
+            // Validate email format
+            isValidEmail: function(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            },
+            
+            // CSRF Token helper
+            getCsrfToken: function() {
+                return document.querySelector('[name=csrfmiddlewaretoken]').value;
+            }
+        };
+        
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Authentication error:', e.error);
+        });
+        
+        // Auto-dismiss alerts
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    if (alert && alert.parentNode) {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 8000);
+            });
+        });
+    </script>
+    
+    {% block extra_body %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Importuj dane</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" accept=".xlsx, .csv">
+    <button type="submit" class="btn btn-primary">Importuj</button>
+</form>
+<p>Obsługiwane formaty: XLSX, CSV</p>
+{% endblock %}

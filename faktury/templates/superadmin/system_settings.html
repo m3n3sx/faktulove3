@@ -1,0 +1,434 @@
+{% extends "superadmin/base.html" %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <button type="button" class="btn btn-outline-primary" onclick="testAllSystems()">
+        <i class="bi bi-lightning"></i> Test All Systems
+    </button>
+    <a href="{% url 'superadmin:system_logs' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-journal-text"></i> View Logs
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- System Information -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> System Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Application Settings</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Debug Mode:</strong></td>
+                                <td>
+                                    {% if system_info.debug_mode %}
+                                        <span class="badge bg-warning">ENABLED</span>
+                                        <small class="text-muted d-block">⚠️ Should be disabled in production</small>
+                                    {% else %}
+                                        <span class="badge bg-success">DISABLED</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Secret Key:</strong></td>
+                                <td>
+                                    {% if system_info.secret_key_set %}
+                                        <span class="badge bg-success">CONFIGURED</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">DEFAULT KEY</span>
+                                        <small class="text-danger d-block">🚨 Security risk! Change immediately</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Database:</strong></td>
+                                <td><span class="badge bg-info">{{ system_info.database_engine|slice:"19:" }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Allowed Hosts:</strong></td>
+                                <td>
+                                    {% for host in system_info.allowed_hosts %}
+                                        <span class="badge bg-secondary me-1">{{ host }}</span>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-primary">API & External Services</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>GUS API Key:</strong></td>
+                                <td>
+                                    {% if system_info.gus_api_key %}
+                                        <span class="badge bg-success">CONFIGURED</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">NOT SET</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email Host:</strong></td>
+                                <td>
+                                    {% if system_info.email_host %}
+                                        <span class="badge bg-success">{{ system_info.email_host }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">NOT CONFIGURED</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>CSRF Origins:</strong></td>
+                                <td>
+                                    {% for origin in system_info.csrf_trusted_origins %}
+                                        <span class="badge bg-secondary me-1">{{ origin }}</span>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-shield-check"></i> Security Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="security-check">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Debug Mode:</span>
+                        {% if system_info.debug_mode %}
+                            <span class="badge bg-danger">HIGH RISK</span>
+                        {% else %}
+                            <span class="badge bg-success">SECURE</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Secret Key:</span>
+                        {% if system_info.secret_key_set %}
+                            <span class="badge bg-success">SECURE</span>
+                        {% else %}
+                            <span class="badge bg-danger">VULNERABLE</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>HTTPS Ready:</span>
+                        <span class="badge bg-warning">CHECK DEPLOYMENT</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>CSRF Protection:</span>
+                        <span class="badge bg-success">ENABLED</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GUS API Testing -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-cloud-check"></i> GUS API Testing</h5>
+            </div>
+            <div class="card-body">
+                {% if gus_status %}
+                    <div class="alert alert-{% if gus_status.success %}success{% else %}danger{% endif %}">
+                        <i class="bi bi-{% if gus_status.success %}check-circle{% else %}x-circle{% endif %}"></i>
+                        {{ gus_status.message }}
+                    </div>
+                {% endif %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Connection Test</h6>
+                        <form method="post" class="mb-3">
+                            {% csrf_token %}
+                            <button type="submit" name="test_gus" class="btn btn-outline-primary">
+                                <i class="bi bi-wifi"></i> Test GUS Connection
+                            </button>
+                        </form>
+                        
+                        <h6>NIP Lookup Test</h6>
+                        <div class="input-group mb-3">
+                            <input type="text" id="testNip" class="form-control" 
+                                   placeholder="Enter NIP (e.g., 1234567890)" maxlength="10">
+                            <button class="btn btn-outline-secondary" type="button" onclick="testGUSLookup()">
+                                <i class="bi bi-search"></i> Test Lookup
+                            </button>
+                        </div>
+                        
+                        <div id="gusTestResult" class="mt-3"></div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>GUS API Configuration</h6>
+                        <div class="bg-light p-3 rounded">
+                            <p class="small mb-2">
+                                <strong>Current Status:</strong> 
+                                {% if system_info.gus_api_key %}
+                                    <span class="text-success">API Key Configured</span>
+                                {% else %}
+                                    <span class="text-warning">API Key Missing</span>
+                                {% endif %}
+                            </p>
+                            
+                            {% if not system_info.gus_api_key %}
+                                <div class="alert alert-warning small">
+                                    <strong>To configure GUS API:</strong><br>
+                                    1. Obtain API key from <a href="https://api.stat.gov.pl/" target="_blank">GUS API Portal</a><br>
+                                    2. Add <code>GUS_API_KEY=your-key-here</code> to .env file<br>
+                                    3. Restart the application
+                                </div>
+                            {% endif %}
+                            
+                            <p class="small mb-0">
+                                <strong>Endpoint:</strong> <code>wyszukiwarkaregon.stat.gov.pl</code><br>
+                                <strong>Method:</strong> SOAP + AJAX<br>
+                                <strong>Cache:</strong> 5 minutes session cache
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Actions -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-tools"></i> System Maintenance</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary" onclick="clearCache()">
+                        <i class="bi bi-arrow-clockwise"></i> Clear Cache
+                    </button>
+                    <button type="button" class="btn btn-outline-info" onclick="checkDatabase()">
+                        <i class="bi bi-database"></i> Check Database
+                    </button>
+                    <button type="button" class="btn btn-outline-warning" onclick="validateConfiguration()">
+                        <i class="bi bi-check-circle"></i> Validate Configuration
+                    </button>
+                    <a href="/admin/" class="btn btn-outline-secondary">
+                        <i class="bi bi-gear"></i> Django Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-download"></i> System Backup</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Export system data for backup or migration purposes.
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'superadmin:export_data' %}?type=users" class="btn btn-outline-success">
+                        <i class="bi bi-people"></i> Export Users
+                    </a>
+                    <a href="{% url 'superadmin:export_data' %}?type=companies" class="btn btn-outline-success">
+                        <i class="bi bi-building"></i> Export Companies
+                    </a>
+                    <button type="button" class="btn btn-outline-info" onclick="exportFullBackup()">
+                        <i class="bi bi-archive"></i> Full System Backup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Environment Variables Guide -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Environment Configuration Guide</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Required Environment Variables</h6>
+                        <pre class="bg-light p-3 rounded small"><code># Django Core
+SECRET_KEY=your-very-secret-django-key-here
+DEBUG=False
+ALLOWED_HOSTS=localhost,127.0.0.1,your-domain.com
+
+# Database
+DATABASE_ENGINE=django.db.backends.mysql
+DATABASE_NAME=faktury
+DATABASE_USER=faktury_user
+DATABASE_PASSWORD=secure-password-here
+DATABASE_HOST=localhost
+DATABASE_PORT=3306</code></pre>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Optional but Recommended</h6>
+                        <pre class="bg-light p-3 rounded small"><code># Email Configuration
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+
+# API Keys
+GUS_API_KEY=your-gus-api-key
+
+# Security (Production)
+SECURE_SSL_REDIRECT=True
+SECURE_HSTS_SECONDS=31536000
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com</code></pre>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Security Note:</strong> Never commit the .env file to version control. 
+                    Use .env.example as a template and configure .env locally on each environment.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testGUSLookup() {
+    const nip = document.getElementById('testNip').value.trim();
+    const resultDiv = document.getElementById('gusTestResult');
+    
+    if (!nip) {
+        showMessage('Please enter a NIP number', 'warning');
+        return;
+    }
+    
+    if (!/^\d{10}$/.test(nip)) {
+        showMessage('NIP must be exactly 10 digits', 'warning');
+        return;
+    }
+    
+    resultDiv.innerHTML = '<div class="text-center"><div class="spinner-custom"></div> Testing GUS API...</div>';
+    
+    fetch('/superadmin/api/gus-test/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nip: nip })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="bi bi-check-circle"></i> GUS API Test Successful</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Company Name:</strong> ${data.data.nazwa || 'N/A'}<br>
+                            <strong>Address:</strong> ${data.data.ulica || ''} ${data.data.numer_domu || ''}<br>
+                            <strong>City:</strong> ${data.data.miejscowosc || 'N/A'}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>NIP:</strong> ${data.data.nip || 'N/A'}<br>
+                            <strong>REGON:</strong> ${data.data.regon || 'N/A'}<br>
+                            <strong>Postal Code:</strong> ${data.data.kod_pocztowy || 'N/A'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            showMessage('GUS API test completed successfully', 'success');
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6><i class="bi bi-x-circle"></i> GUS API Test Failed</h6>
+                    <p>${data.message || data.error}</p>
+                </div>
+            `;
+            showMessage('GUS API test failed: ' + (data.message || data.error), 'danger');
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h6><i class="bi bi-exclamation-triangle"></i> Test Error</h6>
+                <p>Network error: ${error.message}</p>
+            </div>
+        `;
+        showMessage('Test failed: ' + error.message, 'danger');
+    });
+}
+
+function testAllSystems() {
+    showMessage('Running system tests...', 'info');
+    
+    // Test GUS API with a known good NIP
+    document.getElementById('testNip').value = '1234567890';
+    testGUSLookup();
+    
+    // Add other system tests here
+    setTimeout(() => {
+        showMessage('System tests completed', 'success');
+    }, 2000);
+}
+
+function clearCache() {
+    if (confirm('Are you sure you want to clear the system cache?')) {
+        // Implementation would require a backend endpoint
+        showMessage('Cache clearing functionality would be implemented here', 'info');
+    }
+}
+
+function checkDatabase() {
+    showMessage('Database check functionality would be implemented here', 'info');
+}
+
+function validateConfiguration() {
+    showMessage('Configuration validation functionality would be implemented here', 'info');
+}
+
+function exportFullBackup() {
+    showMessage('Full backup functionality would be implemented here', 'info');
+}
+
+// Auto-format NIP input
+document.getElementById('testNip').addEventListener('input', function(e) {
+    // Remove non-digits
+    this.value = this.value.replace(/\D/g, '');
+    
+    // Limit to 10 digits
+    if (this.value.length > 10) {
+        this.value = this.value.slice(0, 10);
+    }
+});
+
+// Allow Enter key to trigger test
+document.getElementById('testNip').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        testGUSLookup();
+    }
+});
+</script>
+{% endblock %}

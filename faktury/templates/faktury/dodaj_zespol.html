@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Dodaj Zespół</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+
+        <h2>Członkowie</h2>
+        {{ czlonkowie_formset.management_form }}
+        <div id="czlonkowie-container">
+            {% for form in czlonkowie_formset %}
+                <div class="czlonek-form">
+                    {{ form|crispy }}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn-secondary" id="add-czlonek">Dodaj Członka</button>
+
+        <button type="submit" class="btn btn-primary">Zapisz</button>
+        <a href="{% url 'lista_zespolow' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+{% endblock %}

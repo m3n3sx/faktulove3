@@ -1,0 +1,35 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load static %}
+{% load form_extras %}
+{% load socialaccount %}
+
+{% block body %}
+<section class="auth bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="{% static 'assets/images/auth/auth-image.png' %}" alt="">
+        </div>
+    </div>
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <div class="text-center">
+                <a href="/" class="mb-40 max-w-290-px">
+                    <img src="{% static 'assets/images/logo.png' %}" alt="">
+                </a>
+                <h5 class="mb-12">Czy na pewno chcesz się wylogować?</h5>
+                <p class="mb-32 text-secondary-light text-lg">
+                    Jeśli wylogujesz się teraz, będziesz musiał ponownie podać swoje dane, aby uzyskać dostęp do konta.
+                </p>
+            </div>
+
+            <form method="post" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32">Tak, wyloguj mnie</button>
+            </form>
+
+            <a href="/" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32">Anuluj</a>
+        </div>
+    </div>
+</section>
+{% endblock body %}

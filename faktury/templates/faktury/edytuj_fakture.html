@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<h1 class="mb-4">Dodaj Fakturę</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            {{ faktura_form.typ_dokumentu|as_crispy_field }}
+        </div>
+        <div class="col-md-3 mb-3">
+            </div>
+        <div class="col-md-3 mb-3">
+            {{ faktura_form.data_wystawienia|as_crispy_field }}
+        </div>
+        <div class="col-md-3 mb-3">
+            {{ faktura_form.data_sprzedazy|as_crispy_field }}
+        </div>
+    </div>
+     <div class="row mb-3">
+        <div class="col-md-3 mb-3">
+            {{ faktura_form.miejsce_wystawienia|as_crispy_field }}
+        </div>
+         <div class="col-md-4">
+          <div class="form-check">
+            {{ faktura_form.zwolnienie_z_vat|as_crispy_field }}
+            </div>
+        </div>
+        <div class="col-md-5">
+            {{ faktura_form.powod_zwolnienia|as_crispy_field }}
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Sprzedawca</h2>
+            {% if firma %}
+            <p><strong>{{ firma.nazwa }}</strong></p>
+            <p>NIP: {{ firma.nip }}</p>
+            <p>{{ firma.ulica }} {{ firma.numer_domu }}{% if firma.numer_mieszkania %}/{{ firma.numer_mieszkania }}{% endif %}</p>
+            <p>{{ firma.kod_pocztowy }} {{ firma.miejscowosc }}</p>
+            <p><a href="{% url 'edytuj_firme' %}" class="btn btn-secondary btn-sm">Edytuj dane firmy</a></p>
+            {% else %}
+            <p>Nie uzupełniłeś danych firmy. <a href="{% url 'dodaj_firme' %}" class="btn btn-primary btn-sm">Dodaj
+                    dane firmy</a></p>
+            {% endif %}
+
+        </div>
+
+        <div class="col-md-6">
+           <h2>Nabywca</h2>
+            <div class="mb-3">
+                {{ faktura_form.nabywca|as_crispy_field }}
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="firma" name="czy_firma" value="firma" checked>
+                <label class="form-check-label" for="firma">Firma</label>
+            </div>
+            <div class="form-check form-check-inline mb-3">
+                <input class="form-check-input" type="radio" id="osoba_prywatna" name="czy_firma" value="osoba_prywatna">
+                <label class="form-check-label" for="osoba_prywatna">Osoba prywatna</label>
+            </div>
+
+            <div class="mb-3">
+                <label for="id_nabywca_nip">NIP</label>
+                <div class="input-group">
+                     <input type="text" id="id_nabywca_nip" name="nabywca_nip" class="form-control">
+                    <button type="button" class="btn btn-primary" id="pobierz-dane-gus">Pobierz dane z GUS</button>
+                </div>
+            </div>
+             <div class="mb-3">
+                <label for="id_nabywca_nazwa">Nazwa</label>
+                <input type="text" id="id_nabywca_nazwa" name="nabywca_nazwa" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="id_nabywca_ulica">Ulica</label>
+                <input type="text" id="id_nabywca_ulica" name="nabywca_ulica" class="form-control">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_nabywca_numer_domu">Numer domu</label>
+                    <input type="text" id="id_nabywca_numer_domu" name="nabywca_numer_domu" class="form-control">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_nabywca_numer_mieszkania">Numer mieszkania</label>
+                    <input type="text" id="id_nabywca_numer_mieszkania" name="nabywca_numer_mieszkania" class="form-control">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="id_nabywca_kod_pocztowy">Kod pocztowy</label>
+                     <input type="text" id="id_nabywca_kod_pocztowy" name="nabywca_kod_pocztowy" class="form-control">
+                </div>
+                <div class="col-md-8 mb-3">
+                    <label for="id_nabywca_miejscowosc">Miejscowość</label>
+                    <input type="text" id="id_nabywca_miejscowosc" name="nabywca_miejscowosc" class="form-control">
+                </div>
+            </div>
+             <div class="mb-3">
+                <label for="id_nabywca_kraj">Kraj</label>
+                <input type="text" id="id_nabywca_kraj" name="nabywca_kraj" class="form-control" value="Polska">
+            </div>
+
+            <button type="button" id="zapisz-kontrahenta" class="btn btn-success">Zapisz odbiorcę</button>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Pozycje na fakturze</h2>
+    <div class="mb-3">
+        <button type="button" class="btn btn-secondary" id="ukryj-rabat">Ukryj rabat</button>
+        <button type = "button" class="btn btn-info" id="dodaj-produkt-btn">Dodaj Produkt</button>
+    </div>
+    <div class='table-responsive'>
+        {{ pozycje_formset.management_form }}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th class="rabat-col">Rabat</th>
+                    <th class="rabat-col">Typ rabatu</th>  <th class="rabat-col"></th>
+                    <th>Ilość</th>
+                    <th>Jednostka</th>
+                    <th>Cena netto</th>
+                    <th>VAT</th>
+                    <th class="wartosc-netto-col">Wartość netto</th>
+                    <th class="wartosc-brutto-col">Wartość brutto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in pozycje_formset %}
+                <tr class="pozycja-form">
+                    <td>{{ form.nazwa|as_crispy_field }}
+                        <label for="id_pozycje-{{ forloop.counter0 }}-produkt">Produkt:</label>
+                        <select name="pozycje-{{ forloop.counter0 }}-produkt" id="id_pozycje-{{ forloop.counter0 }}-produkt" class="form-select produkt-select">
+                            <option value="">---------</option>
+                            {% for produkt in produkty %}
+                                <option value="{{ produkt.pk }}">{{ produkt.nazwa }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="rabat-col">{{ form.rabat|as_crispy_field }}</td>
+                    <td class="rabat-col">{{ form.rabat_typ|as_crispy_field }}</td>
+                    <td>{{ form.ilosc|as_crispy_field }}</td>
+                    <td>{{ form.jednostka|as_crispy_field }}</td>
+                    <td>{{ form.cena_netto|as_crispy_field }}</td>
+                    <td>{{ form.vat|as_crispy_field }}</td>
+                    <td class="wartosc-netto-col"></td>
+                    <td class="wartosc-brutto-col"></td>
+                    <td>
+                        {% if form.instance.pk %}
+                          <button type="button" class="btn btn-danger btn-sm usun-pozycje">Usuń</button>
+                        {% endif %}
+                    </td>
+                    {{ form.id }}
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot id="faktura-tfoot">
+                <tr class="suma-przed-rabatem">
+                    <td colspan="7" class="text-end">Suma netto przed rabatem:</td>
+                    <td class="suma-netto-przed-rabatem"></td>
+                    <td></td>
+
+                </tr>
+                <tr class="suma-rabat" >
+                    <td colspan="7" class="text-end">Suma rabatu:</td>
+                    <td class="suma-rabatu"></td>
+                    <td></td>
+
+                </tr>
+                <tr class="suma-po-rabacie">
+                    <td colspan="7" class="text-end">Suma netto po rabacie:</td>
+                    <td class="suma-netto-po-rabacie"></td>
+                    <td></td>
+
+                </tr>
+                 <tr class="vat-row">
+                    <td colspan="7" class="text-end">Suma VAT:</td>
+                    <td></td>
+                    <td class="suma-vat"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="7"  class="text-end">Suma brutto:</td>
+                    <td></td>
+                    <td class="suma-brutto"></td>
+                    <td></td>
+                </tr>
+
+            </tfoot>
+        </table>
+    </div>
+     <button type="button" class="btn btn-secondary" id="add-pozycja">Dodaj pozycję</button>
+
+    <div class="row">
+        <div class="col-md-4">
+            {{ faktura_form.zwolnienie_z_vat|as_crispy_field }}
+        </div>
+        <div class="col-md-8">
+            {{ faktura_form.powod_zwolnienia|as_crispy_field }}
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row">
+        <div class="col-md-3">
+            {{ faktura_form.sposob_platnosci|as_crispy_field }}
+        </div>
+        <div class="col-md-3">
+            {{ faktura_form.termin_platnosci|as_crispy_field }}
+        </div>
+        <div class="col-md-3">
+            {{ faktura_form.status|as_crispy_field }}
+        </div>
+        <div class="col-md-3" id="kwota-oplacona-container" style="display: none;">
+            
+         </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            {{faktura_form.wystawca|as_crispy_field}}
+        </div>
+        <div class="col-md-6">
+            {{faktura_form.odbiorca|as_crispy_field}}
+        </div>
+    </div>
+    {{faktura_form.uwagi|as_crispy_field}}
+    <div class="row">
+        <div class="col-md-6">
+            {{faktura_form.waluta|as_crispy_field}}
+        </div>
+    </div>
+     <div class="row">
+        <p><b>Kwota do zapłaty:</b> <span id="kwota-do-zaplaty"></span></p>
+    </div>
+     <div class="mt-3">
+        <button type="submit" class="btn btn-primary me-2">Zapisz fakturę</button>
+        <button type="button" class="btn btn-danger">Usuń</button>
+    </div>
+
+</form>
+<div class="modal fade" id="dodajProduktModal" tabindex="-1" aria-labelledby="dodajProduktModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="dodajProduktModalLabel">Dodaj Nowy Produkt</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="dodaj-produkt-form" method="post" action="{% url 'dodaj_produkt_ajax' %}">
+            {% csrf_token %}
+            {{ produkt_form|crispy }}
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
+        <button type="button" class="btn btn-primary" id="zapisz-produkt">Zapisz</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/faktury.js' %}"></script>
+
+{% endblock %}

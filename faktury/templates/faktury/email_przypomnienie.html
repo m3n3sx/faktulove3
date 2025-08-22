@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <p>Szanowni Państwo,</p>
+
+    <p>Przypominamy o płatności za fakturę VAT nr {{ faktura.numer }} z dnia {{faktura.data_wystawienia| date:"d.m.Y"}} na kwotę {{faktura.suma_brutto|floatformat:2}} {{faktura.waluta}}.</p>
+
+    <p>Termin płatności: {{ faktura.termin_platnosci|date:"d.m.Y" }}</p>
+
+    {% if faktura.termin_platnosci < today %}
+        <p style="color: red;"><strong>Płatność jest przeterminowana!</strong></p>
+    {% endif %}
+
+    <p>W załączniku przesyłamy kopię faktury.</p>
+
+    <p>Z poważaniem,<br>
+    {{ faktura.sprzedawca.nazwa }}</p>
+
+</body>
+</html>

@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Ustawienia firmy - {{ firma.nazwa }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-main-body">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <h6 class="fw-semibold mb-0">Ustawienia firmy</h6>
+        <ul class="d-flex align-items-center gap-2">
+            <li class="fw-medium">
+                <a href="{% url 'company_dashboard' %}" class="d-flex align-items-center gap-1 hover-text-primary">
+                    <iconify-icon icon="solar:buildings-3-outline" class="icon text-lg"></iconify-icon>
+                    Dashboard Firmy
+                </a>
+            </li>
+            <li>-</li>
+            <li class="fw-medium">Ustawienia</li>
+        </ul>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" id="companySettingsForm">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Basic Information -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0 fw-bold">Podstawowe informacje</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Nazwa firmy <span class="text-danger">*</span></label>
+                                {{ form.nazwa|add_class:"form-control" }}
+                                {% if form.nazwa.errors %}
+                                    <div class="text-danger mt-1">{{ form.nazwa.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">NIP</label>
+                                {{ form.nip|add_class:"form-control" }}
+                                {% if form.nip.errors %}
+                                    <div class="text-danger mt-1">{{ form.nip.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">REGON</label>
+                                {{ form.regon|add_class:"form-control" }}
+                                {% if form.regon.errors %}
+                                    <div class="text-danger mt-1">{{ form.regon.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">KRS</label>
+                                {{ form.krs|add_class:"form-control" }}
+                                {% if form.krs.errors %}
+                                    <div class="text-danger mt-1">{{ form.krs.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Forma prawna</label>
+                                {{ form.forma_prawna|add_class:"form-control" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0 fw-bold">Adres</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Ulica</label>
+                                {{ form.ulica|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Kod pocztowy</label>
+                                {{ form.kod_pocztowy|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Miasto</label>
+                                {{ form.miasto|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Województwo</label>
+                                {{ form.wojewodztwo|add_class:"form-control" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0 fw-bold">Kontakt</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Telefon</label>
+                                {{ form.telefon|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                {{ form.email|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Strona WWW</label>
+                                {{ form.strona_www|add_class:"form-control" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Banking Information -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0 fw-bold">Dane bankowe</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nazwa banku</label>
+                                {{ form.bank|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Numer konta</label>
+                                {{ form.numer_konta|add_class:"form-control" }}
+                                <small class="form-text text-muted">Format: XX XXXX XXXX XXXX XXXX XXXX XXXX</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Logo -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0 fw-bold">Logo firmy</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        {% if firma.logo %}
+                        <div class="mb-3">
+                            <img src="{{ firma.logo.url }}" alt="Logo" class="img-fluid rounded" style="max-width: 150px; max-height: 150px;">
+                        </div>
+                        {% else %}
+                        <div class="mb-3">
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; margin: 0 auto;">
+                                <iconify-icon icon="solar:camera-outline" class="text-muted text-3xl"></iconify-icon>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div>
+                            {{ form.logo|add_class:"form-control" }}
+                            <small class="form-text text-muted">Maksymalny rozmiar: 2MB. Formaty: JPG, PNG</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tax Settings -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0 fw-bold">Ustawienia podatkowe</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            {{ form.vat_ue|add_class:"form-check-input" }}
+                            <label class="form-check-label" for="{{ form.vat_ue.id_for_label }}">
+                                Płatnik VAT UE
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            {{ form.metoda_kasowa|add_class:"form-check-input" }}
+                            <label class="form-check-label" for="{{ form.metoda_kasowa.id_for_label }}">
+                                Metoda kasowa
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0 fw-bold">Dodatkowe informacje</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Rodzaj działalności</label>
+                            {{ form.rodzaj_dzialalnosci|add_class:"form-control" }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Opis firmy</label>
+                            {{ form.opis|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="saveBtn">
+                                <iconify-icon icon="solar:diskette-outline" class="me-8"></iconify-icon>
+                                Zapisz zmiany
+                            </button>
+                            <a href="{% url 'company_info' %}" class="btn btn-outline-secondary">
+                                <iconify-icon icon="solar:eye-outline" class="me-8"></iconify-icon>
+                                Podgląd
+                            </a>
+                            <a href="{% url 'company_dashboard' %}" class="btn btn-outline-info">
+                                <iconify-icon icon="solar:chart-outline" class="me-8"></iconify-icon>
+                                Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('companySettingsForm');
+    const saveBtn = document.getElementById('saveBtn');
+    const originalBtnText = saveBtn.innerHTML;
+
+    // Form submission with AJAX
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-8"></span>Zapisywanie...';
+
+        // Create FormData for file upload support
+        const formData = new FormData(form);
+
+        fetch(form.action || window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showAlert('success', data.message || 'Ustawienia zostały zapisane.');
+                
+                // Redirect after short delay
+                setTimeout(() => {
+                    window.location.href = '{% url "company_dashboard" %}';
+                }, 1500);
+            } else {
+                // Show errors
+                if (data.errors) {
+                    for (const [field, errors] of Object.entries(data.errors)) {
+                        const fieldElement = document.querySelector(`[name="${field}"]`);
+                        if (fieldElement) {
+                            showFieldError(fieldElement, errors[0]);
+                        }
+                    }
+                }
+                showAlert('error', 'Wystąpiły błędy w formularzu. Sprawdź wprowadzone dane.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Wystąpił błąd podczas zapisywania. Spróbuj ponownie.');
+        })
+        .finally(() => {
+            // Reset button state
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalBtnText;
+        });
+    });
+
+    // File input preview
+    const logoInput = document.querySelector('input[type="file"]');
+    if (logoInput) {
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.querySelector('.card-body img');
+                    if (img) {
+                        img.src = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+
+function showAlert(type, message) {
+    const alertClass = type === 'error' ? 'danger' : type;
+    const alertHtml = `
+        <div class="alert alert-${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert at top of dashboard-main-body
+    document.querySelector('.dashboard-main-body').insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 5000);
+}
+
+function showFieldError(fieldElement, error) {
+    // Remove existing error
+    const existingError = fieldElement.parentNode.querySelector('.text-danger');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    // Add new error
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'text-danger mt-1';
+    errorDiv.textContent = error;
+    fieldElement.parentNode.appendChild(errorDiv);
+    
+    // Add error class to field
+    fieldElement.classList.add('is-invalid');
+    
+    // Remove error class on input
+    fieldElement.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+        const errorDiv = this.parentNode.querySelector('.text-danger');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    }, { once: true });
+}
+</script>
+
+<style>
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}

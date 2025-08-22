@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Dodaj Zespół</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+
+        <h2>Członkowie</h2>
+{{ czlonkowie_formset.management_form }}
+<div id="czlonkowie-container">
+    {% for form in czlonkowie_formset %}
+        <div class="czlonek-form">
+            {{ form|crispy }}
+        </div>
+    {% endfor %}
+</div>
+<button type="button" class="btn btn-secondary" id="add-czlonek">Dodaj Członka</button>
+
+        <button type="submit" class="btn btn-primary">Zapisz</button>
+        <a href="{% url 'lista_zespolow' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let czlonekForm = document.querySelectorAll(".czlonek-form")
+        let container = document.querySelector("#czlonkowie-container")
+        let addButton = document.querySelector("#add-czlonek")
+        let totalForms = document.querySelector("#id_czlonkowie-TOTAL_FORMS") //WAŻNE: Sprawdz ID
+
+        let formNum = czlonekForm.length - 1 // index ostatniego formularza
+
+        addButton.addEventListener('click', addCzłonekForm); //uzyj funkcji
+
+        function addCzłonekForm() {
+            let newForm = czlonekForm[0].cloneNode(true) //klonuj pierwszy formularz
+            formNum++ //zwieksz index
+            newForm.innerHTML = newForm.innerHTML.replaceAll('__prefix__', formNum) //zamien prefix
+            container.insertBefore(newForm, addButton) //wstaw nowy formularz przed przyciskiem
+
+            totalForms.setAttribute('value', `${formNum+1}`) //zaktualizuj liczbe formularzy
+
+            // Dodaj obsługę usuwania dla nowo dodanego formularza
+            let deleteButton = newForm.querySelector('input[type="checkbox"][name$="DELETE"]'); //znajdz checkbox
+            if (deleteButton) {
+                deleteButton.addEventListener('click', function() {
+                    newForm.remove(); //usun formularz po kliknieciu
+                    // Zmniejsz formNum, jeśli usunięto formularz
+                    formNum--;
+                    // Zaktualizuj TOTAL_FORMS
+                    totalForms.setAttribute('value', formNum + 1);
+                });
+            }
+        }
+        //Dodanie obslugi usuwania dla istniejacych formularzy (wczytanych przy edycji)
+        let deleteButtons = document.querySelectorAll('input[type="checkbox"][name$="DELETE"]');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.czlonek-form').remove();  // Usuń najbliższy element o klasie .pozycja-form
+                     formNum--;
+                    totalForms.setAttribute('value', formNum + 1); // Zaktualizuj TOTAL_FORMS (opcjonalnie, ale zalecane dla spójności)
+
+                });
+        });
+    });
+
+    </script>
+{% endblock %}

@@ -1,0 +1,378 @@
+{% extends "superadmin/base.html" %}
+{% load humanize %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'superadmin:user_management' %}" class="btn btn-admin-primary">
+        <i class="bi bi-people"></i> Manage Users
+    </a>
+    <a href="{% url 'superadmin:system_settings' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-gear"></i> Settings
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="stat-number">{{ stats.users.total|intcomma }}</div>
+                <div class="stat-label text-white-50">Total Users</div>
+                <div class="mt-2">
+                    <small><i class="bi bi-arrow-up"></i> {{ stats.users.new_today }} today</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="stat-number">{{ stats.companies.total|intcomma }}</div>
+                <div class="stat-label text-white-50">Companies</div>
+                <div class="mt-2">
+                    <small><i class="bi bi-check-circle"></i> {{ stats.companies.with_nip }} with NIP</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="stat-number">{{ stats.invoices.total|intcomma }}</div>
+                <div class="stat-label text-white-50">Invoices</div>
+                <div class="mt-2">
+                    <small><i class="bi bi-calendar"></i> {{ stats.invoices.this_month }} this month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-warning text-white">
+            <div class="card-body">
+                <div class="stat-number">{{ stats.partnerships.active|intcomma }}</div>
+                <div class="stat-label text-white-50">Active Partnerships</div>
+                <div class="mt-2">
+                    <small><i class="bi bi-robot"></i> {{ stats.partnerships.with_auto_accounting }} auto-accounting</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Statistics -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> User Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Active Users:</span>
+                            <span class="badge bg-success">{{ stats.users.active }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Inactive Users:</span>
+                            <span class="badge bg-secondary">{{ stats.users.inactive }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Superusers:</span>
+                            <span class="badge bg-danger">{{ stats.users.superusers }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <canvas id="userChart" width="150" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Invoice Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Sales Invoices:</span>
+                            <span class="badge bg-success">{{ stats.invoices.sales }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Cost Invoices:</span>
+                            <span class="badge bg-info">{{ stats.invoices.costs }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Auto-accounted:</span>
+                            <span class="badge bg-warning">{{ stats.invoices.auto_accounted }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <canvas id="invoiceChart" width="150" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Health -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-heart-pulse"></i> System Health</h5>
+            </div>
+            <div class="card-body">
+                {% for check in health_checks %}
+                    <div class="health-check {{ check.status }}">
+                        <div class="me-3">
+                            {% if check.status == 'ok' %}
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                            {% elif check.status == 'warning' %}
+                                <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                            {% else %}
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong>{{ check.name }}</strong>
+                            <div class="text-muted small">{{ check.message }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> System Info</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Debug Mode:</strong>
+                    <span class="badge {% if stats.system.debug_mode %}bg-warning{% else %}bg-success{% endif %}">
+                        {% if stats.system.debug_mode %}ON{% else %}OFF{% endif %}
+                    </span>
+                </div>
+                <div class="mb-2">
+                    <strong>Database:</strong>
+                    <span class="badge bg-info">{{ stats.system.database }}</span>
+                </div>
+                <div class="mb-2">
+                    <strong>GUS API:</strong>
+                    <span class="badge {% if stats.system.gus_configured %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if stats.system.gus_configured %}Configured{% else %}Not Set{% endif %}
+                    </span>
+                </div>
+                <div class="mb-2">
+                    <strong>Email:</strong>
+                    <span class="badge {% if stats.system.email_configured %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if stats.system.email_configured %}Configured{% else %}Not Set{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-person-plus"></i> Recent Users</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for user in recent_users %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <div class="user-avatar me-3">
+                                {{ user.username.0|upper }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">{{ user.username }}</div>
+                                <small class="text-muted">{{ user.date_joined|naturaltime }}</small>
+                            </div>
+                            <div>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted">No recent users</div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'superadmin:user_management' %}" class="btn btn-sm btn-outline-primary">
+                        View All Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> Recent Invoices</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for invoice in recent_invoices %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold">{{ invoice.numer }}</div>
+                                    <small class="text-muted">{{ invoice.sprzedawca.nazwa|truncatechars:20 }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge {% if invoice.typ_faktury == 'sprzedaz' %}bg-success{% else %}bg-info{% endif %}">
+                                        {{ invoice.get_typ_faktury_display }}
+                                    </span>
+                                    <div class="small text-muted">{{ invoice.data_wystawienia|date:"d.m.Y" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted">No recent invoices</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-building"></i> Recent Companies</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for company in recent_companies %}
+                        <div class="list-group-item">
+                            <div class="fw-bold">{{ company.nazwa|truncatechars:25 }}</div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ company.user.username }}</small>
+                                <div>
+                                    {% if company.nip %}
+                                        <span class="badge bg-success">NIP</span>
+                                    {% endif %}
+                                    {% if company.regon %}
+                                        <span class="badge bg-info">REGON</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted">No recent companies</div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'superadmin:company_management' %}" class="btn btn-sm btn-outline-primary">
+                        View All Companies
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'superadmin:user_management' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-people"></i> Manage Users
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'superadmin:company_management' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-building"></i> Manage Companies
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'superadmin:system_settings' %}" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-gear"></i> System Settings
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'superadmin:system_logs' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-journal-text"></i> View Logs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // User Statistics Chart
+    const userCtx = document.getElementById('userChart').getContext('2d');
+    new Chart(userCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active', 'Inactive'],
+            datasets: [{
+                data: [{{ stats.users.active }}, {{ stats.users.inactive }}],
+                backgroundColor: ['#198754', '#6c757d'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Invoice Statistics Chart
+    const invoiceCtx = document.getElementById('invoiceChart').getContext('2d');
+    new Chart(invoiceCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Sales', 'Costs'],
+            datasets: [{
+                data: [{{ stats.invoices.sales }}, {{ stats.invoices.costs }}],
+                backgroundColor: ['#198754', '#0dcaf0'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

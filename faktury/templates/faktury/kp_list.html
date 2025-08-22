@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Lista Dowodów Wpłaty (KP)</h2>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Numer</th>
+        <th>Data Wystawienia</th>
+        <th>Nabywca</th>
+        <th>Kwota Opłacona</th>
+        <th>Faktura Powiązana</th>
+        <th>Szczegóły</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for kp in kps %}
+        <tr>
+          <td>{{ kp.numer }}</td>
+          <td>{{ kp.data_wystawienia }}</td>
+          <td>{{ kp.nabywca.nazwa }}</td>
+          <td>{{ kp.kwota_oplacona|floatformat:2 }} {{ kp.waluta }}</td>
+          <td>
+              {% if kp.dokument_podstawowy %}
+                  <a href="{% url 'szczegoly_faktury' kp.dokument_podstawowy.pk %}">{{ kp.dokument_podstawowy.numer }}</a>
+              {% else %}
+                  Brak
+              {% endif %}
+          </td>
+          <td><a href="{% url 'szczegoly_kp' kp.pk %}" class="btn btn-sm btn-info">Szczegóły</a></td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6">Brak KP</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

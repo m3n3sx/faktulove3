@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h1>Profil członka zespołu: {{ czlonek.imie }} {{ czlonek.nazwisko }}</h1>
+
+<p>Rola: {{ czlonek.rola }}</p>
+<p>Email: {{ czlonek.email }}</p>
+
+<h2>Przypisane Zadania</h2>
+<ul>
+    {% for zadanie in zadania_przypisane %}
+        <li><a href="{% url 'edytuj_zadanie' zadanie.pk %}">{{ zadanie.tytul }}</a> (Status: {{ zadanie.get_status_display }})</li>
+    {% empty %}
+        <li>Brak przypisanych zadań.</li>
+    {% endfor %}
+</ul>
+
+<h2>Wykonane Zadania</h2>
+<ul>
+    {% for zadanie in zadania_wykonane %}
+        <li><a href="{% url 'edytuj_zadanie' zadanie.pk %}">{{ zadanie.tytul }}</a> (Termin wykonania: {{ zadanie.termin_wykonania }})</li>
+    {% empty %}
+        <li>Brak wykonanych zadań.</li>
+    {% endfor %}
+</ul>
+
+<button id="pokazWiadomoscFormBtn" class="btn btn-success">Wyślij wiadomość</button>
+<div id="wiadomoscFormContainer" style="display: none;">
+    <form method="post" action="#"> <!— Możesz dodać URL do wysyłania wiadomości do członka zespołu -->
+        {% csrf_token %}
+        {{ wiadomosc_form|crispy }}
+        <button type="submit" class="btn btn-primary">Wyślij wiadomość</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const pokazWiadomoscFormBtn = document.getElementById('pokazWiadomoscFormBtn');
+        const wiadomoscFormContainer = document.getElementById('wiadomoscFormContainer');
+
+        pokazWiadomoscFormBtn.addEventListener('click', function() {
+            wiadomoscFormContainer.style.display = 'block';
+            pokazWiadomoscFormBtn.style.display = 'none';
+        });
+    });
+</script>
+
+{% endblock %}

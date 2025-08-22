@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Dashboard Firmy - {{ firma.nazwa }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-main-body">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <h6 class="fw-semibold mb-0">Dashboard Firmy</h6>
+        <ul class="d-flex align-items-center gap-2">
+            <li class="fw-medium">
+                <a href="{% url 'panel_uzytkownika' %}" class="d-flex align-items-center gap-1 hover-text-primary">
+                    <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+                    Główny Panel
+                </a>
+            </li>
+            <li>-</li>
+            <li class="fw-medium">Dashboard Firmy</li>
+        </ul>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Company Header -->
+    <div class="row mb-24">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-24">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            {% if firma.logo %}
+                            <div class="w-72-px h-72-px rounded-circle overflow-hidden">
+                                <img src="{{ firma.logo.url }}" alt="{{ firma.nazwa }}" class="w-100 h-100 object-fit-cover">
+                            </div>
+                            {% else %}
+                            <div class="w-72-px h-72-px rounded-circle bg-primary-50 d-flex align-items-center justify-content-center">
+                                <iconify-icon icon="solar:buildings-3-outline" class="text-primary text-2xl"></iconify-icon>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h4 class="mb-8">{{ firma.nazwa }}</h4>
+                                <div class="d-flex align-items-center gap-2 text-secondary-light">
+                                    <span>NIP: {{ firma.nip|default:"Nie podano" }}</span>
+                                    {% if firma.regon %}
+                                    <span>•</span>
+                                    <span>REGON: {{ firma.regon }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-secondary-light">
+                                    {{ firma.miasto }}, {{ firma.ulica }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{% url 'company_info' %}" class="btn btn-outline-primary btn-sm">
+                                <iconify-icon icon="solar:eye-outline" class="me-8"></iconify-icon>
+                                Szczegóły
+                            </a>
+                            <a href="{% url 'company_settings' %}" class="btn btn-primary btn-sm">
+                                <iconify-icon icon="solar:settings-outline" class="me-8"></iconify-icon>
+                                Ustawienia
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-24">
+        <div class="col-xxl-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-20">
+                    <div class="d-flex align-items-center justify-content-between gap-3">
+                        <div>
+                            <p class="fw-medium text-primary-light mb-1">Faktury</p>
+                            <h6 class="mb-0">{{ stats.faktury_count|floatformat:0 }}</h6>
+                        </div>
+                        <div class="w-50-px h-50-px bg-cyan-100 text-cyan-600 rounded-circle d-flex justify-content-center align-items-center">
+                            <iconify-icon icon="solar:document-text-outline" class="text-2xl mb-0"></iconify-icon>
+                        </div>
+                    </div>
+                    <p class="fw-medium text-sm text-secondary-light mt-12 mb-0">
+                        <a href="{% url 'faktury_sprzedaz' %}" class="text-primary">Zobacz wszystkie</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xxl-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-20">
+                    <div class="d-flex align-items-center justify-content-between gap-3">
+                        <div>
+                            <p class="fw-medium text-primary-light mb-1">Kontrahenci</p>
+                            <h6 class="mb-0">{{ stats.kontrahenci_count|floatformat:0 }}</h6>
+                        </div>
+                        <div class="w-50-px h-50-px bg-purple-100 text-purple-600 rounded-circle d-flex justify-content-center align-items-center">
+                            <iconify-icon icon="solar:users-group-two-rounded-outline" class="text-2xl mb-0"></iconify-icon>
+                        </div>
+                    </div>
+                    <p class="fw-medium text-sm text-secondary-light mt-12 mb-0">
+                        <a href="{% url 'kontrahenci' %}" class="text-primary">Zarządzaj</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xxl-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-20">
+                    <div class="d-flex align-items-center justify-content-between gap-3">
+                        <div>
+                            <p class="fw-medium text-primary-light mb-1">Przychody</p>
+                            <h6 class="mb-0">{{ stats.total_revenue|floatformat:2|default:"0" }} zł</h6>
+                        </div>
+                        <div class="w-50-px h-50-px bg-success-100 text-success-600 rounded-circle d-flex justify-content-center align-items-center">
+                            <iconify-icon icon="solar:wallet-money-outline" class="text-2xl mb-0"></iconify-icon>
+                        </div>
+                    </div>
+                    <p class="fw-medium text-sm text-secondary-light mt-12 mb-0">
+                        Łączne przychody
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xxl-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-20">
+                    <div class="d-flex align-items-center justify-content-between gap-3">
+                        <div>
+                            <p class="fw-medium text-primary-light mb-1">Do zapłaty</p>
+                            <h6 class="mb-0 text-warning">{{ stats.outstanding_amount|floatformat:2|default:"0" }} zł</h6>
+                        </div>
+                        <div class="w-50-px h-50-px bg-warning-100 text-warning-600 rounded-circle d-flex justify-content-center align-items-center">
+                            <iconify-icon icon="solar:clock-circle-outline" class="text-2xl mb-0"></iconify-icon>
+                        </div>
+                    </div>
+                    <p class="fw-medium text-sm text-secondary-light mt-12 mb-0">
+                        {{ stats.outstanding_count }} faktur
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-24">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0 fw-bold">Szybkie akcje</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-sm-6 mb-3">
+                            <a href="{% url 'dodaj_fakture' %}" class="btn btn-outline-primary w-100 py-3">
+                                <iconify-icon icon="solar:document-add-outline" class="me-8"></iconify-icon>
+                                Nowa Faktura
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-sm-6 mb-3">
+                            <a href="{% url 'dodaj_kontrahenta' %}" class="btn btn-outline-secondary w-100 py-3">
+                                <iconify-icon icon="solar:user-plus-outline" class="me-8"></iconify-icon>
+                                Nowy Kontrahent
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-sm-6 mb-3">
+                            <a href="{% url 'dodaj_produkt' %}" class="btn btn-outline-info w-100 py-3">
+                                <iconify-icon icon="solar:box-outline" class="me-8"></iconify-icon>
+                                Nowy Produkt
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-sm-6 mb-3">
+                            <a href="{% url 'company_settings' %}" class="btn btn-outline-warning w-100 py-3">
+                                <iconify-icon icon="solar:settings-outline" class="me-8"></iconify-icon>
+                                Ustawienia
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Information Summary -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0 fw-bold">Informacje o firmie</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Pełna nazwa:</strong><br>
+                            <span class="text-secondary-light">{{ firma.nazwa }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>NIP:</strong><br>
+                            <span class="text-secondary-light">{{ firma.nip|default:"Nie podano" }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Adres:</strong><br>
+                            <span class="text-secondary-light">
+                                {{ firma.ulica }}<br>
+                                {{ firma.kod_pocztowy }} {{ firma.miasto }}
+                            </span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Kontakt:</strong><br>
+                            <span class="text-secondary-light">
+                                {% if firma.telefon %}Tel: {{ firma.telefon }}<br>{% endif %}
+                                {% if firma.email %}Email: {{ firma.email }}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0 fw-bold">Status systemu</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="w-8-px h-8-px bg-success rounded-circle"></div>
+                        <span class="text-sm">Firma skonfigurowana</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="w-8-px h-8-px bg-{% if stats.faktury_count > 0 %}success{% else %}warning{% endif %} rounded-circle"></div>
+                        <span class="text-sm">Faktury: {{ stats.faktury_count }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="w-8-px h-8-px bg-{% if stats.kontrahenci_count > 0 %}success{% else %}warning{% endif %} rounded-circle"></div>
+                        <span class="text-sm">Kontrahenci: {{ stats.kontrahenci_count }}</span>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'panel_uzytkownika' %}" class="btn btn-primary btn-sm w-100">
+                            Przejdź do panelu głównego
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load real-time company status
+    fetchCompanyStatus();
+    
+    // Refresh every 30 seconds
+    setInterval(fetchCompanyStatus, 30000);
+});
+
+function fetchCompanyStatus() {
+    fetch('{% url "company_api_status" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Company status updated:', data.stats);
+                // You can update UI elements here if needed
+            }
+        })
+        .catch(error => {
+            console.log('Error fetching company status:', error);
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Edytuj Zadanie: {{ zadanie.tytul }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Zapisz Zmiany</button>
+        <a href="{% url 'twoje_sprawy' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+{% endblock %}

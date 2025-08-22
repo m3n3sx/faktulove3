@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Dowód Wpłaty (KP) nr {{ kp.numer }}</h1>
+
+    <p>
+        <a href="{% url 'kp_list' %}" class="btn btn-secondary">Powrót</a>
+    </p>
+
+    <h2>Dane KP</h2>
+    <dl>
+        <dt>Data wystawienia:</dt>
+        <dd>{{ kp.data_wystawienia|date:"Y-m-d" }}</dd>
+        <dt>Data płatności:</dt>
+        <dd>{{ kp.data_sprzedazy|date:"Y-m-d" }}</dd>
+        <dt>Miejsce wystawienia:</dt>
+        <dd>{{ kp.miejsce_wystawienia }}</dd>
+        <dt>Waluta:</dt>
+        <dd>{{ kp.waluta }}</dd>
+        <dt>Status:</dt>
+        <dd>{{ kp.get_status_display }}</dd>
+        <dt>Kwota opłacona:</dt>
+        <dd>{{ kp.kwota_oplacona|floatformat:2 }} {{ kp.waluta }}</dd>
+    </dl>
+
+    <h2>Sprzedawca</h2>
+    <p><strong>{{ kp.sprzedawca.nazwa }}</strong></p>
+    <p>NIP: {{ kp.sprzedawca.nip }}</p>
+    <p>{{ kp.sprzedawca.ulica }} {{ kp.sprzedawca.numer_domu }}{% if kp.sprzedawca.numer_mieszkania %}/{{ kp.sprzedawca.numer_mieszkania }}{% endif %}</p>
+    <p>{{ kp.sprzedawca.kod_pocztowy }} {{ kp.sprzedawca.miejscowosc }}</p>
+    <p>{{ kp.sprzedawca.kraj }}</p>
+
+    <h2>Nabywca</h2>
+    <p><strong>{{ kp.nabywca.nazwa }}</strong></p>
+    <p>NIP: {{ kp.nabywca.nip }}</p>
+    <p>{{ kp.nabywca.ulica }} {{ kp.nabywca.numer_domu }}{% if kp.nabywca.numer_mieszkania %}/{{ kp.nabywca.numer_mieszkania }}{% endif %}</p>
+    <p>{{ kp.nabywca.kod_pocztowy }} {{ kp.nabywca.miejscowosc }}</p>
+    <p>{{ kp.nabywca.kraj }}</p>
+
+    {% if kp.dokument_podstawowy %}
+        <h2>Faktura powiązana</h2>
+        <p><strong>Numer faktury:</strong> <a href="{% url 'szczegoly_faktury' kp.dokument_podstawowy.pk %}">{{ kp.dokument_podstawowy.numer }}</a></p>
+    {% endif %}
+{% endblock %}

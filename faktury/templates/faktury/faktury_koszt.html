@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+{% csrf_token %}
+
+<style>
+  th.sortable {
+    cursor: pointer;
+  }
+  .pagination li a {
+    cursor: pointer;
+  }
+  /* Dodatkowy padding, aby zawartość nie schodziła pod przyciski */
+  body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+</style>
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+  <h6 class="fw-semibold mb-0">Faktury kosztów</h6>
+  <ul class="d-flex align-items-center gap-2">
+    <li class="fw-medium">
+      <a href="/" class="d-flex align-items-center gap-1 hover-text-primary">
+        <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+        Panel
+      </a>
+    </li>
+  </ul>
+</div>
+
+<!-- Offcanvas z filtrami (nie jest już częścią gridu) -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasFilters" aria-labelledby="offcanvasFiltersLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasFiltersLabel">Filtruj i wyszukuj</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Zamknij"></button>
+  </div>
+  <div class="offcanvas-body">
+    <form id="filterForm">
+      <!-- Pole filtrowania -->
+      <div class="mb-3">
+        <label for="filterInput" class="form-label">Wyszukaj</label>
+        <input type="text" class="form-control" id="filterInput" placeholder="Wpisz szukaną frazę">
+      </div>
+      <!-- Przełączniki sterujące kolumnami -->
+      <div class="mb-3">
+        <p><strong>Widoczność kolumn:</strong></p>
+        <!-- Kolumna 0: Typ -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch0" value="0" checked>
+          <label class="form-check-label" for="switch0">Typ</label>
+        </div>
+        <!-- Kolumna 1: Numer -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch1" value="1" checked>
+          <label class="form-check-label" for="switch1">Numer</label>
+        </div>
+        <!-- Kolumna 2: Sprzedaż (domyślnie ukryta) -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch2" value="2">
+          <label class="form-check-label" for="switch2">Sprzedaż</label>
+        </div>
+        <!-- Kolumna 3: Wystawiono (domyślnie ukryta) -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch3" value="3">
+          <label class="form-check-label" for="switch3">Wystawiono</label>
+        </div>
+        <!-- Kolumna 4: Termin -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch4" value="4" checked>
+          <label class="form-check-label" for="switch4">Termin</label>
+        </div>
+        <!-- Kolumna 5: Kontrahent (domyślnie ukryta) -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch5" value="5">
+          <label class="form-check-label" for="switch5">Kontrahent</label>
+        </div>
+        <!-- Kolumna 6: Netto -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch6" value="6" checked>
+          <label class="form-check-label" for="switch6">Netto</label>
+        </div>
+        <!-- Kolumna 7: Brutto -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch7" value="7" checked>
+          <label class="form-check-label" for="switch7">Brutto</label>
+        </div>
+        <!-- Kolumna 8: Produkt (domyślnie ukryta) -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch8" value="8">
+          <label class="form-check-label" for="switch8">Produkt</label>
+        </div>
+        <!-- Kolumna 9: Status -->
+        <div class="form-switch switch-primary d-flex align-items-center gap-3 mb-1">
+          <input class="form-check-input column-toggle" type="checkbox" role="switch" id="switch9" value="9" checked>
+          <label class="form-check-label" for="switch9">Status</label>
+        </div>
+      </div>
+      <!-- Przycisk resetowania widoku kolumn -->
+      <div class="mb-3">
+        <a href="#" id="resetColumns" class="btn btn-link p-0">Resetuj widok kolumn</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Główna zawartość – tabela -->
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-12">
+      <!-- Sekcja przycisków nad tabelą -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Po lewej: przycisk otwierający filtry -->
+        <div>
+          <button class="btn btn-lilac-600 radius-8 px-16 py-9 d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilters" aria-controls="offcanvasFilters" id="toggleFiltersBtn"><iconify-icon icon="hugeicons:filter" class="text-xl"></iconify-icon>Filtruj i wyszukuj</button>
+        </div>
+        <!-- Po prawej: pozostałe akcje -->
+        <div>
+          <a href="{% url 'dodaj_fakture' %}">
+            <button type="button" class="btn btn-primary-600 radius-8 px-16 py-9 d-flex align-items-center gap-2">
+              <iconify-icon icon="hugeicons:add-circle" class="text-xl"></iconify-icon>
+              Dodaj fakturę
+            </button>
+          </a>&nbsp;&nbsp;
+          <a href="{% url 'dodaj_fakture_koszt' %}">
+            <button type="button" class="btn btn-primary-600 radius-8 px-16 py-9 d-flex align-items-center gap-2">
+              <iconify-icon icon="hugeicons:add-circle-half-dot" class="text-xl"></iconify-icon>
+              Dodaj koszt
+            </button>
+          </a>&nbsp;&nbsp;
+          <a href="{% url 'dodaj_fakture_koszt' %}">
+            <button type="button" class="btn btn-primary-600 radius-8 px-16 py-9 d-flex align-items-center gap-2">
+              <iconify-icon icon="hugeicons:pdf-01" class="text-xl"></iconify-icon>
+              Wygeneruj PDF z zaznaczonych
+            </button>
+          </a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h6 class="text-lg fw-semibold mb-0">Twoje faktury</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            {% include "partials/tables/tabela_faktur_standalone.html" %}
+          </div>
+          <!-- Kontrolki paginacji i wyboru liczby wpisów -->
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+              <label for="pageSizeSelect" class="form-label mb-0">Ilość wpisów:</label>
+              <select id="pageSizeSelect" class="form-select form-select-sm d-inline-block w-auto ms-2">
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+            <nav>
+              <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                <!-- Paginacja generowana dynamicznie -->
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const allRows = Array.from(document.querySelectorAll('#Filtrowanie tbody tr'));
+  let currentPage = 1;
+  let pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+  let filterValue = '';
+  let sortColumn = null;
+  let sortOrder = 'asc';
+
+  function renderTable() {
+    let filteredRows = allRows.filter(row =>
+      row.textContent.toLowerCase().includes(filterValue)
+    );
+
+    if (sortColumn !== null) {
+      filteredRows.sort((a, b) => {
+        const cellA = a.children[sortColumn].textContent.trim().toLowerCase();
+        const cellB = b.children[sortColumn].textContent.trim().toLowerCase();
+        if (cellA < cellB) return sortOrder === 'asc' ? -1 : 1;
+        if (cellA > cellB) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * pageSize;
+    const pageRows = filteredRows.slice(start, start + pageSize);
+
+    const tbody = document.querySelector('#Filtrowanie tbody');
+    tbody.innerHTML = '';
+    pageRows.forEach(row => tbody.appendChild(row));
+
+    updateColumnVisibility();
+    renderPagination(totalPages);
+  }
+
+  function toggleColumn(colIndex, isVisible) {
+    const display = isVisible ? '' : 'none';
+    document.querySelectorAll(`#Filtrowanie thead th:nth-child(${colIndex + 1})`).forEach(th => {
+      th.style.display = display;
+    });
+    document.querySelectorAll(`#Filtrowanie tbody tr`).forEach(tr => {
+      if (tr.children[colIndex]) {
+        tr.children[colIndex].style.display = display;
+      }
+    });
+  }
+
+  function updateColumnVisibility() {
+    document.querySelectorAll('.column-toggle').forEach(switchEl => {
+      const colIndex = parseInt(switchEl.value);
+      toggleColumn(colIndex, switchEl.checked);
+    });
+  }
+
+  document.getElementById('filterInput').addEventListener('keyup', function() {
+    filterValue = this.value.toLowerCase();
+    currentPage = 1;
+    renderTable();
+  });
+
+  document.getElementById('pageSizeSelect').addEventListener('change', function() {
+    pageSize = parseInt(this.value);
+    currentPage = 1;
+    renderTable();
+  });
+
+  document.querySelectorAll('#Filtrowanie thead th.sortable').forEach((th, index) => {
+    th.addEventListener('click', function() {
+      if (sortColumn === index) {
+        sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = index;
+        sortOrder = 'asc';
+      }
+      renderTable();
+    });
+  });
+
+  function renderPagination(totalPages) {
+    const pagination = document.getElementById('paginationControls');
+    pagination.innerHTML = '';
+
+    const prevLi = document.createElement('li');
+    prevLi.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
+    prevLi.innerHTML = `<a class="page-link">Poprzednia</a>`;
+    prevLi.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    });
+    pagination.appendChild(prevLi);
+
+    for (let i = 1; i <= totalPages; i++) {
+      const li = document.createElement('li');
+      li.className = 'page-item' + (currentPage === i ? ' active' : '');
+      li.innerHTML = `<a class="page-link">${i}</a>`;
+      li.addEventListener('click', () => {
+        currentPage = i;
+        renderTable();
+      });
+      pagination.appendChild(li);
+    }
+
+    const nextLi = document.createElement('li');
+    nextLi.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
+    nextLi.innerHTML = `<a class="page-link">Następna</a>`;
+    nextLi.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+      }
+    });
+    pagination.appendChild(nextLi);
+  }
+
+  // Zapamiętywanie stanu switchy
+  function saveSwitchState(switchEl) {
+    localStorage.setItem('switch-' + switchEl.id, switchEl.checked);
+  }
+
+  function restoreSwitchState() {
+    document.querySelectorAll('.column-toggle').forEach(switchEl => {
+      const saved = localStorage.getItem('switch-' + switchEl.id);
+      if (saved !== null) {
+        switchEl.checked = (saved === 'true');
+      }
+    });
+  }
+
+  document.querySelectorAll('.column-toggle').forEach(switchEl => {
+    switchEl.addEventListener('change', function() {
+      saveSwitchState(this);
+      renderTable();
+    });
+  });
+
+  restoreSwitchState();
+  renderTable();
+
+  // Reset widoku kolumn do domyślnych ustawień
+  function resetColumnView() {
+    const defaults = {
+      switch0: true,
+      switch1: true,
+      switch2: false,
+      switch3: false,
+      switch4: true,
+      switch5: false,
+      switch6: true,
+      switch7: true,
+      switch8: false,
+      switch9: true,
+    };
+    document.querySelectorAll('.column-toggle').forEach(switchEl => {
+      const def = defaults[switchEl.id];
+      if (typeof def !== 'undefined') {
+        switchEl.checked = def;
+        localStorage.setItem('switch-' + switchEl.id, def);
+      }
+    });
+    renderTable();
+  }
+
+  document.getElementById('resetColumns').addEventListener('click', function(e) {
+    e.preventDefault();
+    resetColumnView();
+  });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% load static %}
+
+<!-- Apex Chart js -->
+<script src="/static/assets/js/lib/apexcharts.min.js"></script>
+<!-- Apex Chart css -->
+<link rel="stylesheet" href="{% static 'assets/css/lib/apexcharts.css' %}">
+
+<div class="card h-100 p-0 radius-12">
+	<div class="card-header border-bottom bg-base py-16 px-24">
+		<h6 class="text-lg fw-semibold mb-0">Analityka</h6>
+        </div>
+        <div class="card-body p-24">
+        <div class="row gy-4">
+		{% include "partials/widgets/sprzedaz_tygodniowa.html" %}
+		{% include "partials/widgets/sprzedaz_miesieczna.html" %}
+		{% include "partials/widgets/sprzedaz_kwartalna.html" %}
+		{% include "partials/widgets/sprzedaz_roczna.html" %}
+	</div>
+<br />
+        <div class="row gy-4">
+		{% include "partials/widgets/koszt_tygodniowa.html" %}
+		{% include "partials/widgets/koszt_miesieczna.html" %}
+		{% include "partials/widgets/koszt_kwartalna.html" %}
+		{% include "partials/widgets/koszt_roczna.html" %}
+	</div>
+
+	</div>
+</div>

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <h1>Twoje Sprawy</h1>
+
+    <div id="calendar"></div>
+
+    <h2>Twoje Zadania</h2>
+ <ul>
+        {% for faktura in faktury %}
+            {% if faktura.status != 'oplacona' %}  <-- Dodajemy warunek! -->
+                <li>
+                    Faktura {{ faktura.numer }} - Termin płatności: {{ faktura.termin_platnosci|date:"Y-m-d" }}
+                    <a href="{% url 'szczegoly_faktury' pk=faktura.pk %}">Szczegóły</a>
+                    {% if faktura.termin_platnosci < now.date %}
+                        <a href="{% url 'wyslij_przypomnienie' pk=faktura.pk %}" class="btn btn-sm btn-warning">Wyślij przypomnienie</a>
+                    {% endif %}
+                </li>
+            {% endif %}
+        {% empty %}
+            <li>Brak zadań.</li>
+        {% endfor %}
+    </ul>
+
+
+{% endblock %}
+
+{% block extra_js %}
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script src="{% static 'js/locales/pl.js' %}"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          locale: 'pl',
+          events: '{% url "get_events" %}',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+          },
+        });
+
+        calendar.render();
+      });
+    </script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <div class="container">
+    <h2>Odpowiedz na wiadomość: "{{ parent_msg.temat }}"</h2>
+    <div class="mb-3">
+      <p><strong>Oryginalna wiadomość od:</strong> {{ parent_msg.nadawca }}</p>
+      <p>{{ parent_msg.tresc|linebreaks }}</p>
+    </div>
+    <hr>
+    <form method="post" action="">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button type="submit" class="btn btn-primary">Wyślij odpowiedź</button>
+    </form>
+  </div>
+{% endblock %}

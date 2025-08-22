@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h1>{{ wiadomosc.temat }}</h1>
+  <p><strong>Od:</strong> {{ wiadomosc.nadawca.firma.nazwa }}</p>
+  <p>{{ wiadomosc.tresc|linebreaks }}</p>
+  <a href="{% url 'lista_wiadomosci' %}" class="btn btn-secondary">Powrót</a>
+{% endblock %}

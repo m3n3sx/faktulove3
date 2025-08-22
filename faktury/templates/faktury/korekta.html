@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Korekta faktury nr {{ podstawowa.numer }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    
+    {{ pozycje_formset.management_form }}
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>Ilość (Korekta)</th>
+                <th>DELETE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for form in pozycje_formset %}
+                <tr>
+                    <td>{{ form.nazwa }}</td>
+                    <td>{{ form.ilosc }}</td>
+                    <td>{{ form.DELETE }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <button type="submit" class="btn btn-warning">Wystaw Korektę</button>
+</form>
+
+{% endblock %}

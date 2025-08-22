@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Profil użytkownika: {{ profile_user.username }}</h1>
+
+<p>Imię: {{ profile_user.first_name|default:"Brak" }}</p>
+<p>Nazwisko: {{ profile_user.last_name|default:"Brak" }}</p>
+<p>Email: {{ profile_user.email|default:"Brak" }}</p>
+
+{% if profile_user.userprofile.telefon %}
+<p>Telefon: {{profile_user.userprofile.telefon }}</p>
+{% endif %}
+{% if profile_user.userprofile.avatar %}
+    <img src="{{profile_user.userprofile.avatar.url}}" alt = "avatar">
+{% endif %}
+{% endblock %}

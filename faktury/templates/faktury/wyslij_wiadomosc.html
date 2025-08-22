@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Wyślij Wiadomość do Zespołu: {{ zespol.nazwa }}</h1>
+
+    <form method="post" action="{% url 'wyslij_wiadomosc' zespol.pk %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Wyślij</button>
+        <a href="{% url 'szczegoly_zespolu' zespol.pk %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+{% endblock %}

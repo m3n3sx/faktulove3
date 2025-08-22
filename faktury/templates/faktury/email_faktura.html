@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Faktura VAT</title>
+</head>
+<body>
+    <p>Szanowni Państwo,</p>
+
+    <p>W załączeniu przesyłamy fakturę VAT nr {{ faktura.numer }}.</p>
+
+    <p>Szczegóły faktury:</p>
+    <ul>
+        <li>Numer faktury: {{ faktura.numer }}</li>
+        <li>Data wystawienia: {{ faktura.data_wystawienia|date:"Y-m-d" }}</li>
+        <li>Data sprzedaży: {{ faktura.data_sprzedazy|date:"Y-m-d" }}</li>
+        <li>Kwota brutto: {{ faktura.suma_brutto|floatformat:2 }} {{ faktura.waluta }}</li>
+    </ul>
+
+    <p>W razie pytań prosimy o kontakt.</p>
+
+    <p>Z poważaniem,<br>
+    {{ faktura.sprzedawca.nazwa }}</p> </body>
+</html>

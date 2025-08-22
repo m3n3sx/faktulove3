@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+{% load crispy_forms_tags %}
+    {% if not request.user.firma %}
+        <div class="alert alert-danger">
+            Musisz najpierw dodać dane swojej firmy!
+            <a href="{% url 'dodaj_firme' %}" class="alert-link">Dodaj teraz</a>
+        </div>
+    {% else %}
+        <h2>Dowód wpłaty (KP)</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    {{ form.nabywca|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.kwota_oplacona }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    {{ form.numer_konta_bankowego|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    {{ form.tytul_przelewu|as_crispy_field }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Zapisz KP</button>
+        </form>
+    {% endif %}
+{% endblock %}

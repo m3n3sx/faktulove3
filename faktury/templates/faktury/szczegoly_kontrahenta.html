@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+  <h6 class="fw-semibold mb-0">Dane i faktury kontrahenta</h6>
+  <ul class="d-flex align-items-center gap-2">
+    <li class="fw-medium">
+      <a href="/" class="d-flex align-items-center gap-1 hover-text-primary">
+        <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+        Panel
+      </a>
+    </li>
+    <li>-</li>
+    <li class="fw-medium">Dane kontrahenta</li>
+  </ul>
+</div>
+
+<div class="card">
+      <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+                   <a href="{% url 'dodaj_fakture' %}?kontrahent={{ kontrahent.pk }}" class="btn btn-primary">Wystaw fakturę sprzedaży</a>
+        <a href="{% url 'dodaj_fakture_koszt' %}?kontrahent={{ kontrahent.pk }}" class="btn btn-warning">Wystaw fakturę kosztową</a>
+         <a href="{% url 'edytuj_kontrahenta' pk=kontrahent.pk %}" class="btn btn-secondary">Edytuj</a>
+	</div>
+      </div>
+      <div class="card-body">
+
+<h5>{{ kontrahent.nazwa }}</h5>
+<div class="row">
+
+                        <div class="col-sm-3">
+
+    <dl>
+        <dt>NIP:</dt>
+        <dd>{{ kontrahent.nip|default:"Brak" }}</dd>
+        <dt>REGON:</dt>
+        <dd>{{ kontrahent.regon|default:"Brak" }}</dd>
+        <dt>Ulica:</dt>
+        <dd>{{ kontrahent.ulica }} {{ kontrahent.numer_domu }}{% if kontrahent.numer_mieszkania %}/{{ kontrahent.numer_mieszkania }}{% endif %}</dd>
+</dl>
+
+			</div>
+
+<div class="col-sm-9">
+    <dl>
+        <dt>Kod pocztowy:</dt>
+        <dd>{{ kontrahent.kod_pocztowy }}</dd>
+        <dt>Miejscowość:</dt>
+        <dd>{{ kontrahent.miejscowosc }}</dd>
+        <dt>Kraj:</dt>
+        <dd>{{ kontrahent.kraj }}</dd>
+         {% if kontrahent.email %}
+        <dt>Email:</dt>
+        <dd>{{ kontrahent.email }}</dd>
+         {% endif %}
+        {% if kontrahent.telefon %}
+        <dt>Telefon:</dt>
+        <dd>{{ kontrahent.telefon }}</dd>
+        {% endif %}
+        {% if kontrahent.telefon_komorkowy %}
+        <dt>Telefon komórkowy:</dt>
+        <dd>{{ kontrahent.telefon_komorkowy }}</dd>
+        {% endif %}
+        {% if kontrahent.adres_korespondencyjny_ulica %}
+        <dt>Adres korespondencyjny:</dt>
+         <dd>{{ kontrahent.adres_korespondencyjny_ulica }} {{ kontrahent.adres_korespondencyjny_numer_domu }}{% if kontrahent.adres_korespondencyjny_numer_mieszkania %}/{{ kontrahent.adres_korespondencyjny_numer_mieszkania }}{% endif %}</dd>
+        <dd>{{ kontrahent.adres_korespondencyjny_kod_pocztowy }} {{ kontrahent.adres_korespondencyjny_miejscowosc }}</dd>
+        <dd>{{ kontrahent.adres_korespondencyjny_kraj }}</dd>
+        {% endif %}
+        {% if kontrahent.dodatkowy_opis %}
+        <dt>Dodatkowy opis:</dt>
+        <dd>{{ kontrahent.dodatkowy_opis }}</dd>
+        {% endif %}
+</dl>
+			</div>
+
+
+</div>
+
+            <table class="table bordered-table sm-table mb-0">
+                      <thead>
+                        <tr>
+                <th>Numer</th>
+                <th>Data wystawienia</th>
+                <th>Data sprzedaży</th>
+                <th>Typ</th>
+                <th>Suma brutto</th>
+                <th>Status</th>
+                <th>Akcje</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            {% for faktura in faktury %}
+                <tr>
+                    <td><a href="{% url 'edytuj_fakture' pk=faktura.pk %}">{{ faktura.numer }}</a></td>
+                    <td>{{ faktura.data_wystawienia|date:"Y-m-d" }}</td>
+                    <td>{{ faktura.data_sprzedazy|date:"Y-m-d" }}</td>
+                    <td>{{ faktura.get_typ_faktury_display }}</td>
+                    <td>{{ faktura.suma_brutto|floatformat:2 }}</td>
+                                  <td> 
+{% if faktura.status == 'wystawiona' %}
+  <span class="bg-danger-focus text-danger-main px-24 py-4 rounded-pill fw-medium text-sm">
+    {{ faktura.get_status_display }}
+  </span>
+{% elif faktura.status == 'oplacona' %}
+  <span class="bg-success-focus text-success-main px-24 py-4 rounded-pill fw-medium text-sm">
+    {{ faktura.get_status_display }}
+  </span>
+{% elif faktura.status == 'cz_oplacona' %}
+  <span class="bg-warning-focus text-warning-main px-24 py-4 rounded-pill fw-medium text-sm">
+    {{ faktura.get_status_display }}
+  </span>
+{% else %}
+  <span class="bg-secondary-focus text-secondary-main px-24 py-4 rounded-pill fw-medium text-sm">
+    {{ faktura.get_status_display }}
+  </span>
+{% endif %}
+ </td>
+
+                    <td>
+                        <a href="{% url 'generuj_pdf' pk=faktura.pk %}" class="btn btn-sm btn-secondary">PDF</a>
+                        <a href="{% url 'update_payment' pk=faktura.pk %}" class="btn btn-sm btn-info">Zapłać</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">Brak faktur dla tego kontrahenta.</td>
+                </tr>
+            {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+
+
+{% endblock %}

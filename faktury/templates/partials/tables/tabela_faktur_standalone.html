@@ -1,0 +1,67 @@
+    <table class="table bordered-table mb-0 compact stripe" id="Filtrowanie">
+        <thead>
+            <tr>
+              	<th class="sortable">Typ</th>
+              	<th class="sortable">Numer</th>
+              	<th class="sortable">Sprzedaż</th>
+              	<th class="sortable">Wystawiono</th>
+              	<th class="sortable">Termin</th>
+		<th class="sortable">Kontrahent</th>
+		<th class="sortable">Netto</th>
+		<th class="sortable">Brutto</th>
+		<th class="sortable">Produkt</th>
+		<th class="sortable">Status</th>
+              	<th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+{% for faktura in faktury %}
+            <tr>
+		<td>{{ faktura.get_typ_dokumentu_display }}</td>
+              <td><a href="{% url 'szczegoly_faktury' pk=faktura.pk %}" class="text-primary-600">{{ faktura.numer }}</a></td>
+              <td>{{ faktura.data_sprzedazy|date:"Y-m-d" }}</td>
+              <td>{{ faktura.data_wystawienia|date:"Y-m-d" }}</td>
+<td>{{ faktura.termin_platnosci|date:"Y-m-d" }}</td>
+<td>{{ faktura.nabywca.nazwa }}</td>
+<td>{{ faktura.suma_netto }}</td>
+<td>{{ faktura.suma_brutto }}</td>
+              <td>{% for pozycja in faktura.pozycjafaktury_set.all %}
+                            {{ pozycja.nazwa }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+</td>
+              <td> 
+{% if faktura.status == 'wystawiona' %}
+  <span class="bg-danger-focus text-danger-main px-24 py-4 rounded-pill fw-medium text-sm">
+    {{ faktura.get_status_display }}
+  </span>
+{% elif faktura.status == 'oplacona' %}
+  <span class="bg-success-focus text-success-main px-24 py-4 rounded-pill fw-medium text-sm">
+    {{ faktura.get_status_display }}
+  </span>
+{% elif faktura.status == 'cz_oplacona' %}
+  <span class="bg-warning-focus text-warning-main px-24 py-4 rounded-pill fw-medium text-sm">
+    {{ faktura.get_status_display }}
+  </span>
+{% else %}
+  <span class="bg-secondary-focus text-secondary-main px-24 py-4 rounded-pill fw-medium text-sm">
+    {{ faktura.get_status_display }}
+  </span>
+{% endif %}
+ </td>
+              <td>
+                <a href="{% url 'generuj_pdf' pk=faktura.pk%}" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center">
+                  <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                </a>
+                <a href="{% url 'update_payment' pk=faktura.pk %}" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center">
+                  <iconify-icon icon="lucide:edit"></iconify-icon>
+                </a>
+                <a href="{% url 'usun_fakture' pk=faktura.pk %}" class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center">
+                  <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+                <tr><td colspan="12">Brak faktur.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>

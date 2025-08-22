@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Sum, F, FloatField
+from django.db.models import Q, Sum, F, FloatField, DecimalField, Case, When
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
@@ -15,7 +15,9 @@ from ..models import Faktura, Firma
 
 
 def get_total(queryset, typ_faktury, start_date, end_date):
-    """Calculate total for given date range and invoice type"""
+    """Calculate total for given date range and invoice type - FIXED VAT calculation"""
+    from decimal import Decimal
+    
     total = queryset.filter(
         data_sprzedazy__gte=start_date,
         data_sprzedazy__lt=end_date,
@@ -24,11 +26,20 @@ def get_total(queryset, typ_faktury, start_date, end_date):
         total=Sum(
             F('pozycjafaktury__ilosc') *
             F('pozycjafaktury__cena_netto') *
-            (1 + F('pozycjafaktury__vat') / 100.0),
-            output_field=FloatField()
+            Case(
+                # Proper VAT calculation with string values
+                When(pozycjafaktury__vat='23', then=Decimal('1.23')),
+                When(pozycjafaktury__vat='8', then=Decimal('1.08')),
+                When(pozycjafaktury__vat='5', then=Decimal('1.05')),
+                When(pozycjafaktury__vat='0', then=Decimal('1.00')),
+                When(pozycjafaktury__vat='zw', then=Decimal('1.00')),
+                default=Decimal('1.23'),  # Default to 23% VAT
+                output_field=DecimalField(max_digits=5, decimal_places=2)
+            ),
+            output_field=DecimalField(max_digits=15, decimal_places=2)
         )
-    )['total'] or 0.0
-    return total
+    )['total'] or Decimal('0.00')
+    return float(total)  # Convert to float for compatibility with existing code
 
 
 def get_time_series(queryset, typ_faktury, start_date, end_date, points=10):

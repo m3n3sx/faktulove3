@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Status Przetwarzania OCR{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fas fa-cog fa-spin text-primary me-2"></i>Status Przetwarzania OCR</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'ocr_upload' %}">OCR Upload</a></li>
+                    <li class="breadcrumb-item active">Status</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Document Info -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt me-2"></i>Informacje o Dokumencie</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Nazwa pliku:</dt>
+                        <dd class="col-sm-8">{{ document.original_filename }}</dd>
+                        
+                        <dt class="col-sm-4">Rozmiar:</dt>
+                        <dd class="col-sm-8">{{ document.file_size|filesizeformat }}</dd>
+                        
+                        <dt class="col-sm-4">Typ:</dt>
+                        <dd class="col-sm-8">{{ document.content_type }}</dd>
+                        
+                        <dt class="col-sm-4">Przesłano:</dt>
+                        <dd class="col-sm-8">{{ document.upload_timestamp|date:"d.m.Y H:i:s" }}</dd>
+                        
+                        {% if document.processing_started_at %}
+                        <dt class="col-sm-4">Rozpoczęto:</dt>
+                        <dd class="col-sm-8">{{ document.processing_started_at|date:"d.m.Y H:i:s" }}</dd>
+                        {% endif %}
+                        
+                        {% if document.processing_completed_at %}
+                        <dt class="col-sm-4">Zakończono:</dt>
+                        <dd class="col-sm-8">{{ document.processing_completed_at|date:"d.m.Y H:i:s" }}</dd>
+                        {% endif %}
+                        
+                        {% if processing_duration %}
+                        <dt class="col-sm-4">Czas przetwarzania:</dt>
+                        <dd class="col-sm-8">{{ processing_duration|floatformat:1 }}s</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Processing Status -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tasks me-2"></i>Status Przetwarzania</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if document.processing_status == 'uploaded' %}
+                            <div class="spinner-border text-secondary" role="status">
+                                <span class="visually-hidden">Oczekiwanie...</span>
+                            </div>
+                            <h5 class="mt-2 text-secondary">Oczekuje na przetwarzanie</h5>
+                            <p class="text-muted">Dokument został przesłany i oczekuje w kolejce</p>
+                        
+                        {% elif document.processing_status == 'processing' %}
+                            <div class="spinner-border text-warning" role="status">
+                                <span class="visually-hidden">Przetwarzanie...</span>
+                            </div>
+                            <h5 class="mt-2 text-warning">Przetwarzanie w toku</h5>
+                            <p class="text-muted">AI analizuje dokument i wyodrębnia dane</p>
+                        
+                        {% elif document.processing_status == 'completed' %}
+                            <i class="fas fa-check-circle fa-3x text-success"></i>
+                            <h5 class="mt-2 text-success">Przetwarzanie zakończone</h5>
+                            <p class="text-muted">Dane zostały pomyślnie wyodrębnione</p>
+                        
+                        {% elif document.processing_status == 'failed' %}
+                            <i class="fas fa-times-circle fa-3x text-danger"></i>
+                            <h5 class="mt-2 text-danger">Błąd przetwarzania</h5>
+                            <p class="text-muted">Wystąpił błąd podczas przetwarzania dokumentu</p>
+                            
+                            {% if document.error_message %}
+                            <div class="alert alert-danger mt-3">
+                                <small><strong>Szczegóły błędu:</strong><br>{{ document.error_message }}</small>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Auto-refresh for processing status -->
+                    {% if document.processing_status == 'uploaded' or document.processing_status == 'processing' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>Strona odświeża się automatycznie co 5 sekund</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- OCR Results -->
+    {% if ocr_result %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-robot me-2"></i>Wyniki OCR</h5>
+                    <div>
+                        <!-- Confidence Badge -->
+                        {% if ocr_result.confidence_score >= 95 %}
+                            <span class="badge bg-success">Wysoka pewność: {{ ocr_result.confidence_score|floatformat:1 }}%</span>
+                        {% elif ocr_result.confidence_score >= 80 %}
+                            <span class="badge bg-warning">Średnia pewność: {{ ocr_result.confidence_score|floatformat:1 }}%</span>
+                        {% else %}
+                            <span class="badge bg-danger">Niska pewność: {{ ocr_result.confidence_score|floatformat:1 }}%</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Extracted Data Preview -->
+                        <div class="col-md-8">
+                            <h6>Wyodrębnione dane:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        {% if ocr_result.extracted_data.invoice_number %}
+                                        <tr>
+                                            <td><strong>Numer faktury:</strong></td>
+                                            <td>{{ ocr_result.extracted_data.invoice_number }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        
+                                        {% if ocr_result.extracted_data.invoice_date %}
+                                        <tr>
+                                            <td><strong>Data wystawienia:</strong></td>
+                                            <td>{{ ocr_result.extracted_data.invoice_date }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        
+                                        {% if ocr_result.extracted_data.supplier_name %}
+                                        <tr>
+                                            <td><strong>Sprzedawca:</strong></td>
+                                            <td>{{ ocr_result.extracted_data.supplier_name }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        
+                                        {% if ocr_result.extracted_data.buyer_name %}
+                                        <tr>
+                                            <td><strong>Nabywca:</strong></td>
+                                            <td>{{ ocr_result.extracted_data.buyer_name }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        
+                                        {% if ocr_result.extracted_data.total_amount %}
+                                        <tr>
+                                            <td><strong>Kwota brutto:</strong></td>
+                                            <td>{{ ocr_result.extracted_data.total_amount }} {{ ocr_result.extracted_data.currency|default:"PLN" }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        
+                                        {% if ocr_result.extracted_data.net_amount %}
+                                        <tr>
+                                            <td><strong>Kwota netto:</strong></td>
+                                            <td>{{ ocr_result.extracted_data.net_amount }} {{ ocr_result.extracted_data.currency|default:"PLN" }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        
+                                        {% if ocr_result.extracted_data.vat_amount %}
+                                        <tr>
+                                            <td><strong>Kwota VAT:</strong></td>
+                                            <td>{{ ocr_result.extracted_data.vat_amount }} {{ ocr_result.extracted_data.currency|default:"PLN" }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="col-md-4">
+                            <h6>Dostępne akcje:</h6>
+                            
+                            {% if not ocr_result.faktura %}
+                                {% if ocr_result.confidence_score >= 80 %}
+                                    <a href="{% url 'ocr_result_detail' ocr_result.id %}" class="btn btn-primary btn-sm mb-2 d-block">
+                                        <i class="fas fa-edit me-2"></i>Przejrzyj i Utwórz Fakturę
+                                    </a>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <small>
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Niska pewność OCR. Zalecane ręczne wprowadzenie danych.
+                                        </small>
+                                    </div>
+                                    <a href="{% url 'dodaj_fakture' %}" class="btn btn-outline-primary btn-sm mb-2 d-block">
+                                        <i class="fas fa-plus me-2"></i>Utwórz Fakturę Ręcznie
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check me-2"></i>
+                                    Faktura została utworzona: <strong>{{ ocr_result.faktura.numer }}</strong>
+                                </div>
+                                <a href="{% url 'szczegoly_faktury' ocr_result.faktura.id %}" class="btn btn-success btn-sm d-block">
+                                    <i class="fas fa-eye me-2"></i>Zobacz Fakturę
+                                </a>
+                            {% endif %}
+                            
+                            <a href="{% url 'ocr_results_list' %}" class="btn btn-outline-secondary btn-sm mb-2 d-block">
+                                <i class="fas fa-list me-2"></i>Wszystkie Wyniki OCR
+                            </a>
+                            
+                            <a href="{% url 'ocr_upload' %}" class="btn btn-outline-primary btn-sm d-block">
+                                <i class="fas fa-plus me-2"></i>Prześlij Kolejny Dokument
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Auto-refresh script for processing status -->
+{% if document.processing_status == 'uploaded' or document.processing_status == 'processing' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh every 5 seconds while processing
+    setTimeout(function() {
+        window.location.reload();
+    }, 5000);
+});
+</script>
+{% endif %}
+{% endblock %}

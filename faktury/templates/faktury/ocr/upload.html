@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Przesyłanie Faktury OCR{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fas fa-cloud-upload-alt text-primary me-2"></i>Przesyłanie Faktury OCR</h2>
+            <p class="text-muted">Prześlij skan lub zdjęcie faktury, a system automatycznie wyodrębni dane</p>
+        </div>
+    </div>
+    
+    <!-- Upload Area -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-upload me-2"></i>Przesyłanie Dokumentu</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Drag and Drop Area -->
+                    <div id="drop-area" class="border border-2 border-dashed border-primary rounded p-4 text-center mb-3" 
+                         style="min-height: 200px; background-color: #f8f9fa;">
+                        <div id="drop-content">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                            <h5>Przeciągnij i upuść plik tutaj</h5>
+                            <p class="text-muted">lub</p>
+                            <button type="button" class="btn btn-primary" id="select-file-btn">
+                                <i class="fas fa-folder-open me-2"></i>Wybierz plik
+                            </button>
+                        </div>
+                        
+                        <!-- Progress Bar (hidden by default) -->
+                        <div id="upload-progress" style="display: none;">
+                            <div class="progress mb-3">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <p class="text-muted" id="progress-text">Przesyłanie...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- File Input (hidden) -->
+                    <form id="upload-form" method="post" enctype="multipart/form-data" style="display: none;">
+                        {% csrf_token %}
+                        <input type="file" id="file-input" name="document" accept=".pdf,.jpg,.jpeg,.png,.tiff,.gif">
+                    </form>
+                    
+                    <!-- File Info -->
+                    <div id="file-info" style="display: none;" class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Informacje o pliku:</h6>
+                        <ul class="mb-0">
+                            <li><strong>Nazwa:</strong> <span id="file-name"></span></li>
+                            <li><strong>Rozmiar:</strong> <span id="file-size"></span></li>
+                            <li><strong>Typ:</strong> <span id="file-type"></span></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Upload Button -->
+                    <div id="upload-actions" style="display: none;">
+                        <button type="button" class="btn btn-success me-2" id="upload-btn">
+                            <i class="fas fa-upload me-2"></i>Prześlij i Przetwórz
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancel-btn">
+                            <i class="fas fa-times me-2"></i>Anuluj
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upload Guidelines -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle me-2"></i>Wskazówki</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Obsługiwane formaty:</h6>
+                    <ul class="list-unstyled">
+                        {% for mime_type, extension in supported_types.items %}
+                        <li><i class="fas fa-check text-success me-2"></i>{{ extension|upper }}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <h6 class="mt-3">Wymagania:</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Max {{ max_file_size_mb }} MB</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Min 150 DPI dla skanów</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Czytelny tekst</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Dobra jakość obrazu</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <small>
+                            <i class="fas fa-shield-alt me-2"></i>
+                            Dokumenty są przetwarzane zgodnie z GDPR i automatycznie usuwane po 30 dniach.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Uploads -->
+    {% if recent_uploads %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history me-2"></i>Ostatnie Przesyłania</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Nazwa pliku</th>
+                                    <th>Data przesłania</th>
+                                    <th>Status</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for upload in recent_uploads %}
+                                <tr>
+                                    <td>{{ upload.original_filename }}</td>
+                                    <td>{{ upload.upload_timestamp|date:"d.m.Y H:i" }}</td>
+                                    <td>
+                                        {% if upload.processing_status == 'completed' %}
+                                            <span class="badge bg-success">Zakończony</span>
+                                        {% elif upload.processing_status == 'processing' %}
+                                            <span class="badge bg-warning">Przetwarzany</span>
+                                        {% elif upload.processing_status == 'failed' %}
+                                            <span class="badge bg-danger">Błąd</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Przesłany</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'ocr_status' upload.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>Zobacz
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('file-input');
+    const selectFileBtn = document.getElementById('select-file-btn');
+    const uploadForm = document.getElementById('upload-form');
+    const fileInfo = document.getElementById('file-info');
+    const uploadActions = document.getElementById('upload-actions');
+    const uploadBtn = document.getElementById('upload-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.getElementById('progress-text');
+    
+    let selectedFile = null;
+    
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    // Handle dropped files
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    // Handle file selection via button
+    selectFileBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    // Upload button
+    uploadBtn.addEventListener('click', uploadFile);
+    
+    // Cancel button
+    cancelBtn.addEventListener('click', resetUpload);
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    function highlight(e) {
+        dropArea.classList.add('border-success');
+        dropArea.style.backgroundColor = '#d4edda';
+    }
+    
+    function unhighlight(e) {
+        dropArea.classList.remove('border-success');
+        dropArea.style.backgroundColor = '#f8f9fa';
+    }
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            handleFiles(files[0]);
+        }
+    }
+    
+    function handleFileSelect(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+            handleFiles(files[0]);
+        }
+    }
+    
+    function handleFiles(file) {
+        selectedFile = file;
+        
+        // Validate file
+        if (!validateFile(file)) {
+            return;
+        }
+        
+        // Show file info
+        showFileInfo(file);
+        
+        // Show upload actions
+        uploadActions.style.display = 'block';
+    }
+    
+    function validateFile(file) {
+        const supportedTypes = {{ supported_types|safe }};
+        const maxSize = {{ max_file_size_mb }} * 1024 * 1024;
+        
+        if (!supportedTypes.includes(file.type)) {
+            alert(`Nieobsługiwany typ pliku: ${file.type}\nObsługiwane typy: ${supportedTypes.join(', ')}`);
+            return false;
+        }
+        
+        if (file.size > maxSize) {
+            alert(`Plik jest za duży: ${(file.size / 1024 / 1024).toFixed(1)} MB\nMaksymalny rozmiar: {{ max_file_size_mb }} MB`);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function showFileInfo(file) {
+        document.getElementById('file-name').textContent = file.name;
+        document.getElementById('file-size').textContent = formatFileSize(file.size);
+        document.getElementById('file-type').textContent = file.type;
+        fileInfo.style.display = 'block';
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function uploadFile() {
+        if (!selectedFile) return;
+        
+        const formData = new FormData();
+        formData.append('document', selectedFile);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        // Show progress
+        uploadProgress.style.display = 'block';
+        uploadActions.style.display = 'none';
+        
+        // Create XMLHttpRequest for progress tracking
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBar.style.width = percentComplete + '%';
+                progressText.textContent = `Przesyłanie... ${Math.round(percentComplete)}%`;
+            }
+        });
+        
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                progressText.textContent = 'Przesłano! Przekierowywanie...';
+                progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.add('bg-success');
+                
+                // Redirect to status page
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                progressText.textContent = 'Błąd podczas przesyłania';
+                progressBar.classList.add('bg-danger');
+                alert('Wystąpił błąd podczas przesyłania pliku');
+            }
+        });
+        
+        xhr.addEventListener('error', function() {
+            progressText.textContent = 'Błąd połączenia';
+            progressBar.classList.add('bg-danger');
+            alert('Wystąpił błąd połączenia');
+        });
+        
+        xhr.open('POST', window.location.href);
+        xhr.send(formData);
+    }
+    
+    function resetUpload() {
+        selectedFile = null;
+        fileInput.value = '';
+        fileInfo.style.display = 'none';
+        uploadActions.style.display = 'none';
+        uploadProgress.style.display = 'none';
+        progressBar.style.width = '0%';
+        progressBar.classList.remove('bg-success', 'bg-danger');
+        progressBar.classList.add('progress-bar-animated');
+        progressText.textContent = 'Przesyłanie...';
+    }
+});
+</script>
+
+<style>
+#drop-area {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+#drop-area:hover {
+    background-color: #e9ecef !important;
+}
+
+#drop-area.border-success {
+    border-color: #198754 !important;
+}
+
+.fa-cloud-upload-alt {
+    opacity: 0.7;
+}
+</style>
+{% endblock %}

@@ -47,6 +47,12 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'django.contrib.humanize',
     #'notifications',
+    
+    # OCR and API additions
+    'rest_framework',
+    'corsheaders',
+    'django_celery_results',
+    'django_celery_beat',
 ]
 
 
@@ -197,3 +203,121 @@ EMAIL_USE_TLS = True  # Używaj TLS (zalecane)
 EMAIL_HOST_USER = 'xo@ooxo.pl'  # Twój adres e-mail
 EMAIL_HOST_PASSWORD = 'CAnabis123#$'  # Hasło do Twojego e-maila (!!! UŻYWAJ HASŁA APLIKACJI !!!)
 DEFAULT_FROM_EMAIL = 'xo@ooxo.pl' # Domyślny adres "Od"
+
+# ============================================================================
+# OCR AND AI CONFIGURATION
+# ============================================================================
+
+# Google Cloud Configuration
+GOOGLE_CLOUD_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', 'faktulove-ocr')
+GOOGLE_APPLICATION_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+
+# Document AI Configuration
+DOCUMENT_AI_CONFIG = {
+    'project_id': GOOGLE_CLOUD_PROJECT,
+    'location': 'eu',  # Europe for GDPR compliance
+    'processor_id': os.getenv('DOCUMENT_AI_PROCESSOR_ID'),
+    'processor_version': 'rc',  # Release candidate for latest features
+    'timeout': 30,  # seconds
+    'max_file_size': 10 * 1024 * 1024,  # 10MB limit
+}
+
+# Supported file types for OCR
+SUPPORTED_DOCUMENT_TYPES = {
+    'application/pdf': '.pdf',
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/tiff': '.tiff',
+    'image/gif': '.gif',
+}
+
+# File Upload Configuration
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024   # 10MB
+
+# ============================================================================
+# CELERY CONFIGURATION
+# ============================================================================
+
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# Task routing
+CELERY_TASK_ROUTES = {
+    'faktury.tasks.process_ocr_document': {'queue': 'ocr'},
+    'faktury.tasks.cleanup_old_documents': {'queue': 'cleanup'},
+}
+
+# ============================================================================
+# REST FRAMEWORK CONFIGURATION
+# ============================================================================
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+}
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "https://app.ooxo.pl",
+    "https://faktulove.pl",
+]
+
+if DEBUG:
+    CORS_ALLOWED_ORIGINS += [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+
+# ============================================================================
+# OCR PROCESSING CONFIGURATION
+# ============================================================================
+
+# OCR Processing Settings
+OCR_SETTINGS = {
+    'confidence_thresholds': {
+        'auto_approve': 0.95,    # Above 95% - auto-process
+        'review_required': 0.80, # 80-95% - human review
+        'manual_entry': 0.80,    # Below 80% - manual entry
+    },
+    'max_processing_time': 300,  # 5 minutes timeout
+    'retry_attempts': 3,
+    'cleanup_after_days': 30,    # Delete processed files after 30 days
+}
+
+# Polish language patterns for OCR enhancement
+POLISH_OCR_PATTERNS = {
+    'vat_patterns': [
+        r'VAT\s*(\d{1,2})%',
+        r'PTU\s*(\d{1,2})%', 
+        r'(\d{1,2})\s*%\s*VAT',
+    ],
+    'date_patterns': [
+        r'(\d{1,2})\.(\d{1,2})\.(\d{4})',  # DD.MM.YYYY
+        r'(\d{1,2})-(\d{1,2})-(\d{4})',   # DD-MM-YYYY
+    ],
+    'nip_pattern': r'NIP:?\s*(\d{3}[- ]?\d{3}[- ]?\d{2}[- ]?\d{2})',
+    'currency_patterns': [
+        r'(\d+[,.]?\d*)\s*PLN',
+        r'PLN\s*(\d+[,.]?\d*)',
+        r'(\d+[,.]?\d*)\s*zł',
+    ],
+}

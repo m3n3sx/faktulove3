@@ -62,6 +62,16 @@
           <span>{% trans "Produkty" %}</span>
         </a>
       </li>
+      <li>
+        <a href="{% url 'ocr_upload' %}">
+          <iconify-icon
+            icon="hugeicons:ai-brain-04"
+            class="menu-icon"
+          ></iconify-icon>
+          <span>{% trans "OCR Faktury" %}</span>
+          <span class="badge bg-primary ms-2">AI</span>
+        </a>
+      </li>
       {% if firma %}
       <li>
         <a href="{% url 'edytuj_firme' %}">

@@ -1,6 +1,7 @@
 from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
+from . import views_modules
 
 urlpatterns = [
 path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus'),
@@ -115,4 +116,18 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
 
     # Enhanced invoice system URLs
     path('enhanced/', include('faktury.enhanced_urls')),
+    
+    # OCR URLs
+    path('ocr/', include([
+        path('upload/', views_modules.ocr_views.ocr_upload_view, name='ocr_upload'),
+        path('status/<int:document_id>/', views_modules.ocr_views.ocr_status_view, name='ocr_status'),
+        path('results/', views_modules.ocr_views.ocr_results_list, name='ocr_results_list'),
+        path('result/<int:result_id>/', views_modules.ocr_views.ocr_result_detail, name='ocr_result_detail'),
+        path('create-invoice/<int:result_id>/', views_modules.ocr_views.create_invoice_from_ocr, name='create_invoice_from_ocr'),
+        
+        # API endpoints
+        path('api/upload/', views_modules.ocr_views.api_upload_document, name='api_upload_document'),
+        path('api/status/<int:document_id>/', views_modules.ocr_views.api_processing_status, name='api_processing_status'),
+        path('api/statistics/', views_modules.ocr_views.api_ocr_statistics, name='api_ocr_statistics'),
+    ])),
 ]

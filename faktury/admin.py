@@ -2,7 +2,10 @@ import datetime
 from import_export import resources, fields
 from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
-from .models import Kontrahent, Faktura, Produkt, PozycjaFaktury, Firma, UserProfile, Partnerstwo
+from .models import (
+    Kontrahent, Faktura, Produkt, PozycjaFaktury, Firma, UserProfile, Partnerstwo,
+    DocumentUpload, OCRResult, OCRValidation, OCRProcessingLog
+)
 
 
 admin.site.register(Firma)
@@ -106,3 +109,84 @@ class ProduktResource(resources.ModelResource):
 @admin.register(Kontrahent)
 class KontrahentAdmin(ImportExportModelAdmin):
     resource_class = KontrahentResource
+
+
+# ============================================================================
+# OCR ADMIN CONFIGURATIONS
+# ============================================================================
+
+@admin.register(DocumentUpload)
+class DocumentUploadAdmin(admin.ModelAdmin):
+    list_display = ['original_filename', 'user', 'processing_status', 'upload_timestamp', 'file_size_mb']
+    list_filter = ['processing_status', 'content_type', 'upload_timestamp']
+    search_fields = ['original_filename', 'user__username', 'user__email']
+    readonly_fields = ['upload_timestamp', 'processing_started_at', 'processing_completed_at', 'file_size']
+    date_hierarchy = 'upload_timestamp'
+    
+    def file_size_mb(self, obj):
+        return f"{obj.file_size / (1024 * 1024):.2f} MB"
+    file_size_mb.short_description = 'Rozmiar'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
+
+
+@admin.register(OCRResult)
+class OCRResultAdmin(admin.ModelAdmin):
+    list_display = ['document_filename', 'confidence_score', 'confidence_level', 'processing_time', 'has_invoice', 'created_at']
+    list_filter = ['confidence_level', 'created_at', 'processor_version']
+    search_fields = ['document__original_filename', 'document__user__username', 'faktura__numer']
+    readonly_fields = ['created_at', 'processing_time', 'confidence_score', 'raw_text']
+    date_hierarchy = 'created_at'
+    
+    def document_filename(self, obj):
+        return obj.document.original_filename
+    document_filename.short_description = 'Plik'
+    
+    def has_invoice(self, obj):
+        return bool(obj.faktura)
+    has_invoice.boolean = True
+    has_invoice.short_description = 'Faktura utworzona'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('document', 'faktura')
+
+
+@admin.register(OCRValidation)
+class OCRValidationAdmin(admin.ModelAdmin):
+    list_display = ['document_filename', 'validated_by', 'accuracy_rating', 'corrections_count', 'validation_timestamp']
+    list_filter = ['accuracy_rating', 'validation_timestamp']
+    search_fields = ['ocr_result__document__original_filename', 'validated_by__username']
+    readonly_fields = ['validation_timestamp', 'corrections_count']
+    date_hierarchy = 'validation_timestamp'
+    
+    def document_filename(self, obj):
+        return obj.ocr_result.document.original_filename
+    document_filename.short_description = 'Plik'
+    
+    def corrections_count(self, obj):
+        return obj.corrections_count
+    corrections_count.short_description = 'Liczba poprawek'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('ocr_result__document', 'validated_by')
+
+
+@admin.register(OCRProcessingLog)
+class OCRProcessingLogAdmin(admin.ModelAdmin):
+    list_display = ['document_filename', 'level', 'message_preview', 'timestamp']
+    list_filter = ['level', 'timestamp']
+    search_fields = ['document__original_filename', 'message']
+    readonly_fields = ['timestamp']
+    date_hierarchy = 'timestamp'
+    
+    def document_filename(self, obj):
+        return obj.document.original_filename
+    document_filename.short_description = 'Plik'
+    
+    def message_preview(self, obj):
+        return obj.message[:100] + '...' if len(obj.message) > 100 else obj.message
+    message_preview.short_description = 'Wiadomość'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('document')

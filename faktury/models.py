@@ -11,6 +11,7 @@ from django.db.models import Q
 import logging
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
+from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 class UserProfile(models.Model):
@@ -875,5 +876,262 @@ def validate_paragon(self):
             raise ValidationError("Paragon wymaga numeru kasy")
         if self.metoda_platnosci != 'gotowka':
             raise ValidationError("Paragon dotyczy tylko płatności gotówkowych")   
+
+
+# ============================================================================
+# OCR AND DOCUMENT PROCESSING MODELS
+# ============================================================================
+
+class DocumentUpload(models.Model):
+    """Track uploaded documents for OCR processing"""
+    
+    STATUS_CHOICES = [
+        ('uploaded', 'Przesłany'),
+        ('processing', 'Przetwarzany'),
+        ('completed', 'Zakończony'),
+        ('failed', 'Błąd'),
+        ('cancelled', 'Anulowany'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Użytkownik")
+    original_filename = models.CharField(max_length=255, verbose_name="Nazwa pliku")
+    file_path = models.CharField(max_length=500, verbose_name="Ścieżka pliku")
+    file_size = models.BigIntegerField(verbose_name="Rozmiar pliku (bytes)")
+    content_type = models.CharField(max_length=100, verbose_name="Typ MIME")
+    upload_timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Data przesłania")
+    processing_status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='uploaded',
+        verbose_name="Status przetwarzania"
+    )
+    processing_started_at = models.DateTimeField(null=True, blank=True, verbose_name="Rozpoczęcie przetwarzania")
+    processing_completed_at = models.DateTimeField(null=True, blank=True, verbose_name="Zakończenie przetwarzania")
+    error_message = models.TextField(blank=True, null=True, verbose_name="Komunikat błędu")
+    
+    class Meta:
+        verbose_name = "Przesłany dokument"
+        verbose_name_plural = "Przesłane dokumenty"
+        ordering = ['-upload_timestamp']
+        indexes = [
+            models.Index(fields=['user', '-upload_timestamp']),
+            models.Index(fields=['processing_status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.original_filename} ({self.get_processing_status_display()})"
+    
+    @property
+    def processing_duration(self):
+        """Calculate processing duration in seconds"""
+        if self.processing_started_at and self.processing_completed_at:
+            return (self.processing_completed_at - self.processing_started_at).total_seconds()
+        return None
+    
+    def mark_processing_started(self):
+        """Mark document as processing started"""
+        self.processing_status = 'processing'
+        self.processing_started_at = timezone.now()
+        self.save(update_fields=['processing_status', 'processing_started_at'])
+    
+    def mark_processing_completed(self):
+        """Mark document as processing completed"""
+        self.processing_status = 'completed'
+        self.processing_completed_at = timezone.now()
+        self.save(update_fields=['processing_status', 'processing_completed_at'])
+    
+    def mark_processing_failed(self, error_message):
+        """Mark document as processing failed"""
+        self.processing_status = 'failed'
+        self.processing_completed_at = timezone.now()
+        self.error_message = error_message
+        self.save(update_fields=['processing_status', 'processing_completed_at', 'error_message'])
+
+
+class OCRResult(models.Model):
+    """Store OCR extraction results"""
+    
+    document = models.OneToOneField(
+        DocumentUpload, 
+        on_delete=models.CASCADE, 
+        verbose_name="Dokument"
+    )
+    faktura = models.ForeignKey(
+        Faktura, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        verbose_name="Powiązana faktura"
+    )
+    raw_text = models.TextField(verbose_name="Surowy tekst OCR")
+    extracted_data = models.JSONField(verbose_name="Wyodrębnione dane")  # Structured data from Document AI
+    confidence_score = models.FloatField(verbose_name="Pewność OCR (%)")
+    processing_time = models.FloatField(verbose_name="Czas przetwarzania (s)")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data utworzenia")
+    
+    # Detailed confidence scores for different fields
+    field_confidence = models.JSONField(
+        default=dict, 
+        blank=True,
+        verbose_name="Pewność poszczególnych pól"
+    )
+    
+    # Processing metadata
+    processor_version = models.CharField(max_length=50, blank=True, verbose_name="Wersja procesora")
+    processing_location = models.CharField(max_length=50, blank=True, verbose_name="Lokalizacja przetwarzania")
+    
+    class Meta:
+        verbose_name = "Wynik OCR"
+        verbose_name_plural = "Wyniki OCR"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['document']),
+            models.Index(fields=['faktura']),
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['confidence_score']),
+        ]
+    
+    def __str__(self):
+        return f"OCR: {self.document.original_filename} ({self.confidence_score:.1f}%)"
+    
+    @property
+    def needs_human_review(self):
+        """Check if result needs human review based on confidence"""
+        from django.conf import settings
+        thresholds = settings.OCR_SETTINGS['confidence_thresholds']
+        return self.confidence_score < thresholds['auto_approve']
+    
+    @property
+    def confidence_level(self):
+        """Get confidence level category"""
+        from django.conf import settings
+        thresholds = settings.OCR_SETTINGS['confidence_thresholds']
         
+        if self.confidence_score >= thresholds['auto_approve']:
+            return 'high'
+        elif self.confidence_score >= thresholds['review_required']:
+            return 'medium'
+        else:
+            return 'low'
+
+
+class OCRValidation(models.Model):
+    """Track manual validation of OCR results"""
+    
+    ACCURACY_CHOICES = [(i, f"{i}/10") for i in range(1, 11)]
+    
+    ocr_result = models.OneToOneField(
+        OCRResult, 
+        on_delete=models.CASCADE,
+        verbose_name="Wynik OCR"
+    )
+    validated_by = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        verbose_name="Zwalidowany przez"
+    )
+    validation_timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Data walidacji")
+    corrections_made = models.JSONField(default=dict, verbose_name="Wprowadzone poprawki")
+    accuracy_rating = models.IntegerField(
+        choices=ACCURACY_CHOICES,
+        verbose_name="Ocena dokładności"
+    )
+    validation_notes = models.TextField(blank=True, verbose_name="Notatki walidacji")
+    time_spent_minutes = models.PositiveIntegerField(
+        null=True, 
+        blank=True,
+        verbose_name="Czas walidacji (minuty)"
+    )
+    
+    class Meta:
+        verbose_name = "Walidacja OCR"
+        verbose_name_plural = "Walidacje OCR"
+        ordering = ['-validation_timestamp']
+        indexes = [
+            models.Index(fields=['validated_by', '-validation_timestamp']),
+            models.Index(fields=['accuracy_rating']),
+        ]
+    
+    def __str__(self):
+        return f"Walidacja: {self.ocr_result.document.original_filename} ({self.accuracy_rating}/10)"
+    
+    @property
+    def corrections_count(self):
+        """Count number of corrections made"""
+        return len(self.corrections_made) if self.corrections_made else 0
+
+
+# ============================================================================
+# EXTENSIONS TO EXISTING FAKTURA MODEL
+# ============================================================================
+
+# Add OCR-related fields to existing Faktura model
+def add_ocr_fields_to_faktura():
+    """
+    This function documents the fields that need to be added to the Faktura model.
+    They should be added manually to avoid migration conflicts.
+    """
+    ocr_fields = {
+        'source_document': models.ForeignKey(
+            'DocumentUpload', 
+            on_delete=models.SET_NULL, 
+            null=True, 
+            blank=True,
+            verbose_name="Dokument źródłowy"
+        ),
+        'ocr_confidence': models.FloatField(
+            null=True, 
+            blank=True,
+            verbose_name="Pewność OCR (%)"
+        ),
+        'manual_verification_required': models.BooleanField(
+            default=False,
+            verbose_name="Wymaga weryfikacji"
+        ),
+        'ocr_processing_time': models.FloatField(
+            null=True, 
+            blank=True,
+            verbose_name="Czas przetwarzania OCR (s)"
+        ),
+        'ocr_extracted_at': models.DateTimeField(
+            null=True,
+            blank=True,
+            verbose_name="Data ekstrakcji OCR"
+        ),
+    }
+    return ocr_fields
+
+
+class OCRProcessingLog(models.Model):
+    """Log OCR processing events for debugging and monitoring"""
+    
+    LOG_LEVELS = [
+        ('DEBUG', 'Debug'),
+        ('INFO', 'Info'), 
+        ('WARNING', 'Warning'),
+        ('ERROR', 'Error'),
+        ('CRITICAL', 'Critical'),
+    ]
+    
+    document = models.ForeignKey(
+        DocumentUpload,
+        on_delete=models.CASCADE,
+        verbose_name="Dokument"
+    )
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Znacznik czasu")
+    level = models.CharField(max_length=10, choices=LOG_LEVELS, verbose_name="Poziom")
+    message = models.TextField(verbose_name="Wiadomość")
+    details = models.JSONField(default=dict, blank=True, verbose_name="Szczegóły")
+    
+    class Meta:
+        verbose_name = "Log przetwarzania OCR"
+        verbose_name_plural = "Logi przetwarzania OCR"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['document', '-timestamp']),
+            models.Index(fields=['level']),
+        ]
+    
+    def __str__(self):
+        return f"{self.level}: {self.document.original_filename} - {self.message[:50]}"
 

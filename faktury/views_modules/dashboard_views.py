@@ -11,7 +11,7 @@ from django.db.models import Q, Sum, F, FloatField
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
-from ..models import Faktura, Firma
+from ..models import Faktura, Firma, DocumentUpload, OCRResult, OCRValidation
 
 
 def get_total(queryset, typ_faktury, start_date, end_date):
@@ -248,6 +248,10 @@ def panel_uzytkownika(request):
         'costs_total_labels': json.dumps(costs_total_labels),
         'costs_total_series': json.dumps(costs_total_series),
     }
+    
+    # Add OCR statistics to context
+    ocr_context = get_ocr_dashboard_context(request.user)
+    context.update(ocr_context)
     return render(request, 'faktury/panel_uzytkownika.html', context)
 
 
@@ -265,3 +269,168 @@ def faktury_koszt(request):
     faktury = Faktura.objects.for_user(request.user).koszt().with_related()
     context = {'faktury': faktury}
     return render(request, 'faktury/faktury_koszt.html', context)
+
+
+# ============================================================================
+# OCR DASHBOARD FUNCTIONS
+# ============================================================================
+
+def get_ocr_statistics(user, days=30):
+    """Get OCR statistics for dashboard"""
+    from django.db.models import Count, Avg
+    from django.conf import settings
+    
+    # Calculate date range
+    end_date = timezone.now()
+    start_date = end_date - datetime.timedelta(days=days)
+    
+    # Base querysets for user
+    documents = DocumentUpload.objects.filter(
+        user=user,
+        upload_timestamp__gte=start_date
+    )
+    
+    ocr_results = OCRResult.objects.filter(
+        document__user=user,
+        created_at__gte=start_date
+    )
+    
+    # Document statistics
+    total_documents = documents.count()
+    completed_docs = documents.filter(processing_status='completed').count()
+    failed_docs = documents.filter(processing_status='failed').count()
+    processing_docs = documents.filter(processing_status='processing').count()
+    
+    # OCR accuracy statistics
+    if ocr_results.exists():
+        confidence_stats = ocr_results.aggregate(
+            avg_confidence=Avg('confidence_score'),
+            high_confidence=Count('id', filter=Q(confidence_score__gte=95)),
+            medium_confidence=Count('id', filter=Q(confidence_score__gte=80, confidence_score__lt=95)),
+            low_confidence=Count('id', filter=Q(confidence_score__lt=80)),
+            auto_created=Count('id', filter=Q(faktura__isnull=False)),
+        )
+        
+        processing_stats = ocr_results.aggregate(
+            avg_processing_time=Avg('processing_time')
+        )
+    else:
+        confidence_stats = {
+            'avg_confidence': 0,
+            'high_confidence': 0,
+            'medium_confidence': 0,
+            'low_confidence': 0,
+            'auto_created': 0,
+        }
+        processing_stats = {'avg_processing_time': 0}
+    
+    # Calculate success rate
+    success_rate = (completed_docs / total_documents * 100) if total_documents > 0 else 0
+    
+    # Calculate auto-creation rate
+    auto_creation_rate = (confidence_stats['auto_created'] / ocr_results.count() * 100) if ocr_results.count() > 0 else 0
+    
+    return {
+        'total_documents': total_documents,
+        'completed_documents': completed_docs,
+        'failed_documents': failed_docs,
+        'processing_documents': processing_docs,
+        'success_rate': round(success_rate, 1),
+        'avg_confidence': round(confidence_stats['avg_confidence'] or 0, 1),
+        'high_confidence_count': confidence_stats['high_confidence'],
+        'medium_confidence_count': confidence_stats['medium_confidence'],
+        'low_confidence_count': confidence_stats['low_confidence'],
+        'auto_created_invoices': confidence_stats['auto_created'],
+        'auto_creation_rate': round(auto_creation_rate, 1),
+        'avg_processing_time': round(processing_stats['avg_processing_time'] or 0, 1),
+        'total_ocr_results': ocr_results.count(),
+    }
+
+
+def get_ocr_chart_data(user, days=30):
+    """Get OCR data for charts"""
+    end_date = timezone.now()
+    start_date = end_date - datetime.timedelta(days=days)
+    
+    # Daily upload trend
+    daily_uploads = DocumentUpload.objects.filter(
+        user=user,
+        upload_timestamp__gte=start_date
+    ).extra(
+        select={'day': 'date(upload_timestamp)'}
+    ).values('day').annotate(
+        uploads=Count('id'),
+        completed=Count('id', filter=Q(processing_status='completed')),
+        failed=Count('id', filter=Q(processing_status='failed'))
+    ).order_by('day')
+    
+    # Confidence distribution
+    ocr_results = OCRResult.objects.filter(
+        document__user=user,
+        created_at__gte=start_date
+    )
+    
+    confidence_ranges = [
+        ('95-100%', ocr_results.filter(confidence_score__gte=95).count()),
+        ('80-94%', ocr_results.filter(confidence_score__gte=80, confidence_score__lt=95).count()),
+        ('60-79%', ocr_results.filter(confidence_score__gte=60, confidence_score__lt=80).count()),
+        ('<60%', ocr_results.filter(confidence_score__lt=60).count()),
+    ]
+    
+    return {
+        'daily_uploads': list(daily_uploads),
+        'confidence_distribution': confidence_ranges,
+    }
+
+
+def get_recent_ocr_activity(user, limit=5):
+    """Get recent OCR activity for dashboard"""
+    recent_documents = DocumentUpload.objects.filter(
+        user=user
+    ).select_related('user').prefetch_related('ocrresult_set').order_by('-upload_timestamp')[:limit]
+    
+    activities = []
+    for doc in recent_documents:
+        activity = {
+            'filename': doc.original_filename,
+            'upload_time': doc.upload_timestamp,
+            'status': doc.processing_status,
+            'has_result': hasattr(doc, 'ocrresult'),
+        }
+        
+        # Add OCR result info if available
+        try:
+            ocr_result = doc.ocrresult
+            activity.update({
+                'confidence': ocr_result.confidence_score,
+                'processing_time': ocr_result.processing_time,
+                'has_invoice': bool(ocr_result.faktura),
+                'invoice_number': ocr_result.faktura.numer if ocr_result.faktura else None,
+                'ocr_result_id': ocr_result.id,
+            })
+        except OCRResult.DoesNotExist:
+            activity.update({
+                'confidence': None,
+                'processing_time': None,
+                'has_invoice': False,
+                'invoice_number': None,
+                'ocr_result_id': None,
+            })
+        
+        activities.append(activity)
+    
+    return activities
+
+
+def get_ocr_dashboard_context(user):
+    """Get complete OCR context for dashboard"""
+    stats = get_ocr_statistics(user)
+    charts = get_ocr_chart_data(user)
+    recent = get_recent_ocr_activity(user)
+    
+    return {
+        'ocr_stats': stats,
+        'ocr_charts': charts,
+        'recent_ocr_activity': recent,
+        'has_ocr_activity': stats['total_documents'] > 0,
+    }

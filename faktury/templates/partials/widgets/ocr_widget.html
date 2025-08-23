@@ -1,0 +1,324 @@
+{% load static %}
+
+<!-- OCR Activity Widget -->
+{% if has_ocr_activity %}
+<div class="col-lg-6 col-xl-4 col-xxl-3">
+    <div class="card h-100">
+        <div class="card-header border-bottom border-gray-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <h6 class="fw-semibold mb-0">
+                    <i class="fas fa-robot text-primary me-2"></i>AI OCR
+                </h6>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'ocr_upload' %}">
+                            <i class="fas fa-upload me-2"></i>Prześlij dokument
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'ocr_results_list' %}">
+                            <i class="fas fa-list me-2"></i>Wszystkie wyniki
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'api_ocr_statistics' %}">
+                            <i class="fas fa-chart-bar me-2"></i>Statystyki API
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- OCR Stats Summary -->
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <div class="text-center">
+                        <div class="h4 text-primary mb-1">{{ ocr_stats.total_documents }}</div>
+                        <small class="text-muted">Dokumenty</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-center">
+                        <div class="h4 text-success mb-1">{{ ocr_stats.avg_confidence }}%</div>
+                        <small class="text-muted">Śr. pewność</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Processing Rate -->
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="text-muted">Wskaźnik sukcesu</span>
+                <span class="fw-semibold text-success">{{ ocr_stats.success_rate }}%</span>
+            </div>
+            <div class="progress mb-3" style="height: 6px;">
+                <div class="progress-bar bg-success" style="width: {{ ocr_stats.success_rate }}%"></div>
+            </div>
+            
+            <!-- Confidence Distribution -->
+            <div class="mb-3">
+                <small class="text-muted d-block mb-2">Rozkład pewności</small>
+                <div class="d-flex gap-1">
+                    {% if ocr_stats.total_ocr_results > 0 %}
+                        <div class="bg-success" style="height: 4px; width: {{ ocr_stats.high_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;" title="Wysoka pewność: {{ ocr_stats.high_confidence_count }}"></div>
+                        <div class="bg-warning" style="height: 4px; width: {{ ocr_stats.medium_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;" title="Średnia pewność: {{ ocr_stats.medium_confidence_count }}"></div>
+                        <div class="bg-danger" style="height: 4px; width: {{ ocr_stats.low_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;" title="Niska pewność: {{ ocr_stats.low_confidence_count }}"></div>
+                    {% else %}
+                        <div class="bg-light" style="height: 4px; width: 100%;"></div>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                    <small class="text-success">{{ ocr_stats.high_confidence_count }}</small>
+                    <small class="text-warning">{{ ocr_stats.medium_confidence_count }}</small>
+                    <small class="text-danger">{{ ocr_stats.low_confidence_count }}</small>
+                </div>
+            </div>
+            
+            <!-- Auto-creation Rate -->
+            {% if ocr_stats.auto_created_invoices > 0 %}
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="text-muted">Auto-tworzenie</span>
+                <span class="fw-semibold text-info">{{ ocr_stats.auto_creation_rate }}%</span>
+            </div>
+            {% endif %}
+            
+            <!-- Processing Performance -->
+            {% if ocr_stats.avg_processing_time > 0 %}
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="text-muted">Śr. czas przetwarzania</span>
+                <span class="fw-semibold">{{ ocr_stats.avg_processing_time }}s</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer border-top border-gray-100 bg-light">
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'ocr_upload' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>Nowy
+                </a>
+                <a href="{% url 'ocr_results_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-list me-1"></i>Wyniki
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent OCR Activity Widget -->
+{% if recent_ocr_activity %}
+<div class="col-lg-6 col-xl-8 col-xxl-6">
+    <div class="card h-100">
+        <div class="card-header border-bottom border-gray-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <h6 class="fw-semibold mb-0">
+                    <i class="fas fa-history text-info me-2"></i>Ostatnia aktywność OCR
+                </h6>
+                <a href="{% url 'ocr_results_list' %}" class="btn btn-sm btn-outline-light">
+                    Zobacz wszystkie
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="list-group list-group-flush">
+                {% for activity in recent_ocr_activity %}
+                <div class="list-group-item border-0 px-0 py-2">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            {% if activity.status == 'completed' %}
+                                <div class="avatar avatar-sm bg-success text-white rounded-circle">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            {% elif activity.status == 'processing' %}
+                                <div class="avatar avatar-sm bg-warning text-white rounded-circle">
+                                    <i class="fas fa-cog fa-spin"></i>
+                                </div>
+                            {% elif activity.status == 'failed' %}
+                                <div class="avatar avatar-sm bg-danger text-white rounded-circle">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                            {% else %}
+                                <div class="avatar avatar-sm bg-secondary text-white rounded-circle">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 fw-semibold">{{ activity.filename|truncatechars:25 }}</h6>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        {% if activity.confidence %}
+                                            {% if activity.confidence >= 95 %}
+                                                <span class="badge bg-success">{{ activity.confidence|floatformat:0 }}%</span>
+                                            {% elif activity.confidence >= 80 %}
+                                                <span class="badge bg-warning">{{ activity.confidence|floatformat:0 }}%</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ activity.confidence|floatformat:0 }}%</span>
+                                            {% endif %}
+                                        {% endif %}
+                                        
+                                        {% if activity.has_invoice %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-file-invoice me-1"></i>{{ activity.invoice_number }}
+                                            </span>
+                                        {% endif %}
+                                        
+                                        {% if activity.processing_time %}
+                                            <small class="text-muted">{{ activity.processing_time|floatformat:1 }}s</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ activity.upload_time|timesince }} temu</small>
+                                    {% if activity.ocr_result_id %}
+                                        <br>
+                                        <a href="{% url 'ocr_result_detail' activity.ocr_result_id %}" class="btn btn-xs btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card-footer border-top border-gray-100 bg-light text-center">
+            <a href="{% url 'ocr_upload' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-cloud-upload-alt me-2"></i>Prześlij nowy dokument
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- OCR Getting Started Widget -->
+{% if not has_ocr_activity %}
+<div class="col-lg-12 col-xl-8">
+    <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-magic fa-2x me-3"></i>
+                <div>
+                    <h5 class="mb-1">🤖 AI-Powered Invoice OCR</h5>
+                    <p class="mb-0 opacity-75">Automatyczne rozpoznawanie tekstu z faktur</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h6 class="fw-semibold mb-3">Zacznij korzystać z AI OCR:</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Automatyczne rozpoznawanie</strong> - AI wyodrębnia dane z faktur
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Obsługa polskich faktur</strong> - zoptymalizowane dla polskiego rynku
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Auto-tworzenie faktur</strong> - wysokiej pewności dane automatycznie tworzą faktury
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>GDPR compliance</strong> - bezpieczne przetwarzanie danych
+                        </li>
+                    </ul>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Obsługiwane formaty:</strong> PDF, JPG, PNG, TIFF (max 10MB)
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-robot fa-5x text-primary mb-3 opacity-50"></i>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'ocr_upload' %}" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Prześlij pierwszą fakturę
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#ocrHelpModal">
+                            <i class="fas fa-question-circle me-2"></i>Jak to działa?
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OCR Help Modal -->
+<div class="modal fade" id="ocrHelpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-robot me-2"></i>Jak działa AI OCR?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <i class="fas fa-upload fa-3x text-primary mb-2"></i>
+                        <h6>1. Prześlij</h6>
+                        <p class="small text-muted">Przeciągnij fakturę (PDF/obraz) do systemu</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <i class="fas fa-cog fa-3x text-warning mb-2"></i>
+                        <h6>2. Przetwarzanie</h6>
+                        <p class="small text-muted">AI analizuje dokument i wyodrębnia dane</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
+                        <h6>3. Weryfikacja</h6>
+                        <p class="small text-muted">Sprawdź i popraw dane przed utworzeniem faktury</p>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <i class="fas fa-file-invoice fa-3x text-info mb-2"></i>
+                        <h6>4. Faktura</h6>
+                        <p class="small text-muted">Automatycznie utworzona faktura w systemie</p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Wskazówka:</strong> Im lepsza jakość skanu, tym wyższa dokładność OCR. 
+                    Zalecane minimum to 150 DPI dla najlepszych rezultatów.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
+                <a href="{% url 'ocr_upload' %}" class="btn btn-primary">Rozpocznij teraz</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.avatar {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-sm {
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+}
+
+.btn-xs {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.75rem;
+}
+
+.list-group-item:last-child {
+    border-bottom: 0 !important;
+}
+</style>

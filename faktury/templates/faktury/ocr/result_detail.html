@@ -1,0 +1,416 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Szczegóły OCR{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fas fa-search-plus text-primary me-2"></i>Szczegóły Wyniku OCR</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'ocr_upload' %}">OCR Upload</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'ocr_results_list' %}">Wyniki</a></li>
+                    <li class="breadcrumb-item active">Szczegóły</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Document & Processing Info -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-file-alt me-2"></i>Informacje o dokumencie</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Plik:</dt>
+                        <dd class="col-sm-7">{{ ocr_result.document.original_filename }}</dd>
+                        
+                        <dt class="col-sm-5">Rozmiar:</dt>
+                        <dd class="col-sm-7">{{ ocr_result.document.file_size|filesizeformat }}</dd>
+                        
+                        <dt class="col-sm-5">Przesłano:</dt>
+                        <dd class="col-sm-7">{{ ocr_result.document.upload_timestamp|date:"d.m.Y H:i" }}</dd>
+                        
+                        <dt class="col-sm-5">Przetworzono:</dt>
+                        <dd class="col-sm-7">{{ ocr_result.created_at|date:"d.m.Y H:i" }}</dd>
+                        
+                        <dt class="col-sm-5">Czas:</dt>
+                        <dd class="col-sm-7">{{ ocr_result.processing_time|floatformat:1 }}s</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-chart-bar me-2"></i>Analiza dokładności</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if ocr_result.confidence_score >= confidence_thresholds.auto_approve %}
+                            <div class="badge bg-success fs-5 p-2">{{ ocr_result.confidence_score|floatformat:1 }}%</div>
+                            <p class="text-success mt-2 mb-1"><strong>Wysoka pewność</strong></p>
+                            <small class="text-muted">Dane można zaufać</small>
+                        {% elif ocr_result.confidence_score >= confidence_thresholds.review_required %}
+                            <div class="badge bg-warning fs-5 p-2">{{ ocr_result.confidence_score|floatformat:1 }}%</div>
+                            <p class="text-warning mt-2 mb-1"><strong>Średnia pewność</strong></p>
+                            <small class="text-muted">Zalecana weryfikacja</small>
+                        {% else %}
+                            <div class="badge bg-danger fs-5 p-2">{{ ocr_result.confidence_score|floatformat:1 }}%</div>
+                            <p class="text-danger mt-2 mb-1"><strong>Niska pewność</strong></p>
+                            <small class="text-muted">Wymagana weryfikacja</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="progress mb-2">
+                        <div class="progress-bar 
+                            {% if ocr_result.confidence_score >= confidence_thresholds.auto_approve %}bg-success
+                            {% elif ocr_result.confidence_score >= confidence_thresholds.review_required %}bg-warning
+                            {% else %}bg-danger{% endif %}" 
+                            style="width: {{ ocr_result.confidence_score }}%"></div>
+                    </div>
+                    
+                    <small class="text-muted">
+                        Procesor: {{ ocr_result.processor_version }}<br>
+                        Lokalizacja: {{ ocr_result.processing_location }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-tasks me-2"></i>Status faktury</h6>
+                </div>
+                <div class="card-body">
+                    {% if ocr_result.faktura %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Faktura utworzona</strong><br>
+                            Numer: {{ ocr_result.faktura.numer }}<br>
+                            <small>{{ ocr_result.faktura.data_wystawienia|date:"d.m.Y" }}</small>
+                        </div>
+                        <a href="{% url 'szczegoly_faktury' ocr_result.faktura.id %}" class="btn btn-success btn-sm w-100">
+                            <i class="fas fa-eye me-2"></i>Zobacz fakturę
+                        </a>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Faktura nie została utworzona</strong><br>
+                            <small>Przejrzyj dane i utwórz fakturę ręcznie</small>
+                        </div>
+                        {% if ocr_result.confidence_score >= confidence_thresholds.review_required %}
+                            <button type="button" class="btn btn-primary btn-sm w-100" id="create-invoice-btn">
+                                <i class="fas fa-plus me-2"></i>Utwórz fakturę
+                            </button>
+                        {% else %}
+                            <a href="{% url 'dodaj_fakture' %}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-edit me-2"></i>Utwórz ręcznie
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Extracted Data Form -->
+    {% if not ocr_result.faktura %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-edit me-2"></i>Wyodrębnione dane - Edycja</h5>
+                    <small class="text-muted">Sprawdź i popraw dane przed utworzeniem faktury</small>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'create_invoice_from_ocr' ocr_result.id %}" id="create-invoice-form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Basic Invoice Data -->
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2 mb-3">Dane faktury</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="invoice_number" class="form-label">Numer faktury</label>
+                                    <input type="text" class="form-control" id="invoice_number" name="invoice_number" 
+                                           value="{{ extracted_data.invoice_number|default:'' }}">
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="invoice_date" class="form-label">Data wystawienia</label>
+                                        <input type="date" class="form-control" id="invoice_date" name="invoice_date" 
+                                               value="{{ extracted_data.invoice_date|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="due_date" class="form-label">Termin płatności</label>
+                                        <input type="date" class="form-control" id="due_date" name="due_date" 
+                                               value="{{ extracted_data.due_date|default:'' }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label for="total_amount" class="form-label">Kwota brutto</label>
+                                        <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" 
+                                               value="{{ extracted_data.total_amount|default:'' }}">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="currency" class="form-label">Waluta</label>
+                                        <input type="text" class="form-control" id="currency" name="currency" 
+                                               value="{{ extracted_data.currency|default:'PLN' }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="net_amount" class="form-label">Kwota netto</label>
+                                        <input type="number" step="0.01" class="form-control" id="net_amount" name="net_amount" 
+                                               value="{{ extracted_data.net_amount|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="vat_amount" class="form-label">Kwota VAT</label>
+                                        <input type="number" step="0.01" class="form-control" id="vat_amount" name="vat_amount" 
+                                               value="{{ extracted_data.vat_amount|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Supplier & Buyer Data -->
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2 mb-3">Kontrahenci</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="supplier_name" class="form-label">Sprzedawca</label>
+                                    <input type="text" class="form-control" id="supplier_name" name="supplier_name" 
+                                           value="{{ extracted_data.supplier_name|default:'' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="supplier_nip" class="form-label">NIP sprzedawcy</label>
+                                    <input type="text" class="form-control" id="supplier_nip" name="supplier_nip" 
+                                           value="{{ extracted_data.supplier_nip|default:'' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="buyer_name" class="form-label">Nabywca</label>
+                                    <input type="text" class="form-control" id="buyer_name" name="buyer_name" 
+                                           value="{{ extracted_data.buyer_name|default:'' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="buyer_nip" class="form-label">NIP nabywcy</label>
+                                    <input type="text" class="form-control" id="buyer_nip" name="buyer_nip" 
+                                           value="{{ extracted_data.buyer_nip|default:'' }}">
+                                </div>
+                                
+                                <!-- Validation Section -->
+                                <h6 class="border-bottom pb-2 mb-3">Walidacja</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="accuracy_rating" class="form-label">Ocena dokładności OCR (1-10)</label>
+                                    <select class="form-select" id="accuracy_rating" name="accuracy_rating">
+                                        <option value="8" selected>8 - Dobra dokładność</option>
+                                        <option value="9">9 - Bardzo dobra</option>
+                                        <option value="10">10 - Doskonała</option>
+                                        <option value="7">7 - Przeciętna</option>
+                                        <option value="6">6 - Poniżej średniej</option>
+                                        <option value="5">5 - Słaba</option>
+                                        <option value="4">4 - Bardzo słaba</option>
+                                        <option value="3">3 - Zła</option>
+                                        <option value="2">2 - Bardzo zła</option>
+                                        <option value="1">1 - Nieużyteczna</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="validation_notes" class="form-label">Notatki walidacji</label>
+                                    <textarea class="form-control" id="validation_notes" name="validation_notes" 
+                                              rows="3" placeholder="Opcjonalne uwagi o dokładności OCR..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <a href="{% url 'ocr_results_list' %}" class="btn btn-secondary">
+                                            <i class="fas fa-arrow-left me-2"></i>Powrót do listy
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <button type="submit" class="btn btn-success" id="submit-invoice-btn">
+                                            <i class="fas fa-check me-2"></i>Utwórz fakturę
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Field Confidence Details -->
+    {% if ocr_result.field_confidence %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-chart-line me-2"></i>Szczegółowa pewność pól</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for field, confidence in ocr_result.field_confidence.items %}
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ field|title }}</small>
+                                <span class="badge 
+                                    {% if confidence >= 0.9 %}bg-success
+                                    {% elif confidence >= 0.7 %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ confidence|floatformat:1|mul:100 }}%
+                                </span>
+                            </div>
+                            <div class="progress progress-sm">
+                                <div class="progress-bar 
+                                    {% if confidence >= 0.9 %}bg-success
+                                    {% elif confidence >= 0.7 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    style="width: {{ confidence|mul:100 }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Raw OCR Text -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-file-text me-2"></i>Surowy tekst OCR</h6>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto; font-size: 0.9em;">{{ ocr_result.raw_text|default:"Brak dostępnego tekstu" }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const createInvoiceBtn = document.getElementById('create-invoice-btn');
+    const createInvoiceForm = document.getElementById('create-invoice-form');
+    const submitBtn = document.getElementById('submit-invoice-btn');
+    
+    // Show form when create invoice button is clicked
+    if (createInvoiceBtn) {
+        createInvoiceBtn.addEventListener('click', function() {
+            createInvoiceForm.scrollIntoView({ behavior: 'smooth' });
+            createInvoiceForm.style.border = '2px solid #0d6efd';
+            setTimeout(() => {
+                createInvoiceForm.style.border = '';
+            }, 2000);
+        });
+    }
+    
+    // Form validation
+    if (createInvoiceForm) {
+        createInvoiceForm.addEventListener('submit', function(e) {
+            const requiredFields = ['invoice_number', 'invoice_date', 'total_amount'];
+            let valid = true;
+            
+            requiredFields.forEach(fieldName => {
+                const field = document.getElementById(fieldName);
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    valid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!valid) {
+                e.preventDefault();
+                alert('Proszę wypełnić wszystkie wymagane pola.');
+                return false;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Tworzenie faktury...';
+        });
+    }
+    
+    // Auto-calculate VAT
+    const netAmount = document.getElementById('net_amount');
+    const vatAmount = document.getElementById('vat_amount');
+    const totalAmount = document.getElementById('total_amount');
+    
+    function calculateTotals() {
+        const net = parseFloat(netAmount.value) || 0;
+        const vat = parseFloat(vatAmount.value) || 0;
+        const total = net + vat;
+        
+        if (total > 0) {
+            totalAmount.value = total.toFixed(2);
+        }
+    }
+    
+    if (netAmount && vatAmount) {
+        netAmount.addEventListener('input', calculateTotals);
+        vatAmount.addEventListener('input', calculateTotals);
+    }
+});
+</script>
+
+<style>
+.progress-sm {
+    height: 6px;
+}
+
+.badge.fs-5 {
+    font-size: 1.25rem !important;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}

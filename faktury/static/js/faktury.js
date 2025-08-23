@@ -1,5 +1,5 @@
 // FIXED VERSION - Live calculations for invoice forms
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
     // -------------------------------------------------
     // Pobierz referencje do elementów DOM - RAZ, na początku
@@ -19,13 +19,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const kodPocztowyInput = document.querySelector('#id_nabywca_kod_pocztowy');
     const miejscowoscInput = document.querySelector('#id_nabywca_miejscowosc');
     const krajInput = document.querySelector('#id_nabywca_kraj');
-    
+
     // FIXED: Pozycje Faktury - use correct container ID
     const ukryjRabatButton = document.querySelector('#ukryj-rabat');
     const addButton = document.querySelector("#add-pozycja");
     const totalForms = document.querySelector("#id_pozycje-TOTAL_FORMS");
     const container = document.querySelector("#faktura-pozycje"); // FIXED: Use correct ID
-    
+
     // Użyj querySelectorAll *raz*, na początku
     let pozycjaForm = document.querySelectorAll(".pozycja-form");
     let formNum = pozycjaForm.length - 1;
@@ -48,9 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // -------------------------------------------------------------
 
     if (pobierzDaneGUSButton && nipInput) {
-        pobierzDaneGUSButton.addEventListener("click", function() {
+        pobierzDaneGUSButton.addEventListener("click", function () {
             let nip = nipInput.value;
-    
+
             if (!nip) {
                 displayErrorMessage('Wprowadź NIP');
                 return;
@@ -79,32 +79,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // 2. Obsługa wybierania kontrahenta z listy (dropdown)
     // -------------------------------------------------------------
     if (kontrahentSelect) {
-        kontrahentSelect.addEventListener('change', function() {
+        kontrahentSelect.addEventListener('change', function () {
             const selectedKontrahentId = this.value;
             if (selectedKontrahentId) {
                 fetch(`/pobierz_dane_kontrahenta/?id=${selectedKontrahentId}`)
-                .then(handleFetchResponse)
-                .then(data => {
-                    if (nazwaInput) nazwaInput.value = data.nazwa || '';
-                    if (ulicaInput) ulicaInput.value = data.ulica || '';
-                    if (numerDomuInput) numerDomuInput.value = data.numer_domu || '';
-                    if (numerMieszkaniaInput) numerMieszkaniaInput.value = data.numer_mieszkania || '';
-                    if (kodPocztowyInput) kodPocztowyInput.value = data.kod_pocztowy || '';
-                    if (miejscowoscInput) miejscowoscInput.value = data.miejscowosc || '';
-                    if (nipInput) nipInput.value = data.nip || '';
-                    if (krajInput) krajInput.value = data.kraj || '';
+                    .then(handleFetchResponse)
+                    .then(data => {
+                        if (nazwaInput) nazwaInput.value = data.nazwa || '';
+                        if (ulicaInput) ulicaInput.value = data.ulica || '';
+                        if (numerDomuInput) numerDomuInput.value = data.numer_domu || '';
+                        if (numerMieszkaniaInput) numerMieszkaniaInput.value = data.numer_mieszkania || '';
+                        if (kodPocztowyInput) kodPocztowyInput.value = data.kod_pocztowy || '';
+                        if (miejscowoscInput) miejscowoscInput.value = data.miejscowosc || '';
+                        if (nipInput) nipInput.value = data.nip || '';
+                        if (krajInput) krajInput.value = data.kraj || '';
 
-                    if (data.czy_firma) {
-                        if (firmaRadio) firmaRadio.checked = true;
-                    } else {
-                        if (osobaPrywatnaRadio) osobaPrywatnaRadio.checked = true;
-                    }
-                    toggleNipField();
-                })
-                .catch(error => {
-                    console.error("Błąd pobierania danych kontrahenta:", error);
-                    displayErrorMessage("Wystąpił błąd podczas pobierania danych kontrahenta.");
-                });
+                        if (data.czy_firma) {
+                            if (firmaRadio) firmaRadio.checked = true;
+                        } else {
+                            if (osobaPrywatnaRadio) osobaPrywatnaRadio.checked = true;
+                        }
+                        toggleNipField();
+                    })
+                    .catch(error => {
+                        console.error("Błąd pobierania danych kontrahenta:", error);
+                        displayErrorMessage("Wystąpił błąd podczas pobierania danych kontrahenta.");
+                    });
             }
         });
     }
@@ -116,20 +116,20 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('TOTAL_FORMS element not found');
             return null;
         }
-        
+
         const newIndex = parseInt(totalFormsElement.value);
         const emptyFormElement = document.getElementById('empty-form');
-        
+
         if (!emptyFormElement) {
             console.error('Empty form template not found');
             return null;
         }
-        
+
         // Clone the empty form element
         const emptyForm = emptyFormElement.cloneNode(true);
         emptyForm.id = ''; // Remove the ID to avoid duplicates
         emptyForm.style.display = ''; // Make sure it's visible
-        
+
         // Update all the form field names and IDs
         const inputs = emptyForm.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 input.id = input.id.replace('__prefix__', newIndex);
             }
         });
-        
+
         // Update labels
         const labels = emptyForm.querySelectorAll('label');
         labels.forEach(label => {
@@ -148,15 +148,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 label.htmlFor = label.htmlFor.replace('__prefix__', newIndex);
             }
         });
-        
+
         // Initialize event listeners for the new row
         addFormListeners(emptyForm);
         addProduktSelectionListener(emptyForm);
-        
+
         // Add delete button functionality
         const deleteBtn = emptyForm.querySelector('.usun-pozycje');
         if (deleteBtn) {
-            deleteBtn.addEventListener('click', function() {
+            deleteBtn.addEventListener('click', function () {
                 const deleteCheckbox = emptyForm.querySelector('input[name$="-DELETE"]');
                 if (deleteCheckbox) {
                     deleteCheckbox.checked = true;
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-      
+
         totalFormsElement.value = newIndex + 1;
         return emptyForm;
     }
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addButton.addEventListener('click', addPozycjaForm);
 
         // Delegacja zdarzeń dla przycisków usuwania (istniejące wiersze)
-        container.addEventListener('click', function(event) {
+        container.addEventListener('click', function (event) {
             if (event.target.classList.contains('usun-pozycje')) {
                 const row = event.target.closest('.pozycja-form');
                 const deleteInput = row.querySelector('input[type="checkbox"][name$="DELETE"]');
@@ -197,15 +197,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayErrorMessage("Kontener dla pozycji faktury nie został znaleziony");
                 return;
             }
-            
+
             let newForm = createRow();
             if (!newForm) {
                 displayErrorMessage("Nie można utworzyć nowego wiersza");
                 return;
             }
-            
+
             container.appendChild(newForm);
-            
+
             // Wyczyść wartości wejściowe w nowym formularzu
             let inputs = newForm.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"])');
             inputs.forEach(input => {
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 element.removeEventListener('change', handleFieldChange);
                 element.removeEventListener('keyup', handleFieldChange);
                 element.removeEventListener('input', handleFieldChange);
-                
+
                 // Add new listeners
                 element.addEventListener('change', handleFieldChange);
                 element.addEventListener('keyup', handleFieldChange);
@@ -270,17 +270,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function addProduktSelectionListener(form) {
         const produktSelect = form.querySelector('.produkt-select');
         if (!produktSelect) return;
-        
+
         const nazwaInput = form.querySelector('input[name$="nazwa"]');
         const cenaNettoInput = form.querySelector('input[name$="cena_netto"]');
         const vatSelect = form.querySelector('select[name$="vat"]');
         const jednostkaField = form.querySelector('[name$="jednostka"]'); // FIXED: Can be input or select
-    
+
         // Remove existing listener to prevent duplicates
         produktSelect.removeEventListener('change', produktSelect._changeHandler);
-        
+
         // Create and store the change handler
-        produktSelect._changeHandler = function() {
+        produktSelect._changeHandler = function () {
             const selectedProduktId = this.value;
             if (!selectedProduktId) {
                 // Reset fields when no product selected
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateRowValues(null, form);
                 return;
             }
-    
+
             // Send API request
             fetch(`/pobierz_dane_produktu/?id=${selectedProduktId}`)
                 .then(response => {
@@ -305,13 +305,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         displayErrorMessage(data.error);
                         return;
                     }
-    
+
                     // Update form fields
                     if (nazwaInput) nazwaInput.value = data.nazwa || '';
                     if (cenaNettoInput) cenaNettoInput.value = data.cena_netto || '';
                     if (vatSelect) vatSelect.value = data.vat || '';
                     if (jednostkaField) jednostkaField.value = data.jednostka || '';
-                    
+
                     // Trigger calculation after setting values
                     updateRowValues(null, form);
                 })
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     displayErrorMessage(`Wystąpił błąd podczas pobierania danych produktu: ${error.message}`);
                 });
         };
-        
+
         produktSelect.addEventListener('change', produktSelect._changeHandler);
     }
 
@@ -330,48 +330,48 @@ document.addEventListener('DOMContentLoaded', function() {
             // Handle case where event is null (when called from product selection)
             const row = event ? event.target.closest('.pozycja-form') : form.closest('.pozycja-form') || form;
             if (!row) return;
-            
+
             // Skip deleted rows
             const deleteInput = row.querySelector('input[type="checkbox"][name$="DELETE"]');
             if (deleteInput && deleteInput.checked) {
                 return;
             }
-        
+
             // Get field values with fallbacks
             const iloscInput = row.querySelector('input[name$="ilosc"]');
             const cenaNettoInput = row.querySelector('input[name$="cena_netto"]');
             const vatSelect = row.querySelector('select[name$="vat"]');
             const rabatInput = row.querySelector('input[name$="rabat"]');
             const rabatTypSelect = row.querySelector('select[name$="rabat_typ"]');
-            
+
             const ilosc = parseFloat(iloscInput?.value) || 0;
             const cena_netto = parseFloat(cenaNettoInput?.value) || 0;
             const vat = vatSelect?.value === 'zw' ? 0 : parseFloat(vatSelect?.value) || 0;
             const rabat = parseFloat(rabatInput?.value) || 0;
             const rabat_typ = rabatTypSelect?.value || 'procent';
-        
+
             let wartosc_netto = ilosc * cena_netto;
-            
+
             // Apply discount
             if (rabat_typ === 'procent' && rabat > 0) {
                 wartosc_netto = wartosc_netto * (1 - rabat / 100);
             } else if (rabat_typ === 'kwota' && rabat > 0) {
                 wartosc_netto = wartosc_netto - rabat;
             }
-        
+
             wartosc_netto = Math.max(0, parseFloat(wartosc_netto.toFixed(2)));
             const wartosc_vat = wartosc_netto * (vat / 100);
             const wartosc_brutto = wartosc_netto + wartosc_vat;
-        
+
             // Update display columns
             const nettoCol = row.querySelector('.wartosc-netto-col');
             const bruttoCol = row.querySelector('.wartosc-brutto-col');
-            
+
             if (nettoCol) nettoCol.textContent = wartosc_netto.toFixed(2);
             if (bruttoCol) bruttoCol.textContent = wartosc_brutto.toFixed(2);
-        
+
             updateTotals();
-            
+
         } catch (error) {
             console.error('Error in updateRowValues:', error);
         }
@@ -417,11 +417,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     rabat_wartosc = rabat;
                     wartosc_netto = wartosc_netto - rabat;
                 }
-                
+
                 sumaRabatow += rabat_wartosc;
                 wartosc_netto = Math.max(0, parseFloat(wartosc_netto.toFixed(2)));
                 sumaNettoPoRabacie += wartosc_netto;
-                
+
                 let wartosc_vat = wartosc_netto * (vat / 100);
                 sumaVat += wartosc_vat;
                 sumaBrutto += wartosc_netto + wartosc_vat;
@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     element.textContent = value;
                 }
             });
-            
+
         } catch (error) {
             console.error("Błąd podczas aktualizacji sum:", error);
         }
@@ -499,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // -------------------------------------------------------------
 
     if (saveButton) {
-        saveButton.addEventListener('click', function() {
+        saveButton.addEventListener('click', function () {
             const nip = nipInput?.value || '';
             const nazwa = nazwaInput?.value || '';
             const ulica = ulicaInput?.value || '';
@@ -516,40 +516,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const params = new URLSearchParams({
-                nip, nazwa, ulica, numer_domu, numer_mieszkania, 
+                nip, nazwa, ulica, numer_domu, numer_mieszkania,
                 kod_pocztowy, miejscowosc, kraj, czy_firma
             });
 
             fetch(`/dodaj_kontrahenta_ajax/?${params}`)
-            .then(handleFetchResponse)
-            .then(data => {
-                if (data.error) {
-                    displayErrorMessage("Błąd przy zapisie kontrahenta: " + data.error);
-                } else {
-                    // Check if option already exists
-                    let optionExists = false;
-                    if (kontrahentSelect) {
-                        for (let i = 0; i < kontrahentSelect.options.length; i++) {
-                            if (kontrahentSelect.options[i].value == data.id) {
-                                optionExists = true;
-                                break;
+                .then(handleFetchResponse)
+                .then(data => {
+                    if (data.error) {
+                        displayErrorMessage("Błąd przy zapisie kontrahenta: " + data.error);
+                    } else {
+                        // Check if option already exists
+                        let optionExists = false;
+                        if (kontrahentSelect) {
+                            for (let i = 0; i < kontrahentSelect.options.length; i++) {
+                                if (kontrahentSelect.options[i].value == data.id) {
+                                    optionExists = true;
+                                    break;
+                                }
                             }
+                            if (!optionExists) {
+                                const option = document.createElement("option");
+                                option.text = data.nazwa;
+                                option.value = data.id;
+                                kontrahentSelect.add(option);
+                            }
+                            kontrahentSelect.value = data.id;
                         }
-                        if (!optionExists) {
-                            const option = document.createElement("option");
-                            option.text = data.nazwa;
-                            option.value = data.id;
-                            kontrahentSelect.add(option);
-                        }
-                        kontrahentSelect.value = data.id;
+                        displayErrorMessage("Kontrahent został zapisany.");
                     }
-                    displayErrorMessage("Kontrahent został zapisany.");
-                }
-            })
-            .catch(error => {
-                console.error('Błąd:', error);
-                displayErrorMessage(`Wystąpił błąd podczas zapisywania kontrahenta: ${error.message}`);
-            });
+                })
+                .catch(error => {
+                    console.error('Błąd:', error);
+                    displayErrorMessage(`Wystąpił błąd podczas zapisywania kontrahenta: ${error.message}`);
+                });
         });
     }
 
@@ -558,7 +558,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // -------------------------------------------------------------
 
     if (ukryjRabatButton) {
-        ukryjRabatButton.addEventListener('click', function() {
+        ukryjRabatButton.addEventListener('click', function () {
             // Toggle rabat columns
             document.querySelectorAll('.rabat-col').forEach(col => {
                 col.style.display = col.style.display === 'none' ? '' : 'none';
@@ -567,17 +567,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // Toggle summary rows if they exist
             const sumaPrzedRabatem = document.querySelector('.suma-przed-rabatem');
             const sumaPoRabacie = document.querySelector('.suma-po-rabacie');
-            
+
             if (sumaPrzedRabatem) {
                 sumaPrzedRabatem.style.display = sumaPrzedRabatem.style.display === 'none' ? '' : 'none';
             }
             if (sumaPoRabacie) {
                 sumaPoRabacie.style.display = sumaPoRabacie.style.display === 'none' ? '' : 'none';
             }
-            
+
             // Update button text
             this.innerText = this.innerText === "Ukryj rabat" ? "Pokaż rabat" : "Ukryj rabat";
-            
+
             updateTotals();
         });
     }
@@ -585,10 +585,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // -------------------------------------------------------------
     // 7. Notifications handling
     // -------------------------------------------------------------
-    
+
     // Update read status when opening messages
     document.querySelectorAll('.wiadomosc-link').forEach(link => {
-        link.addEventListener('click', async function() {
+        link.addEventListener('click', async function () {
             const wiadomoscId = this.dataset.id;
             if (wiadomoscId) {
                 try {

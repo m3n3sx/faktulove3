@@ -915,9 +915,13 @@ class DocumentUpload(models.Model):
     
     STATUS_CHOICES = [
         ('uploaded', 'Przesłany'),
+        ('queued', 'W kolejce'),
         ('processing', 'Przetwarzany'),
+        ('ocr_completed', 'OCR zakończone'),
+        ('integration_processing', 'Tworzenie faktury'),
         ('completed', 'Zakończony'),
         ('failed', 'Błąd'),
+        ('manual_review', 'Wymaga przeglądu'),
         ('cancelled', 'Anulowany'),
     ]
     
@@ -928,7 +932,7 @@ class DocumentUpload(models.Model):
     content_type = models.CharField(max_length=100, verbose_name="Typ MIME")
     upload_timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Data przesłania")
     processing_status = models.CharField(
-        max_length=20,
+        max_length=25,
         choices=STATUS_CHOICES,
         default='uploaded',
         verbose_name="Status przetwarzania"
@@ -974,10 +978,204 @@ class DocumentUpload(models.Model):
         self.processing_completed_at = timezone.now()
         self.error_message = error_message
         self.save(update_fields=['processing_status', 'processing_completed_at', 'error_message'])
+    
+    def get_unified_status(self):
+        """
+        Get unified status considering OCR result
+        
+        Returns:
+            Dict: Combined status information including document and OCR status,
+                 progress, display text, and metadata for frontend use
+        """
+        from .services.status_sync_service import StatusSyncService
+        return StatusSyncService.get_combined_status(self)
+    
+    def get_status_display_data(self):
+        """
+        Get status with display metadata optimized for templates
+        
+        Returns:
+            Dict: Status data with CSS classes, icons, progress indicators,
+                 and template-friendly display information
+        """
+        from .services.status_sync_service import StatusSyncService
+        return StatusSyncService.get_status_display_data(self)
+    
+    def get_processing_progress(self):
+        """
+        Get processing progress percentage based on current status
+        
+        Returns:
+            int: Progress percentage (0-100) indicating how far through
+                 the OCR processing pipeline the document has progressed
+        """
+        from .services.status_sync_service import StatusSyncService
+        return StatusSyncService.get_processing_progress(self)
+    
+    def to_api_dict(self, include_sensitive=False):
+        """
+        Convert DocumentUpload to API-friendly dictionary
+        
+        Args:
+            include_sensitive (bool): Whether to include sensitive information
+            
+        Returns:
+            dict: API-friendly representation of the document upload
+        """
+        data = {
+            'id': self.id,
+            'original_filename': self.original_filename,
+            'file_size': self.file_size,
+            'content_type': self.content_type,
+            'upload_timestamp': self.upload_timestamp.isoformat() if self.upload_timestamp else None,
+            'processing_status': self.processing_status,
+            'processing_status_display': self.get_processing_status_display(),
+            'processing_duration': self.processing_duration,
+            'has_ocr_result': hasattr(self, 'ocrresult'),
+            'processing_progress': self.get_processing_progress(),
+        }
+        
+        # Add processing timestamps
+        if self.processing_started_at:
+            data['processing_started_at'] = self.processing_started_at.isoformat()
+        if self.processing_completed_at:
+            data['processing_completed_at'] = self.processing_completed_at.isoformat()
+        
+        # Add error information if present
+        if self.error_message:
+            data['error_message'] = self.error_message
+        
+        # Add sensitive information if requested
+        if include_sensitive:
+            data['file_path'] = self.file_path
+            data['user_id'] = self.user_id
+        
+        # Add OCR result summary if available
+        if hasattr(self, 'ocrresult'):
+            ocr_result = self.ocrresult
+            data['ocr_result'] = {
+                'id': ocr_result.id,
+                'confidence_score': ocr_result.confidence_score,
+                'processing_status': ocr_result.processing_status,
+                'has_faktura': ocr_result.faktura_id is not None,
+                'needs_review': ocr_result.needs_human_review,
+            }
+        
+        return data
+    
+    def get_task_id(self):
+        """
+        Get associated Celery task ID for tracking processing status
+        
+        Returns:
+            str: Task ID if available, None otherwise
+        """
+        # Check if there's a task ID stored in the database
+        # This would require adding a task_id field to the model or using a separate tracking mechanism
+        
+        # For now, we'll use a simple approach based on the document ID and status
+        # In a production system, you might want to store the actual Celery task ID
+        
+        if self.processing_status in ['queued', 'processing']:
+            # Generate a predictable task ID based on document ID
+            # This assumes the task naming convention follows a pattern
+            return f"process_document_ocr_task_{self.id}"
+        
+        return None
+    
+    def get_api_status(self):
+        """
+        Get status formatted for API responses with additional metadata
+        
+        Returns:
+            dict: Status information formatted for API consumption
+        """
+        status_data = {
+            'status': self.processing_status,
+            'status_display': self.get_processing_status_display(),
+            'progress': self.get_processing_progress(),
+            'is_processing': self.processing_status in ['queued', 'processing'],
+            'is_completed': self.processing_status in ['completed', 'ocr_completed'],
+            'is_failed': self.processing_status == 'failed',
+            'needs_review': self.processing_status == 'manual_review',
+        }
+        
+        # Add timing information
+        if self.processing_started_at:
+            status_data['processing_started_at'] = self.processing_started_at.isoformat()
+        
+        if self.processing_completed_at:
+            status_data['processing_completed_at'] = self.processing_completed_at.isoformat()
+            
+        if self.processing_duration:
+            status_data['processing_duration_seconds'] = self.processing_duration
+        
+        # Add ETA estimation for processing documents
+        if self.processing_status in ['queued', 'processing']:
+            status_data['estimated_completion'] = self._estimate_completion_time()
+        
+        # Add error information if present
+        if self.error_message:
+            status_data['error_message'] = self.error_message
+        
+        return status_data
+    
+    def _estimate_completion_time(self):
+        """
+        Estimate completion time based on processing history and queue length
+        
+        Returns:
+            dict: Estimated completion time information
+        """
+        from datetime import timedelta
+        
+        # Calculate average processing time for similar documents
+        # Get completed documents and calculate duration in Python
+        completed_docs = DocumentUpload.objects.filter(
+            processing_status='completed',
+            content_type=self.content_type,
+            processing_started_at__isnull=False,
+            processing_completed_at__isnull=False
+        )[:50]  # Limit to recent 50 documents for performance
+        
+        durations = []
+        for doc in completed_docs:
+            if doc.processing_duration:
+                durations.append(doc.processing_duration)
+        
+        if durations:
+            avg_processing_time = sum(durations) / len(durations)
+        else:
+            avg_processing_time = 30.0  # Default 30 seconds
+        
+        # Count documents ahead in queue
+        queue_position = DocumentUpload.objects.filter(
+            processing_status__in=['queued', 'processing'],
+            upload_timestamp__lt=self.upload_timestamp
+        ).count()
+        
+        # Estimate total time
+        estimated_seconds = avg_processing_time + (queue_position * avg_processing_time)
+        estimated_completion = timezone.now() + timedelta(seconds=estimated_seconds)
+        
+        return {
+            'eta_seconds': int(estimated_seconds),
+            'estimated_completion_time': estimated_completion.isoformat(),
+            'queue_position': queue_position,
+            'average_processing_time': avg_processing_time
+        }
 
 
 class OCRResult(models.Model):
     """Store OCR extraction results"""
+    
+    PROCESSING_STATUS_CHOICES = [
+        ('pending', 'Oczekuje'),
+        ('processing', 'Przetwarzanie'),
+        ('completed', 'Zakończone'),
+        ('failed', 'Błąd'),
+        ('manual_review', 'Wymaga przeglądu'),
+    ]
     
     document = models.OneToOneField(
         DocumentUpload, 
@@ -986,9 +1184,10 @@ class OCRResult(models.Model):
     )
     faktura = models.ForeignKey(
         Faktura, 
-        on_delete=models.CASCADE, 
+        on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
+        related_name='ocr_results',
         verbose_name="Powiązana faktura"
     )
     raw_text = models.TextField(verbose_name="Surowy tekst OCR")
@@ -996,6 +1195,16 @@ class OCRResult(models.Model):
     confidence_score = models.FloatField(verbose_name="Pewność OCR (%)")
     processing_time = models.FloatField(verbose_name="Czas przetwarzania (s)")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data utworzenia")
+    
+    # Processing status and error handling
+    processing_status = models.CharField(
+        max_length=20,
+        choices=PROCESSING_STATUS_CHOICES,
+        default='pending',
+        verbose_name="Status przetwarzania"
+    )
+    error_message = models.TextField(blank=True, null=True, verbose_name="Komunikat błędu")
+    auto_created_faktura = models.BooleanField(default=False, verbose_name="Automatycznie utworzona faktura")
     
     # Detailed confidence scores for different fields
     field_confidence = models.JSONField(
@@ -1017,30 +1226,506 @@ class OCRResult(models.Model):
             models.Index(fields=['faktura']),
             models.Index(fields=['-created_at']),
             models.Index(fields=['confidence_score']),
+            models.Index(fields=['processing_status']),
+            # Note: Compound index with related fields is created in migration 0024
         ]
     
     def __str__(self):
         return f"OCR: {self.document.original_filename} ({self.confidence_score:.1f}%)"
     
+    def save(self, *args, **kwargs):
+        """Override save to handle automatic faktura creation"""
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # Trigger automatic processing for new OCR results
+        # Processing is handled by signals to avoid circular imports
+        if is_new and self.processing_status == 'pending':
+            # The post_save signal will handle the processing
+            pass
+    
     @property
     def needs_human_review(self):
         """Check if result needs human review based on confidence"""
-        from django.conf import settings
-        thresholds = settings.OCR_SETTINGS['confidence_thresholds']
-        return self.confidence_score < thresholds['auto_approve']
+        return self.confidence_score < 80.0
+    
+    @property
+    def can_auto_create_faktura(self):
+        """Check if confidence is high enough for automatic faktura creation"""
+        return self.confidence_score >= 90.0
     
     @property
     def confidence_level(self):
         """Get confidence level category"""
-        from django.conf import settings
-        thresholds = settings.OCR_SETTINGS['confidence_thresholds']
-        
-        if self.confidence_score >= thresholds['auto_approve']:
+        if self.confidence_score >= 90.0:
             return 'high'
-        elif self.confidence_score >= thresholds['review_required']:
+        elif self.confidence_score >= 80.0:
             return 'medium'
         else:
             return 'low'
+    
+    def mark_processing_started(self):
+        """Mark OCR result as processing started"""
+        self.processing_status = 'processing'
+        self.save(update_fields=['processing_status'])
+    
+    def mark_processing_completed(self):
+        """Mark OCR result as processing completed"""
+        self.processing_status = 'completed'
+        self.save(update_fields=['processing_status'])
+    
+    def mark_processing_failed(self, error_message):
+        """Mark OCR result as processing failed"""
+        self.processing_status = 'failed'
+        self.error_message = error_message
+        self.save(update_fields=['processing_status', 'error_message'])
+    
+    def mark_manual_review_required(self):
+        """Mark OCR result as requiring manual review"""
+        self.processing_status = 'manual_review'
+        self.save(update_fields=['processing_status'])
+    
+    def sync_document_status(self):
+        """Sync parent document status"""
+        from .services.status_sync_service import StatusSyncService
+        return StatusSyncService.sync_document_status(self.document)
+    
+    def get_validation_fields(self):
+        """
+        Get fields that can be manually validated with their current values and confidence.
+        
+        Returns:
+            dict: Dictionary of validatable fields with values and confidence scores
+        """
+        if not self.extracted_data:
+            return {}
+        
+        validation_fields = {}
+        field_confidence = self.field_confidence or {}
+        
+        # Define which fields can be validated
+        validatable_fields = [
+            'numer_faktury', 'data_wystawienia', 'data_sprzedazy',
+            'sprzedawca', 'nabywca', 'pozycje', 'suma_netto', 'suma_brutto'
+        ]
+        
+        for field in validatable_fields:
+            if field in self.extracted_data:
+                validation_fields[field] = {
+                    'value': self.extracted_data[field],
+                    'confidence': field_confidence.get(field, self.confidence_score),
+                    'needs_review': field_confidence.get(field, self.confidence_score) < 80.0
+                }
+        
+        return validation_fields
+    
+    def apply_manual_corrections(self, corrections, validated_by=None):
+        """
+        Apply user corrections and update confidence scores.
+        
+        Args:
+            corrections (dict): Dictionary of field corrections
+            validated_by (User): User who made the corrections
+            
+        Returns:
+            dict: Summary of applied corrections
+        """
+        if not corrections:
+            return {'updated_fields': [], 'new_confidence_scores': {}}
+        
+        updated_fields = []
+        new_confidence_scores = {}
+        
+        # Make a copy of extracted_data to modify
+        updated_data = self.extracted_data.copy() if self.extracted_data else {}
+        updated_field_confidence = self.field_confidence.copy() if self.field_confidence else {}
+        
+        for field_path, new_value in corrections.items():
+            try:
+                # Handle nested field paths (e.g., 'sprzedawca.nazwa', 'pozycje.0.cena_netto')
+                if '.' in field_path:
+                    self._apply_nested_correction(updated_data, field_path, new_value)
+                else:
+                    updated_data[field_path] = new_value
+                
+                # Set confidence to 100% for manually corrected fields
+                updated_field_confidence[field_path] = 100.0
+                new_confidence_scores[field_path] = 100.0
+                updated_fields.append(field_path)
+                
+            except (KeyError, IndexError, TypeError) as e:
+                logger.warning(f"Failed to apply correction for field {field_path}: {str(e)}")
+                continue
+        
+        # Update the model fields
+        self.extracted_data = updated_data
+        self.field_confidence = updated_field_confidence
+        
+        # Recalculate overall confidence score
+        self._recalculate_confidence_score()
+        
+        # Save the changes
+        self.save(update_fields=['extracted_data', 'field_confidence', 'confidence_score'])
+        
+        # Create validation record if user provided
+        if validated_by:
+            self._create_validation_record(corrections, validated_by)
+        
+        return {
+            'updated_fields': updated_fields,
+            'new_confidence_scores': new_confidence_scores
+        }
+    
+    def _apply_nested_correction(self, data, field_path, new_value):
+        """
+        Apply correction to nested field using dot notation.
+        
+        Args:
+            data (dict): Data dictionary to modify
+            field_path (str): Dot-separated field path (e.g., 'sprzedawca.nazwa')
+            new_value: New value to set
+        """
+        parts = field_path.split('.')
+        current = data
+        
+        # Navigate to the parent of the target field
+        for part in parts[:-1]:
+            # Handle array indices
+            if part.isdigit():
+                current = current[int(part)]
+            else:
+                if part not in current:
+                    current[part] = {}
+                current = current[part]
+        
+        # Set the final value
+        final_key = parts[-1]
+        if final_key.isdigit():
+            current[int(final_key)] = new_value
+        else:
+            current[final_key] = new_value
+    
+    def _recalculate_confidence_score(self):
+        """
+        Recalculate overall confidence score based on field confidence scores.
+        """
+        if not self.field_confidence:
+            return
+        
+        # Calculate weighted average of field confidence scores
+        field_weights = {
+            'numer_faktury': 0.15,
+            'data_wystawienia': 0.10,
+            'sprzedawca': 0.20,
+            'nabywca': 0.15,
+            'suma_brutto': 0.20,
+            'pozycje': 0.20
+        }
+        
+        total_weight = 0
+        weighted_sum = 0
+        
+        for field, confidence in self.field_confidence.items():
+            weight = field_weights.get(field, 0.05)  # Default weight for other fields
+            weighted_sum += confidence * weight
+            total_weight += weight
+        
+        if total_weight > 0:
+            self.confidence_score = weighted_sum / total_weight
+        
+    def _create_validation_record(self, corrections, validated_by):
+        """
+        Create a validation record for tracking manual corrections.
+        
+        Args:
+            corrections (dict): Applied corrections
+            validated_by (User): User who made the corrections
+        """
+        try:
+            # Check if validation record already exists
+            validation, created = OCRValidation.objects.get_or_create(
+                ocr_result=self,
+                defaults={
+                    'validated_by': validated_by,
+                    'corrections_made': corrections,
+                    'accuracy_rating': 8,  # Default rating for manual corrections
+                    'validation_notes': 'Manual corrections applied via API'
+                }
+            )
+            
+            if not created:
+                # Update existing validation record
+                validation.corrections_made.update(corrections)
+                validation.validation_timestamp = timezone.now()
+                validation.save(update_fields=['corrections_made', 'validation_timestamp'])
+                
+        except Exception as e:
+            logger.error(f"Failed to create validation record: {str(e)}")
+    
+    def can_create_faktura(self):
+        """
+        Check if OCR result has sufficient data quality to create a Faktura.
+        
+        Returns:
+            bool: True if Faktura can be created
+        """
+        if not self.extracted_data:
+            return False
+        
+        # Check if required fields are present with sufficient confidence
+        required_fields = ['numer_faktury', 'data_wystawienia', 'sprzedawca_nazwa', 'suma_brutto']
+        field_confidence = self.field_confidence or {}
+        
+        for field in required_fields:
+            if field not in self.extracted_data:
+                return False
+            
+            confidence = field_confidence.get(field, self.confidence_score)
+            if confidence < 70.0:  # Minimum confidence threshold
+                return False
+        
+        return True
+    
+    def to_api_dict(self, include_sensitive=False):
+        """
+        Convert OCRResult to API-friendly dictionary
+        
+        Args:
+            include_sensitive (bool): Whether to include sensitive information
+            
+        Returns:
+            dict: API-friendly representation of the OCR result
+        """
+        data = {
+            'id': self.id,
+            'document': {
+                'id': self.document.id,
+                'filename': self.document.original_filename,
+                'upload_date': self.document.upload_timestamp.isoformat() if self.document.upload_timestamp else None,
+            },
+            'confidence_score': self.confidence_score,
+            'confidence_level': self.confidence_level,
+            'processing_status': self.processing_status,
+            'processing_status_display': self.get_processing_status_display(),
+            'processing_time': self.processing_time,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'needs_review': self.needs_human_review,
+            'can_auto_create_faktura': self.can_auto_create_faktura,
+            'can_create_faktura': self.can_create_faktura(),
+            'has_faktura': self.faktura_id is not None,
+            'auto_created_faktura': self.auto_created_faktura,
+        }
+        
+        # Add faktura information if available
+        if self.faktura:
+            data['faktura'] = {
+                'id': self.faktura.id,
+                'numer': self.faktura.numer,
+                'url': f'/api/faktury/{self.faktura.id}/',
+                'suma_brutto': float(self.faktura.suma_brutto) if hasattr(self.faktura, 'suma_brutto') else None,
+            }
+        
+        # Add processing metadata
+        if self.processor_version:
+            data['processor_version'] = self.processor_version
+        if self.processing_location:
+            data['processing_location'] = self.processing_location
+        
+        # Add error information if present
+        if self.error_message:
+            data['error_message'] = self.error_message
+        
+        # Add sensitive information if requested
+        if include_sensitive:
+            data['raw_text'] = self.raw_text
+            data['extracted_data'] = self.extracted_data
+            data['field_confidence'] = self.field_confidence
+        else:
+            # Include only summary of extracted data
+            if self.extracted_data:
+                data['extracted_data_summary'] = {
+                    'has_invoice_number': 'numer_faktury' in self.extracted_data,
+                    'has_date': 'data_wystawienia' in self.extracted_data,
+                    'has_seller': 'sprzedawca' in self.extracted_data,
+                    'has_buyer': 'nabywca' in self.extracted_data,
+                    'has_total': 'suma_brutto' in self.extracted_data,
+                    'items_count': len(self.extracted_data.get('pozycje', [])),
+                }
+        
+        return data
+    
+    def get_validation_fields(self):
+        """
+        Get fields that can be manually validated with their current values and confidence.
+        
+        Returns:
+            dict: Dictionary of validatable fields with values and confidence scores
+        """
+        if not self.extracted_data:
+            return {}
+        
+        validation_fields = {}
+        field_confidence = self.field_confidence or {}
+        
+        # Define which fields can be validated
+        validatable_fields = [
+            'numer_faktury', 'data_wystawienia', 'data_sprzedazy',
+            'sprzedawca', 'nabywca', 'pozycje', 'suma_netto', 'suma_brutto'
+        ]
+        
+        for field in validatable_fields:
+            if field in self.extracted_data:
+                validation_fields[field] = {
+                    'value': self.extracted_data[field],
+                    'confidence': field_confidence.get(field, self.confidence_score),
+                    'needs_review': field_confidence.get(field, self.confidence_score) < 80.0,
+                    'field_type': self._get_field_type(field),
+                    'validation_rules': self._get_field_validation_rules(field),
+                }
+        
+        return validation_fields
+    
+    def _get_field_type(self, field_name):
+        """
+        Get the expected data type for a field
+        
+        Args:
+            field_name (str): Name of the field
+            
+        Returns:
+            str: Field type (string, number, date, object, array)
+        """
+        field_types = {
+            'numer_faktury': 'string',
+            'data_wystawienia': 'date',
+            'data_sprzedazy': 'date',
+            'suma_netto': 'number',
+            'suma_brutto': 'number',
+            'sprzedawca': 'object',
+            'nabywca': 'object',
+            'pozycje': 'array',
+        }
+        return field_types.get(field_name, 'string')
+    
+    def _get_field_validation_rules(self, field_name):
+        """
+        Get validation rules for a field
+        
+        Args:
+            field_name (str): Name of the field
+            
+        Returns:
+            dict: Validation rules for the field
+        """
+        validation_rules = {
+            'numer_faktury': {
+                'required': True,
+                'max_length': 50,
+                'pattern': r'^[A-Z0-9\/\-]+$',
+            },
+            'data_wystawienia': {
+                'required': True,
+                'format': 'YYYY-MM-DD',
+            },
+            'data_sprzedazy': {
+                'required': True,
+                'format': 'YYYY-MM-DD',
+            },
+            'suma_netto': {
+                'required': True,
+                'min_value': 0,
+                'decimal_places': 2,
+            },
+            'suma_brutto': {
+                'required': True,
+                'min_value': 0,
+                'decimal_places': 2,
+            },
+            'sprzedawca': {
+                'required': True,
+                'required_fields': ['nazwa', 'nip'],
+            },
+            'nabywca': {
+                'required': True,
+                'required_fields': ['nazwa'],
+            },
+            'pozycje': {
+                'required': True,
+                'min_items': 1,
+                'item_required_fields': ['nazwa', 'cena_netto', 'ilosc'],
+            },
+        }
+        return validation_rules.get(field_name, {})
+    
+    def get_api_status(self):
+        """
+        Get status formatted for API responses with additional metadata
+        
+        Returns:
+            dict: Status information formatted for API consumption
+        """
+        status_data = {
+            'status': self.processing_status,
+            'status_display': self.get_processing_status_display(),
+            'confidence_score': self.confidence_score,
+            'confidence_level': self.confidence_level,
+            'needs_review': self.needs_human_review,
+            'can_create_faktura': self.can_create_faktura(),
+            'has_faktura': self.faktura_id is not None,
+            'auto_created': self.auto_created_faktura,
+        }
+        
+        # Add processing time information
+        if self.processing_time:
+            status_data['processing_time_seconds'] = self.processing_time
+        
+        # Add creation timestamp
+        if self.created_at:
+            status_data['created_at'] = self.created_at.isoformat()
+        
+        # Add error information if present
+        if self.error_message:
+            status_data['error_message'] = self.error_message
+        
+        # Add field-level confidence summary
+        if self.field_confidence:
+            low_confidence_fields = [
+                field for field, confidence in self.field_confidence.items()
+                if confidence < 80.0
+            ]
+            status_data['low_confidence_fields'] = low_confidence_fields
+            status_data['fields_needing_review'] = len(low_confidence_fields)
+        
+        return status_data
+    
+    def get_processing_progress(self):
+        """
+        Get processing progress percentage for OCR result
+        
+        Returns:
+            int: Progress percentage (0-100)
+        """
+        progress_map = {
+            'pending': 10,
+            'processing': 50,
+            'completed': 100,
+            'failed': 0,
+            'manual_review': 90,
+        }
+        return progress_map.get(self.processing_status, 0)
+    
+    def get_task_id(self):
+        """
+        Get associated Celery task ID for OCR result processing
+        
+        Returns:
+            str: Task ID if available, None otherwise
+        """
+        if self.processing_status in ['pending', 'processing']:
+            # Generate a predictable task ID based on OCR result ID
+            return f"process_ocr_result_task_{self.id}"
+        
+        return None
 
 
 class OCRValidation(models.Model):

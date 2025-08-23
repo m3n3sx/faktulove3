@@ -66,6 +66,10 @@ class FileUploadService:
         )
         
         logger.info(f"File uploaded successfully: {document_upload.id} - {uploaded_file.name}")
+        
+        # Trigger OCR processing automatically
+        self._trigger_ocr_processing(document_upload)
+        
         return document_upload
     
     def _validate_file(self, uploaded_file: UploadedFile) -> None:
@@ -263,6 +267,128 @@ class FileUploadService:
             })
         
         return info
+    
+    def _trigger_ocr_processing(self, document_upload):
+        """Trigger OCR processing for uploaded document"""
+        try:
+            # Import here to avoid circular imports
+            from .document_ai_service import get_document_ai_service
+            from ..models import OCRResult
+            
+            logger.info(f"Starting OCR processing for document {document_upload.id}")
+            
+            # Mark document as processing
+            document_upload.mark_processing_started()
+            
+            # Get file content
+            file_content = self.get_file_content(document_upload)
+            
+            # Get OCR service
+            ocr_service = get_document_ai_service()
+            
+            # Process document
+            extracted_data = ocr_service.process_invoice(
+                file_content, 
+                document_upload.content_type
+            )
+            
+            # Create OCR result
+            ocr_result = OCRResult.objects.create(
+                document=document_upload,
+                raw_text=extracted_data.get('raw_text', ''),
+                extracted_data=self._convert_to_faktura_format(extracted_data),
+                confidence_score=extracted_data.get('confidence_score', 0.0),
+                processing_time=extracted_data.get('processing_time', 0.0),
+                field_confidence=extracted_data.get('field_confidence', {}),
+                processor_version=extracted_data.get('processor_version', ''),
+                processing_location=extracted_data.get('processing_location', ''),
+                processing_status='pending'  # Will trigger automatic processing via signals
+            )
+            
+            # Mark document as completed
+            document_upload.mark_processing_completed()
+            
+            logger.info(f"OCR processing completed for document {document_upload.id}, created OCR result {ocr_result.id}")
+            
+        except Exception as e:
+            logger.error(f"OCR processing failed for document {document_upload.id}: {str(e)}")
+            document_upload.mark_processing_failed(str(e))
+    
+    def _convert_to_faktura_format(self, extracted_data):
+        """Convert Document AI format to our Faktura format"""
+        return {
+            'numer_faktury': extracted_data.get('invoice_number', ''),
+            'data_wystawienia': extracted_data.get('invoice_date', ''),
+            'data_sprzedazy': extracted_data.get('invoice_date', ''),  # Use same date if not specified
+            'sprzedawca_nazwa': extracted_data.get('supplier_name', ''),
+            'sprzedawca_nip': extracted_data.get('supplier_nip', ''),
+            'sprzedawca_ulica': self._extract_street_from_address(extracted_data.get('supplier_address', '')),
+            'sprzedawca_numer_domu': '1',  # Default, could be extracted from address
+            'sprzedawca_kod_pocztowy': self._extract_postal_code(extracted_data.get('supplier_address', '')),
+            'sprzedawca_miejscowosc': extracted_data.get('supplier_city', ''),
+            'nabywca_nazwa': extracted_data.get('buyer_name', ''),
+            'nabywca_nip': extracted_data.get('buyer_nip', ''),
+            'pozycje': self._convert_line_items(extracted_data.get('line_items', [])),
+            'suma_brutto': str(extracted_data.get('total_amount', '0.00')),
+            'suma_netto': str(extracted_data.get('net_amount', '0.00')),
+            'sposob_platnosci': 'przelew',  # Default
+            'termin_platnosci_dni': 14,  # Default
+            'waluta': extracted_data.get('currency', 'PLN'),
+        }
+    
+    def _convert_line_items(self, line_items):
+        """Convert line items to our format"""
+        converted_items = []
+        
+        for item in line_items:
+            converted_item = {
+                'nazwa': item.get('description', 'Pozycja'),
+                'ilosc': item.get('quantity', '1'),
+                'jednostka': 'szt',  # Default
+                'cena_netto': item.get('unit_price', '0.00'),
+                'vat': self._extract_vat_rate(item.get('vat_rate', '23%')),
+            }
+            converted_items.append(converted_item)
+        
+        # If no line items found, create a default one
+        if not converted_items:
+            converted_items.append({
+                'nazwa': 'Usługa/Towar',
+                'ilosc': '1',
+                'jednostka': 'szt',
+                'cena_netto': '0.00',
+                'vat': '23'
+            })
+        
+        return converted_items
+    
+    def _extract_street_from_address(self, address):
+        """Extract street from full address"""
+        if not address:
+            return ''
+        
+        # Simple extraction - take first line
+        lines = address.split('\n')
+        return lines[0].strip() if lines else ''
+    
+    def _extract_postal_code(self, address):
+        """Extract postal code from address"""
+        if not address:
+            return ''
+        
+        import re
+        # Polish postal code pattern: XX-XXX
+        match = re.search(r'\d{2}-\d{3}', address)
+        return match.group(0) if match else ''
+    
+    def _extract_vat_rate(self, vat_string):
+        """Extract VAT rate number from string like '23%'"""
+        if not vat_string:
+            return '23'
+        
+        import re
+        match = re.search(r'(\d+)', str(vat_string))
+        return match.group(1) if match else '23'
 
 
 class FileValidationError(ValidationError):

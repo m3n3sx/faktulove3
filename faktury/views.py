@@ -1,6 +1,5 @@
 
 from django.forms import inlineformset_factory
-from RegonAPI import RegonAPI
 from .utils import generuj_numer
 from .notifications.models import Notification
 from .decorators import ajax_login_required
@@ -54,10 +53,6 @@ import requests
 from weasyprint import HTML
 from django.core.files.storage import default_storage
 from dateutil.relativedelta import relativedelta
-import zeep
-from zeep import Client
-from zeep.transports import Transport
-from zeep.wsse.username import UsernameToken
 from requests import Session
 from django.conf import settings
 import logging
@@ -2461,3 +2456,241 @@ def wyslij_systemowa(request):
         form = SystemowaWiadomoscForm()
     
     return render(request, 'wiadomosci/wyslij_systemowa.html', {'form': form})
+
+@login_required
+def pobierz_dane_z_gus(request):
+    """
+    Pobiera dane firmy z API GUS na podstawie numeru NIP
+    """
+    nip = request.GET.get('nip', '').strip()
+    
+    if not nip:
+        return JsonResponse({'error': 'Brak numeru NIP'}, status=400)
+    
+    # Walidacja NIP - usuń wszystkie znaki niebędące cyframi
+    nip_clean = ''.join(filter(str.isdigit, nip))
+    
+    if len(nip_clean) != 10:
+        return JsonResponse({'error': 'Nieprawidłowy format NIP. NIP musi mieć 10 cyfr.'}, status=400)
+    
+    try:
+        # API GUS - używamy publicznego API
+        gus_api_key = getattr(settings, 'GUS_API_KEY', 'a44eade9e2ba46e9bec1')
+        
+        # Endpoint do wyszukiwania danych firmy
+        url = f"https://wl-api.mf.gov.pl/api/search/nip/{nip_clean}"
+        
+        headers = {
+            'Accept': 'application/json',
+            'User-Agent': 'FaktuLove/1.0'
+        }
+        
+        params = {
+            'date': datetime.datetime.now().strftime('%Y-%m-%d')
+        }
+        
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            if data.get('result'):
+                company_data = data['result']
+                
+                # Mapowanie danych z API na format oczekiwany przez frontend
+                formatted_data = {
+                    'Nazwa': company_data.get('name', ''),
+                    'Ulica': company_data.get('residenceAddress', ''),
+                    'KodPocztowy': '',
+                    'Miejscowosc': '',
+                    'Nip': nip_clean
+                }
+                
+                # Próba wyodrębnienia kodu pocztowego i miejscowości z adresu
+                address = company_data.get('residenceAddress', '')
+                if address:
+                    # Szukamy wzorca: kod pocztowy (XX-XXX) i miejscowość
+                    import re
+                    postal_match = re.search(r'(\d{2}-\d{3})\s+([A-ZĄĆĘŁŃÓŚŹŻ\s]+)', address)
+                    if postal_match:
+                        formatted_data['KodPocztowy'] = postal_match.group(1)
+                        formatted_data['Miejscowosc'] = postal_match.group(2).strip()
+                    else:
+                        # Jeśli nie ma kodu pocztowego, spróbuj wyodrębnić miasto z końca adresu
+                        parts = address.split(',')
+                        if len(parts) > 1:
+                            formatted_data['Miejscowosc'] = parts[-1].strip()
+                
+                return JsonResponse({
+                    'success': True,
+                    'data': formatted_data
+                })
+            else:
+                return JsonResponse({'error': 'Nie znaleziono firmy o podanym numerze NIP'}, status=404)
+        
+        elif response.status_code == 404:
+            return JsonResponse({'error': 'Nie znaleziono firmy o podanym numerze NIP'}, status=404)
+        else:
+            return JsonResponse({'error': f'Błąd API GUS: {response.status_code}'}, status=500)
+            
+    except requests.exceptions.Timeout:
+        return JsonResponse({'error': 'Przekroczono czas oczekiwania na odpowiedź z API GUS'}, status=500)
+    except requests.exceptions.ConnectionError:
+        return JsonResponse({'error': 'Błąd połączenia z API GUS'}, status=500)
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({'error': f'Błąd podczas pobierania danych z GUS: {str(e)}'}, status=500)
+    except Exception as e:
+        return JsonResponse({'error': f'Nieoczekiwany błąd: {str(e)}'}, status=500)
+
+@login_required
+def pobierz_dane_kontrahenta(request):
+    """
+    Pobiera dane kontrahenta na podstawie ID
+    """
+    kontrahent_id = request.GET.get('id')
+    
+    if not kontrahent_id:
+        return JsonResponse({'error': 'Brak ID kontrahenta'}, status=400)
+    
+    try:
+        kontrahent = get_object_or_404(Kontrahent, id=kontrahent_id, uzytkownik=request.user)
+        
+        data = {
+            'nazwa': kontrahent.nazwa or '',
+            'nip': kontrahent.nip or '',
+            'ulica': kontrahent.ulica or '',
+            'numer_domu': kontrahent.numer_domu or '',
+            'numer_mieszkania': kontrahent.numer_mieszkania or '',
+            'kod_pocztowy': kontrahent.kod_pocztowy or '',
+            'miejscowosc': kontrahent.miejscowosc or '',
+            'kraj': kontrahent.kraj or 'Polska',
+            'czy_firma': kontrahent.czy_firma
+        }
+        
+        return JsonResponse(data)
+        
+    except Kontrahent.DoesNotExist:
+        return JsonResponse({'error': 'Kontrahent nie został znaleziony'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': f'Błąd podczas pobierania danych kontrahenta: {str(e)}'}, status=500)
+
+@login_required
+def pobierz_dane_produktu(request):
+    """
+    Pobiera dane produktu na podstawie ID
+    """
+    produkt_id = request.GET.get('id')
+    
+    if not produkt_id:
+        return JsonResponse({'error': 'Brak ID produktu'}, status=400)
+    
+    try:
+        produkt = get_object_or_404(Produkt, id=produkt_id, uzytkownik=request.user)
+        
+        data = {
+            'nazwa': produkt.nazwa or '',
+            'cena_netto': str(produkt.cena_netto) if produkt.cena_netto else '0.00',
+            'vat': str(produkt.vat) if produkt.vat else '23',
+            'jednostka': produkt.jednostka or 'szt'
+        }
+        
+        return JsonResponse(data)
+        
+    except Produkt.DoesNotExist:
+        return JsonResponse({'error': 'Produkt nie został znaleziony'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': f'Błąd podczas pobierania danych produktu: {str(e)}'}, status=500)
+
+@login_required
+def dodaj_kontrahenta_ajax(request):
+    """
+    Dodaje nowego kontrahenta przez AJAX
+    """
+    if request.method == 'GET':
+        try:
+            # Pobierz dane z parametrów GET
+            nip = request.GET.get('nip', '').strip()
+            nazwa = request.GET.get('nazwa', '').strip()
+            ulica = request.GET.get('ulica', '').strip()
+            numer_domu = request.GET.get('numer_domu', '').strip()
+            numer_mieszkania = request.GET.get('numer_mieszkania', '').strip()
+            kod_pocztowy = request.GET.get('kod_pocztowy', '').strip()
+            miejscowosc = request.GET.get('miejscowosc', '').strip()
+            kraj = request.GET.get('kraj', 'Polska').strip()
+            czy_firma = request.GET.get('czy_firma', 'true').lower() == 'true'
+            
+            # Walidacja wymaganych pól
+            if not nazwa:
+                return JsonResponse({'error': 'Nazwa jest wymagana'}, status=400)
+            
+            if czy_firma and not nip:
+                return JsonResponse({'error': 'NIP jest wymagany dla firm'}, status=400)
+            
+            if not ulica or not numer_domu or not kod_pocztowy or not miejscowosc:
+                return JsonResponse({'error': 'Adres jest wymagany (ulica, numer domu, kod pocztowy, miejscowość)'}, status=400)
+            
+            # Sprawdź czy kontrahent już istnieje (po NIP dla firm, po nazwie dla osób prywatnych)
+            if czy_firma and nip:
+                existing = Kontrahent.objects.filter(uzytkownik=request.user, nip=nip).first()
+                if existing:
+                    return JsonResponse({'error': 'Kontrahent o tym NIP już istnieje'}, status=400)
+            
+            # Utwórz nowego kontrahenta
+            kontrahent = Kontrahent.objects.create(
+                uzytkownik=request.user,
+                nazwa=nazwa,
+                nip=nip if czy_firma else '',
+                ulica=ulica,
+                numer_domu=numer_domu,
+                numer_mieszkania=numer_mieszkania,
+                kod_pocztowy=kod_pocztowy,
+                miejscowosc=miejscowosc,
+                kraj=kraj,
+                czy_firma=czy_firma
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'id': kontrahent.id,
+                'nazwa': kontrahent.nazwa,
+                'message': 'Kontrahent został dodany pomyślnie'
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': f'Błąd podczas dodawania kontrahenta: {str(e)}'}, status=500)
+    
+    return JsonResponse({'error': 'Metoda nie jest obsługiwana'}, status=405)
+
+@login_required
+def dodaj_produkt_ajax(request):
+    """
+    Dodaje nowy produkt przez AJAX
+    """
+    if request.method == 'POST':
+        try:
+            form = ProduktForm(request.POST)
+            if form.is_valid():
+                produkt = form.save(commit=False)
+                produkt.uzytkownik = request.user
+                produkt.save()
+                
+                return JsonResponse({
+                    'success': True,
+                    'id': produkt.id,
+                    'nazwa': produkt.nazwa,
+                    'cena_netto': str(produkt.cena_netto),
+                    'vat': str(produkt.vat),
+                    'jednostka': produkt.jednostka,
+                    'message': 'Produkt został dodany pomyślnie'
+                })
+            else:
+                errors = []
+                for field, field_errors in form.errors.items():
+                    for error in field_errors:
+                        errors.append(f"{field}: {error}")
+                return JsonResponse({'error': '; '.join(errors)}, status=400)
+                
+        except Exception as e:
+            return JsonResponse({'error': f'Błąd podczas dodawania produktu: {str(e)}'}, status=500)
+    
+    return JsonResponse({'error': 'Metoda nie jest obsługiwana'}, status=405)

@@ -47,9 +47,12 @@ INSTALLED_APPS = [
     
     # OCR and API additions
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
+    'django_filters',
     'django_celery_results',
     'django_celery_beat',
+    'drf_spectacular',
 ]
 
 
@@ -57,10 +60,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'faktury.middleware.SecurityHeadersMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'faktury.api.responses.APIResponseMiddleware',  # Add API response middleware
+    'faktury.api.logging_config.APIRequestLoggingMiddleware',  # Add API logging middleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
@@ -272,6 +278,33 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024   # 10MB
 
 # ============================================================================
+# CACHE CONFIGURATION
+# ============================================================================
+
+# Redis Cache Configuration for distributed rate limiting
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 50,
+                'retry_on_timeout': True,
+            },
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            'IGNORE_EXCEPTIONS': True,
+        },
+        'KEY_PREFIX': 'faktulove',
+        'TIMEOUT': 300,  # 5 minutes default timeout
+    }
+}
+
+# Cache key versioning
+CACHE_MIDDLEWARE_KEY_PREFIX = 'faktulove'
+CACHE_MIDDLEWARE_SECONDS = 300
+
+# ============================================================================
 # CELERY CONFIGURATION
 # ============================================================================
 
@@ -320,6 +353,7 @@ CELERY_TASK_ROUTES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
@@ -328,13 +362,69 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'MAX_PAGE_SIZE': 100,
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour',
+        'ocr_upload': '10/min',
+        'ocr_api': '100/min',
+        'ocr_anon': '5/min',
+        'ocr_burst': '30/min',
+        'ocr_status': '200/min',
+    },
+    'EXCEPTION_HANDLER': 'faktury.api.exceptions.custom_exception_handler',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# CORS Configuration
+# JWT Configuration
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+    
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+    
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+    
+    'JTI_CLAIM': 'jti',
+    
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=7),
+}
+
+# CORS Configuration for React Frontend
 CORS_ALLOWED_ORIGINS = [
     "https://app.ooxo.pl",
     "https://faktulove.pl",
@@ -344,7 +434,31 @@ if DEBUG:
     CORS_ALLOWED_ORIGINS += [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # ============================================================================
 # OCR PROCESSING CONFIGURATION
@@ -378,5 +492,339 @@ POLISH_OCR_PATTERNS = {
         r'(\d+[,.]?\d*)\s*PLN',
         r'PLN\s*(\d+[,.]?\d*)',
         r'(\d+[,.]?\d*)\s*zł',
+    ],
+}
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+
+# Create logs directory if it doesn't exist
+import os
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+
+# Import API logging configuration
+from faktury.api.logging_config import API_LOGGING_CONFIG
+
+# Merge with existing logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+        'api_json': {
+            '()': 'faktury.api.logging_config.APILoggingFormatter',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'django.log'),
+            'maxBytes': 10 * 1024 * 1024,  # 10MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'django_errors.log'),
+            'maxBytes': 10 * 1024 * 1024,  # 10MB
+            'backupCount': 10,
+            'formatter': 'verbose',
+        },
+        'api_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'api.log'),
+            'maxBytes': 10 * 1024 * 1024,  # 10MB
+            'backupCount': 5,
+            'formatter': 'api_json',
+        },
+        'api_error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'api_errors.log'),
+            'maxBytes': 10 * 1024 * 1024,  # 10MB
+            'backupCount': 10,
+            'formatter': 'api_json',
+        },
+        'security_file': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'security.log'),
+            'maxBytes': 10 * 1024 * 1024,  # 10MB
+            'backupCount': 10,
+            'formatter': 'api_json',
+        },
+    },
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', 'file'],
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'faktury': {
+            'handlers': ['console', 'file', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'faktury.api': {
+            'handlers': ['api_file', 'api_error_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'faktury.api.requests': {
+            'handlers': ['api_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'faktury.api.operations': {
+            'handlers': ['api_file', 'api_error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'faktury.api.security': {
+            'handlers': ['security_file', 'api_error_file', 'console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'faktury.api.views': {
+            'handlers': ['api_file', 'api_error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# In production, reduce console logging
+if not DEBUG:
+    LOGGING['handlers']['console']['level'] = 'WARNING'
+    for logger_config in LOGGING['loggers'].values():
+        if 'console' in logger_config.get('handlers', []):
+            # Keep console for errors only in production
+            pass
+
+# ============================================================================
+# API DOCUMENTATION CONFIGURATION
+# ============================================================================
+
+# drf-spectacular settings for OpenAPI schema generation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'FaktuLove OCR API',
+    'DESCRIPTION': '''
+    Comprehensive RESTful API for OCR document processing in the FaktuLove invoice management system.
+    
+    This API provides secure endpoints for:
+    - Document upload and OCR processing
+    - Real-time processing status tracking
+    - OCR results retrieval with filtering and pagination
+    - Manual validation and correction of extracted data
+    - Automatic invoice generation from validated OCR results
+    
+    ## Authentication
+    
+    The API supports multiple authentication methods:
+    - **JWT Token Authentication** (recommended for frontend applications)
+    - **Session Authentication** (for web browser access)
+    - **Token Authentication** (for simple API access)
+    
+    ## Rate Limiting
+    
+    API endpoints are rate-limited to ensure fair usage:
+    - File uploads: 10 requests per minute per user
+    - General API calls: 100 requests per minute per user
+    - Status checks: 200 requests per minute per user
+    
+    ## File Upload Requirements
+    
+    - **Supported formats**: PDF, JPEG, PNG
+    - **Maximum file size**: 10MB
+    - **Security**: All files are scanned for malware and validated
+    
+    ## Response Format
+    
+    All API responses follow a consistent JSON structure:
+    ```json
+    {
+        "success": true,
+        "data": { ... },
+        "message": "Operation completed successfully",
+        "timestamp": "2025-08-23T10:30:00Z"
+    }
+    ```
+    
+    Error responses include detailed error information:
+    ```json
+    {
+        "success": false,
+        "error": {
+            "code": "VALIDATION_ERROR",
+            "message": "Invalid file format",
+            "details": { ... }
+        },
+        "timestamp": "2025-08-23T10:30:00Z"
+    }
+    ```
+    ''',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'CONTACT': {
+        'name': 'FaktuLove API Support',
+        'email': 'api-support@faktulove.pl',
+        'url': 'https://faktulove.pl/support',
+    },
+    'LICENSE': {
+        'name': 'Proprietary',
+        'url': 'https://faktulove.pl/license',
+    },
+    'EXTERNAL_DOCS': {
+        'description': 'FaktuLove Documentation',
+        'url': 'https://docs.faktulove.pl',
+    },
+    
+    # Schema generation settings
+    'COMPONENT_SPLIT_REQUEST': True,
+    'COMPONENT_NO_READ_ONLY_REQUIRED': True,
+    'ENUM_NAME_OVERRIDES': {
+        'ProcessingStatusEnum': 'faktury.models.OCRResult.PROCESSING_STATUS_CHOICES',
+        'ConfidenceLevelEnum': 'faktury.models.OCRResult.CONFIDENCE_LEVEL_CHOICES',
+    },
+    
+    # Authentication configuration
+    'AUTHENTICATION_WHITELIST': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    
+    # API versioning
+    'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
+    'SCHEMA_PATH_PREFIX_TRIM': True,
+    
+    # Documentation customization
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': False,
+        'defaultModelsExpandDepth': 2,
+        'defaultModelExpandDepth': 2,
+        'displayRequestDuration': True,
+        'docExpansion': 'list',
+        'filter': True,
+        'showExtensions': True,
+        'showCommonExtensions': True,
+        'tryItOutEnabled': True,
+    },
+    
+    # Redoc settings
+    'REDOC_UI_SETTINGS': {
+        'hideDownloadButton': False,
+        'hideHostname': False,
+        'hideLoading': False,
+        'hideSchemaPattern': True,
+        'expandResponses': '200,201',
+        'pathInMiddlePanel': True,
+        'nativeScrollbars': False,
+        'theme': {
+            'colors': {
+                'primary': {
+                    'main': '#1976d2'
+                }
+            },
+            'typography': {
+                'fontSize': '14px',
+                'lineHeight': '1.5em',
+                'code': {
+                    'fontSize': '13px'
+                }
+            }
+        }
+    },
+    
+    # Schema customization
+    # 'PREPROCESSING_HOOKS': [
+    #     'faktury.api.schema_hooks.preprocess_schema_result_hook',
+    # ],
+    # 'POSTPROCESSING_HOOKS': [
+    #     'faktury.api.schema_hooks.postprocess_schema_hook',
+    # ],
+    
+    # Error handling
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    'SERVE_AUTHENTICATION': [],
+    
+    # Tags for grouping endpoints
+    'TAGS': [
+        {
+            'name': 'Authentication',
+            'description': 'User authentication and token management endpoints'
+        },
+        {
+            'name': 'OCR Upload',
+            'description': 'Document upload endpoints for OCR processing'
+        },
+        {
+            'name': 'OCR Status',
+            'description': 'Processing status tracking endpoints'
+        },
+        {
+            'name': 'OCR Results',
+            'description': 'OCR results retrieval and management endpoints'
+        },
+        {
+            'name': 'OCR Validation',
+            'description': 'Manual validation and correction endpoints'
+        },
+    ],
+}
+
+# ============================================================================
+# ERROR HANDLING CONFIGURATION
+# ============================================================================
+
+# Custom error handling settings
+API_ERROR_HANDLING = {
+    'log_sensitive_data': DEBUG,  # Only log sensitive data in development
+    'include_stack_trace': DEBUG,  # Only include stack traces in development
+    'max_error_details_length': 1000,  # Limit error details length
+    'rate_limit_retry_after': 60,  # Default retry after seconds for rate limiting
+    'security_log_failed_attempts': True,  # Log failed authentication attempts
+}
+
+# Error monitoring settings (for production)
+ERROR_MONITORING = {
+    'enabled': not DEBUG,
+    'sample_rate': 0.1,  # Sample 10% of errors for performance
+    'ignore_errors': [
+        'django.http.Http404',
+        'django.core.exceptions.PermissionDenied',
     ],
 }

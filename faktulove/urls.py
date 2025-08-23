@@ -11,6 +11,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')), # Dodaj URL-e django-allauth
     path('i18n/', include('django.conf.urls.i18n')),
     path('api/get-company-data/', pobierz_dane_z_gus, name='pobierz_dane_z_gus'),
+    path('api/', include('faktury.api.urls')),  # API endpoints with documentation
     path('', include('faktury.urls')),  # Dołącz URL-e Twojej aplikacji - MUST be last
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #do obslugi media files
 

@@ -1,0 +1,215 @@
+{
+  "components": {
+    "schemas": {
+      "CustomTokenObtainPairRequest": {
+        "description": "Custom JWT token serializer that includes additional user information.",
+        "properties": {
+          "password": {
+            "minLength": 1,
+            "type": "string",
+            "writeOnly": true
+          },
+          "username": {
+            "minLength": 1,
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object"
+      },
+      "TokenRefresh": {
+        "properties": {
+          "access": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "refresh": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh"
+        ],
+        "type": "object"
+      },
+      "TokenRefreshRequest": {
+        "properties": {
+          "refresh": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "in": "cookie",
+        "name": "sessionid",
+        "type": "apiKey"
+      },
+      "jwtAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "tokenAuth": {
+        "description": "Token-based authentication with required prefix \"Token\"",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "FaktuLove Documentation",
+    "url": "https://docs.faktulove.pl"
+  },
+  "info": {
+    "contact": {
+      "email": "api-support@faktulove.pl",
+      "name": "FaktuLove API Support",
+      "url": "https://faktulove.pl/support"
+    },
+    "description": "\n    Comprehensive RESTful API for OCR document processing in the FaktuLove invoice management system.\n    \n    This API provides secure endpoints for:\n    - Document upload and OCR processing\n    - Real-time processing status tracking\n    - OCR results retrieval with filtering and pagination\n    - Manual validation and correction of extracted data\n    - Automatic invoice generation from validated OCR results\n    \n    ## Authentication\n    \n    The API supports multiple authentication methods:\n    - **JWT Token Authentication** (recommended for frontend applications)\n    - **Session Authentication** (for web browser access)\n    - **Token Authentication** (for simple API access)\n    \n    ## Rate Limiting\n    \n    API endpoints are rate-limited to ensure fair usage:\n    - File uploads: 10 requests per minute per user\n    - General API calls: 100 requests per minute per user\n    - Status checks: 200 requests per minute per user\n    \n    ## File Upload Requirements\n    \n    - **Supported formats**: PDF, JPEG, PNG\n    - **Maximum file size**: 10MB\n    - **Security**: All files are scanned for malware and validated\n    \n    ## Response Format\n    \n    All API responses follow a consistent JSON structure:\n    ```json\n    {\n        \"success\": true,\n        \"data\": { ... },\n        \"message\": \"Operation completed successfully\",\n        \"timestamp\": \"2025-08-23T10:30:00Z\"\n    }\n    ```\n    \n    Error responses include detailed error information:\n    ```json\n    {\n        \"success\": false,\n        \"error\": {\n            \"code\": \"VALIDATION_ERROR\",\n            \"message\": \"Invalid file format\",\n            \"details\": { ... }\n        },\n        \"timestamp\": \"2025-08-23T10:30:00Z\"\n    }\n    ```\n    ",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://faktulove.pl/license"
+    },
+    "title": "FaktuLove OCR API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/auth/logout/": {
+      "post": {
+        "description": "Logout view that blacklists the refresh token.",
+        "operationId": "auth_logout_create",
+        "responses": {
+          "200": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "cookieAuth": []
+          },
+          {
+            "tokenAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/token/": {
+      "post": {
+        "description": "Custom JWT token obtain view with enhanced error handling.",
+        "operationId": "auth_token_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomTokenObtainPairRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomTokenObtainPairRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomTokenObtainPairRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "No response body"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/token/refresh/": {
+      "post": {
+        "description": "Custom JWT token refresh view with enhanced error handling.",
+        "operationId": "auth_token_refresh_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefreshRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefreshRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenRefresh"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "User authentication and token management endpoints",
+      "name": "Authentication"
+    },
+    {
+      "description": "Document upload endpoints for OCR processing",
+      "name": "OCR Upload"
+    },
+    {
+      "description": "Processing status tracking endpoints",
+      "name": "OCR Status"
+    },
+    {
+      "description": "OCR results retrieval and management endpoints",
+      "name": "OCR Results"
+    },
+    {
+      "description": "Manual validation and correction endpoints",
+      "name": "OCR Validation"
+    }
+  ]
+}

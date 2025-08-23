@@ -7,7 +7,7 @@ from celery import Celery
 from django.conf import settings
 
 # Set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'faktury_projekt.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'faktulove.settings')
 
 app = Celery('faktury_projekt')
 

@@ -16,7 +16,17 @@
             </nav>
         </div>
     </div>
-    
+
+    <!-- Connection Status Alert -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div id="connection-status" class="alert alert-info d-none">
+                <i class="fas fa-wifi me-2"></i>
+                <span id="connection-message">Sprawdzanie połączenia...</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Document Info -->
     <div class="row mb-4">
         <div class="col-md-6">
@@ -28,102 +38,141 @@
                     <dl class="row">
                         <dt class="col-sm-4">Nazwa pliku:</dt>
                         <dd class="col-sm-8">{{ document.original_filename }}</dd>
-                        
+
                         <dt class="col-sm-4">Rozmiar:</dt>
                         <dd class="col-sm-8">{{ document.file_size|filesizeformat }}</dd>
-                        
+
                         <dt class="col-sm-4">Typ:</dt>
                         <dd class="col-sm-8">{{ document.content_type }}</dd>
-                        
+
                         <dt class="col-sm-4">Przesłano:</dt>
                         <dd class="col-sm-8">{{ document.upload_timestamp|date:"d.m.Y H:i:s" }}</dd>
-                        
-                        {% if document.processing_started_at %}
+
                         <dt class="col-sm-4">Rozpoczęto:</dt>
-                        <dd class="col-sm-8">{{ document.processing_started_at|date:"d.m.Y H:i:s" }}</dd>
-                        {% endif %}
-                        
-                        {% if document.processing_completed_at %}
+                        <dd class="col-sm-8" id="processing-started">
+                            {% if document.processing_started_at %}
+                            {{ document.processing_started_at|date:"d.m.Y H:i:s" }}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </dd>
+
                         <dt class="col-sm-4">Zakończono:</dt>
-                        <dd class="col-sm-8">{{ document.processing_completed_at|date:"d.m.Y H:i:s" }}</dd>
-                        {% endif %}
-                        
-                        {% if processing_duration %}
+                        <dd class="col-sm-8" id="processing-completed">
+                            {% if document.processing_completed_at %}
+                            {{ document.processing_completed_at|date:"d.m.Y H:i:s" }}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </dd>
+
                         <dt class="col-sm-4">Czas przetwarzania:</dt>
-                        <dd class="col-sm-8">{{ processing_duration|floatformat:1 }}s</dd>
-                        {% endif %}
+                        <dd class="col-sm-8" id="processing-duration">
+                            {% if processing_duration %}
+                            {{ processing_duration|floatformat:1 }}s
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </dd>
                     </dl>
                 </div>
             </div>
         </div>
-        
+
         <!-- Processing Status -->
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5><i class="fas fa-tasks me-2"></i>Status Przetwarzania</h5>
+                    <small class="text-muted" id="last-updated">
+                        Ostatnia aktualizacja: <span id="update-timestamp">{{ document.upload_timestamp|date:"H:i:s"
+                            }}</span>
+                    </small>
                 </div>
                 <div class="card-body">
-                    <div class="text-center mb-3">
+                    <!-- Progress Bar -->
+                    <div class="mb-3">
+                        <div class="progress" style="height: 8px;">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0"
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">
+                            <span id="progress-text">Postęp: 10%</span>
+                        </small>
+                    </div>
+
+                    <!-- Status Display -->
+                    <div class="text-center mb-3" id="status-display">
+                        <!-- Initial status based on server-side data -->
                         {% if document.processing_status == 'uploaded' %}
-                            <div class="spinner-border text-secondary" role="status">
-                                <span class="visually-hidden">Oczekiwanie...</span>
-                            </div>
-                            <h5 class="mt-2 text-secondary">Oczekuje na przetwarzanie</h5>
-                            <p class="text-muted">Dokument został przesłany i oczekuje w kolejce</p>
-                        
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Oczekiwanie...</span>
+                        </div>
+                        <h5 class="mt-2 text-secondary">Oczekuje na przetwarzanie</h5>
+                        <p class="text-muted">Dokument został przesłany i oczekuje w kolejce</p>
+
                         {% elif document.processing_status == 'processing' %}
-                            <div class="spinner-border text-warning" role="status">
-                                <span class="visually-hidden">Przetwarzanie...</span>
-                            </div>
-                            <h5 class="mt-2 text-warning">Przetwarzanie w toku</h5>
-                            <p class="text-muted">AI analizuje dokument i wyodrębnia dane</p>
-                        
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Przetwarzanie...</span>
+                        </div>
+                        <h5 class="mt-2 text-warning">Przetwarzanie w toku</h5>
+                        <p class="text-muted">AI analizuje dokument i wyodrębnia dane</p>
+
                         {% elif document.processing_status == 'completed' %}
-                            <i class="fas fa-check-circle fa-3x text-success"></i>
-                            <h5 class="mt-2 text-success">Przetwarzanie zakończone</h5>
-                            <p class="text-muted">Dane zostały pomyślnie wyodrębnione</p>
-                        
+                        <i class="fas fa-check-circle fa-3x text-success"></i>
+                        <h5 class="mt-2 text-success">Przetwarzanie zakończone</h5>
+                        <p class="text-muted">Dane zostały pomyślnie wyodrębnione</p>
+
                         {% elif document.processing_status == 'failed' %}
-                            <i class="fas fa-times-circle fa-3x text-danger"></i>
-                            <h5 class="mt-2 text-danger">Błąd przetwarzania</h5>
-                            <p class="text-muted">Wystąpił błąd podczas przetwarzania dokumentu</p>
-                            
-                            {% if document.error_message %}
-                            <div class="alert alert-danger mt-3">
-                                <small><strong>Szczegóły błędu:</strong><br>{{ document.error_message }}</small>
-                            </div>
-                            {% endif %}
+                        <i class="fas fa-times-circle fa-3x text-danger"></i>
+                        <h5 class="mt-2 text-danger">Błąd przetwarzania</h5>
+                        <p class="text-muted">Wystąpił błąd podczas przetwarzania dokumentu</p>
+
+                        {% if document.error_message %}
+                        <div class="alert alert-danger mt-3">
+                            <small><strong>Szczegóły błędu:</strong><br>{{ document.error_message }}</small>
+                        </div>
+                        {% endif %}
                         {% endif %}
                     </div>
-                    
-                    <!-- Auto-refresh for processing status -->
-                    {% if document.processing_status == 'uploaded' or document.processing_status == 'processing' %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <small>Strona odświeża się automatycznie co 5 sekund</small>
+
+                    <!-- Real-time Status Info -->
+                    <div id="realtime-info" class="alert alert-info">
+                        <i class="fas fa-sync-alt me-2" id="sync-icon"></i>
+                        <small id="status-message">Status aktualizuje się automatycznie</small>
                     </div>
-                    {% endif %}
+
+                    <!-- Retry Button (hidden by default) -->
+                    <div id="retry-section" class="text-center mt-3 d-none">
+                        <button id="retry-btn" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-redo me-2"></i>Spróbuj ponownie
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- OCR Results -->
-    {% if ocr_result %}
-    <div class="row">
+    <div class="row" id="ocr-results-section" {% if not ocr_result %}style="display: none;" {% endif %}>
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5><i class="fas fa-robot me-2"></i>Wyniki OCR</h5>
-                    <div>
-                        <!-- Confidence Badge -->
+                    <div id="confidence-badge">
+                        {% if ocr_result %}
                         {% if ocr_result.confidence_score >= 95 %}
-                            <span class="badge bg-success">Wysoka pewność: {{ ocr_result.confidence_score|floatformat:1 }}%</span>
+                        <span class="badge bg-success">Wysoka pewność: {{ ocr_result.confidence_score|floatformat:1
+                            }}%</span>
                         {% elif ocr_result.confidence_score >= 80 %}
-                            <span class="badge bg-warning">Średnia pewność: {{ ocr_result.confidence_score|floatformat:1 }}%</span>
+                        <span class="badge bg-warning">Średnia pewność: {{ ocr_result.confidence_score|floatformat:1
+                            }}%</span>
                         {% else %}
-                            <span class="badge bg-danger">Niska pewność: {{ ocr_result.confidence_score|floatformat:1 }}%</span>
+                        <span class="badge bg-danger">Niska pewność: {{ ocr_result.confidence_score|floatformat:1
+                            }}%</span>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -133,116 +182,468 @@
                         <div class="col-md-8">
                             <h6>Wyodrębnione dane:</h6>
                             <div class="table-responsive">
-                                <table class="table table-sm">
+                                <table class="table table-sm" id="extracted-data-table">
                                     <tbody>
+                                        {% if ocr_result %}
                                         {% if ocr_result.extracted_data.invoice_number %}
                                         <tr>
                                             <td><strong>Numer faktury:</strong></td>
                                             <td>{{ ocr_result.extracted_data.invoice_number }}</td>
                                         </tr>
                                         {% endif %}
-                                        
+
                                         {% if ocr_result.extracted_data.invoice_date %}
                                         <tr>
                                             <td><strong>Data wystawienia:</strong></td>
                                             <td>{{ ocr_result.extracted_data.invoice_date }}</td>
                                         </tr>
                                         {% endif %}
-                                        
+
                                         {% if ocr_result.extracted_data.supplier_name %}
                                         <tr>
                                             <td><strong>Sprzedawca:</strong></td>
                                             <td>{{ ocr_result.extracted_data.supplier_name }}</td>
                                         </tr>
                                         {% endif %}
-                                        
+
                                         {% if ocr_result.extracted_data.buyer_name %}
                                         <tr>
                                             <td><strong>Nabywca:</strong></td>
                                             <td>{{ ocr_result.extracted_data.buyer_name }}</td>
                                         </tr>
                                         {% endif %}
-                                        
+
                                         {% if ocr_result.extracted_data.total_amount %}
                                         <tr>
                                             <td><strong>Kwota brutto:</strong></td>
-                                            <td>{{ ocr_result.extracted_data.total_amount }} {{ ocr_result.extracted_data.currency|default:"PLN" }}</td>
+                                            <td>{{ ocr_result.extracted_data.total_amount }} {{
+                                                ocr_result.extracted_data.currency|default:"PLN" }}</td>
                                         </tr>
                                         {% endif %}
-                                        
+
                                         {% if ocr_result.extracted_data.net_amount %}
                                         <tr>
                                             <td><strong>Kwota netto:</strong></td>
-                                            <td>{{ ocr_result.extracted_data.net_amount }} {{ ocr_result.extracted_data.currency|default:"PLN" }}</td>
+                                            <td>{{ ocr_result.extracted_data.net_amount }} {{
+                                                ocr_result.extracted_data.currency|default:"PLN" }}</td>
                                         </tr>
                                         {% endif %}
-                                        
+
                                         {% if ocr_result.extracted_data.vat_amount %}
                                         <tr>
                                             <td><strong>Kwota VAT:</strong></td>
-                                            <td>{{ ocr_result.extracted_data.vat_amount }} {{ ocr_result.extracted_data.currency|default:"PLN" }}</td>
+                                            <td>{{ ocr_result.extracted_data.vat_amount }} {{
+                                                ocr_result.extracted_data.currency|default:"PLN" }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="2" class="text-center text-muted">
+                                                <i class="fas fa-hourglass-half me-2"></i>
+                                                Oczekiwanie na wyniki OCR...
+                                            </td>
                                         </tr>
                                         {% endif %}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                        
+
                         <!-- Actions -->
                         <div class="col-md-4">
                             <h6>Dostępne akcje:</h6>
-                            
-                            {% if not ocr_result.faktura %}
+                            <div id="action-buttons">
+                                {% if ocr_result %}
+                                {% if not ocr_result.faktura %}
                                 {% if ocr_result.confidence_score >= 80 %}
-                                    <a href="{% url 'ocr_result_detail' ocr_result.id %}" class="btn btn-primary btn-sm mb-2 d-block">
-                                        <i class="fas fa-edit me-2"></i>Przejrzyj i Utwórz Fakturę
-                                    </a>
+                                <a href="{% url 'ocr_result_detail' ocr_result.id %}"
+                                    class="btn btn-primary btn-sm mb-2 d-block">
+                                    <i class="fas fa-edit me-2"></i>Przejrzyj i Utwórz Fakturę
+                                </a>
                                 {% else %}
-                                    <div class="alert alert-warning">
-                                        <small>
-                                            <i class="fas fa-exclamation-triangle me-2"></i>
-                                            Niska pewność OCR. Zalecane ręczne wprowadzenie danych.
-                                        </small>
-                                    </div>
-                                    <a href="{% url 'dodaj_fakture' %}" class="btn btn-outline-primary btn-sm mb-2 d-block">
-                                        <i class="fas fa-plus me-2"></i>Utwórz Fakturę Ręcznie
-                                    </a>
+                                <div class="alert alert-warning">
+                                    <small>
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Niska pewność OCR. Zalecane ręczne wprowadzenie danych.
+                                    </small>
+                                </div>
+                                <a href="{% url 'dodaj_fakture' %}" class="btn btn-outline-primary btn-sm mb-2 d-block">
+                                    <i class="fas fa-plus me-2"></i>Utwórz Fakturę Ręcznie
+                                </a>
                                 {% endif %}
-                            {% else %}
+                                {% else %}
                                 <div class="alert alert-success">
                                     <i class="fas fa-check me-2"></i>
                                     Faktura została utworzona: <strong>{{ ocr_result.faktura.numer }}</strong>
                                 </div>
-                                <a href="{% url 'szczegoly_faktury' ocr_result.faktura.id %}" class="btn btn-success btn-sm d-block">
+                                <a href="{% url 'szczegoly_faktury' ocr_result.faktura.id %}"
+                                    class="btn btn-success btn-sm d-block">
                                     <i class="fas fa-eye me-2"></i>Zobacz Fakturę
                                 </a>
-                            {% endif %}
-                            
-                            <a href="{% url 'ocr_results_list' %}" class="btn btn-outline-secondary btn-sm mb-2 d-block">
-                                <i class="fas fa-list me-2"></i>Wszystkie Wyniki OCR
-                            </a>
-                            
-                            <a href="{% url 'ocr_upload' %}" class="btn btn-outline-primary btn-sm d-block">
-                                <i class="fas fa-plus me-2"></i>Prześlij Kolejny Dokument
-                            </a>
+                                {% endif %}
+                                {% else %}
+                                <div class="alert alert-info">
+                                    <small>
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Akcje będą dostępne po zakończeniu przetwarzania OCR
+                                    </small>
+                                </div>
+                                {% endif %}
+
+                                <a href="{% url 'ocr_results_list' %}"
+                                    class="btn btn-outline-secondary btn-sm mb-2 d-block">
+                                    <i class="fas fa-list me-2"></i>Wszystkie Wyniki OCR
+                                </a>
+
+                                <a href="{% url 'ocr_upload' %}" class="btn btn-outline-primary btn-sm d-block">
+                                    <i class="fas fa-plus me-2"></i>Prześlij Kolejny Dokument
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    {% endif %}
 </div>
 
-<!-- Auto-refresh script for processing status -->
-{% if document.processing_status == 'uploaded' or document.processing_status == 'processing' %}
+<!-- Real-time Status Update JavaScript -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-refresh every 5 seconds while processing
-    setTimeout(function() {
-        window.location.reload();
-    }, 5000);
+    document.addEventListener('DOMContentLoaded', function () {
+        const documentId = {{ document.id }
+    };
+    let pollingInterval = null;
+    let retryCount = 0;
+    let maxRetries = 3;
+    let isPolling = false;
+
+    // DOM elements
+    const statusDisplay = document.getElementById('status-display');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const connectionStatus = document.getElementById('connection-status');
+    const connectionMessage = document.getElementById('connection-message');
+    const syncIcon = document.getElementById('sync-icon');
+    const statusMessage = document.getElementById('status-message');
+    const updateTimestamp = document.getElementById('update-timestamp');
+    const realtimeInfo = document.getElementById('realtime-info');
+    const retrySection = document.getElementById('retry-section');
+    const retryBtn = document.getElementById('retry-btn');
+    const ocrResultsSection = document.getElementById('ocr-results-section');
+    const lastUpdated = document.getElementById('last-updated');
+
+    // Status display templates
+    const statusTemplates = {
+        uploaded: {
+            html: `
+                <div class="spinner-border text-secondary" role="status">
+                    <span class="visually-hidden">Oczekiwanie...</span>
+                </div>
+                <h5 class="mt-2 text-secondary">Oczekuje na przetwarzanie</h5>
+                <p class="text-muted">Dokument został przesłany i oczekuje w kolejce</p>
+            `,
+            progressClass: 'bg-secondary'
+        },
+        queued: {
+            html: `
+                <div class="spinner-border text-info" role="status">
+                    <span class="visually-hidden">W kolejce...</span>
+                </div>
+                <h5 class="mt-2 text-info">W kolejce</h5>
+                <p class="text-muted">Dokument oczekuje na rozpoczęcie przetwarzania OCR</p>
+            `,
+            progressClass: 'bg-info'
+        },
+        processing: {
+            html: `
+                <div class="spinner-border text-warning" role="status">
+                    <span class="visually-hidden">Przetwarzanie...</span>
+                </div>
+                <h5 class="mt-2 text-warning">Przetwarzanie w toku</h5>
+                <p class="text-muted">AI analizuje dokument i wyodrębnia dane</p>
+            `,
+            progressClass: 'bg-warning progress-bar-striped progress-bar-animated'
+        },
+        ocr_completed: {
+            html: `
+                <i class="fas fa-check-circle fa-3x text-success"></i>
+                <h5 class="mt-2 text-success">OCR zakończone</h5>
+                <p class="text-muted">Przetwarzanie OCR zostało zakończone pomyślnie</p>
+            `,
+            progressClass: 'bg-success'
+        },
+        manual_review: {
+            html: `
+                <i class="fas fa-eye fa-3x text-warning"></i>
+                <h5 class="mt-2 text-warning">Wymaga przeglądu</h5>
+                <p class="text-muted">OCR zakończone, dane wymagają weryfikacji manualnej</p>
+            `,
+            progressClass: 'bg-warning'
+        },
+        integration_processing: {
+            html: `
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Tworzenie faktury...</span>
+                </div>
+                <h5 class="mt-2 text-primary">Tworzenie faktury</h5>
+                <p class="text-muted">Trwa tworzenie faktury na podstawie OCR</p>
+            `,
+            progressClass: 'bg-primary progress-bar-striped progress-bar-animated'
+        },
+        completed: {
+            html: `
+                <i class="fas fa-check-circle fa-3x text-success"></i>
+                <h5 class="mt-2 text-success">Zakończone</h5>
+                <p class="text-muted">Przetwarzanie zostało zakończone pomyślnie</p>
+            `,
+            progressClass: 'bg-success'
+        },
+        failed: {
+            html: `
+                <i class="fas fa-times-circle fa-3x text-danger"></i>
+                <h5 class="mt-2 text-danger">Błąd przetwarzania</h5>
+                <p class="text-muted">Wystąpił błąd podczas przetwarzania dokumentu</p>
+            `,
+            progressClass: 'bg-danger'
+        },
+        cancelled: {
+            html: `
+                <i class="fas fa-ban fa-3x text-secondary"></i>
+                <h5 class="mt-2 text-secondary">Anulowano</h5>
+                <p class="text-muted">Przetwarzanie dokumentu zostało anulowane</p>
+            `,
+            progressClass: 'bg-secondary'
+        }
+    };
+
+    // Update status display
+    function updateStatusDisplay(statusData) {
+        const status = statusData.status;
+        const display = statusData.display;
+        const description = statusData.description;
+        const progress = statusData.progress || 0;
+        const canRetry = statusData.can_retry || false;
+        const isFinal = statusData.is_final || false;
+        const errorMessage = statusData.error_message;
+
+        // Update status display
+        const template = statusTemplates[status];
+        if (template) {
+            statusDisplay.innerHTML = template.html;
+
+            // Update progress bar
+            progressBar.className = `progress-bar ${template.progressClass}`;
+            progressBar.style.width = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+            progressText.textContent = `Postęp: ${progress}%`;
+        } else {
+            // Fallback for unknown status
+            statusDisplay.innerHTML = `
+                <i class="fas fa-question-circle fa-3x text-muted"></i>
+                <h5 class="mt-2 text-muted">${display}</h5>
+                <p class="text-muted">${description}</p>
+            `;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `Postęp: ${progress}%`;
+        }
+
+        // Add error message if present
+        if (errorMessage && status === 'failed') {
+            statusDisplay.innerHTML += `
+                <div class="alert alert-danger mt-3">
+                    <small><strong>Szczegóły błędu:</strong><br>${errorMessage}</small>
+                </div>
+            `;
+        }
+
+        // Show/hide retry button
+        if (canRetry) {
+            retrySection.classList.remove('d-none');
+        } else {
+            retrySection.classList.add('d-none');
+        }
+
+        // Update timestamp
+        const now = new Date();
+        updateTimestamp.textContent = now.toLocaleTimeString('pl-PL');
+
+        // Show OCR results section if completed
+        if (status === 'ocr_completed' || status === 'completed' || status === 'manual_review') {
+            ocrResultsSection.style.display = 'block';
+        }
+
+        return isFinal;
+    }
+
+    // Show connection status
+    function showConnectionStatus(type, message) {
+        connectionStatus.className = `alert alert-${type}`;
+        connectionMessage.innerHTML = `<i class="fas fa-${type === 'success' ? 'wifi' : type === 'warning' ? 'exclamation-triangle' : 'times'} me-2"></i>${message}`;
+        connectionStatus.classList.remove('d-none');
+
+        // Auto-hide success messages
+        if (type === 'success') {
+            setTimeout(() => {
+                connectionStatus.classList.add('d-none');
+            }, 3000);
+        }
+    }
+
+    // Update sync icon
+    function updateSyncIcon(isActive) {
+        if (isActive) {
+            syncIcon.className = 'fas fa-sync-alt fa-spin me-2';
+        } else {
+            syncIcon.className = 'fas fa-sync-alt me-2';
+        }
+    }
+
+    // Fetch status from server
+    async function fetchStatus() {
+        if (isPolling) return; // Prevent concurrent requests
+
+        isPolling = true;
+        updateSyncIcon(true);
+
+        try {
+            const response = await fetch(`/ocr/status/${documentId}/display/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                const statusData = data.data;
+                const isFinal = updateStatusDisplay(statusData);
+
+                // Reset retry count on success
+                retryCount = 0;
+
+                // Update status message
+                statusMessage.textContent = 'Status aktualny';
+                realtimeInfo.className = 'alert alert-success';
+
+                // Show success connection status briefly
+                showConnectionStatus('success', 'Połączenie aktywne');
+
+                // Stop polling if final status reached
+                if (isFinal) {
+                    stopPolling();
+                    statusMessage.textContent = 'Przetwarzanie zakończone';
+                    lastUpdated.innerHTML = `Zakończono: <span id="update-timestamp">${new Date().toLocaleTimeString('pl-PL')}</span>`;
+                } else {
+                    // Adjust polling interval based on status
+                    const pollingConfig = statusData.polling || {};
+                    const newInterval = pollingConfig.interval_ms || 5000;
+
+                    if (pollingInterval && newInterval !== getCurrentPollingInterval()) {
+                        restartPolling(newInterval);
+                    }
+                }
+            } else {
+                throw new Error(data.error || 'Unknown error');
+            }
+
+        } catch (error) {
+            console.error('Error fetching status:', error);
+            retryCount++;
+
+            // Update UI to show error
+            statusMessage.textContent = `Błąd połączenia (próba ${retryCount}/${maxRetries})`;
+            realtimeInfo.className = 'alert alert-warning';
+
+            showConnectionStatus('danger', `Błąd połączenia: ${error.message}`);
+
+            // Stop polling if max retries reached
+            if (retryCount >= maxRetries) {
+                stopPolling();
+                statusMessage.textContent = 'Błąd połączenia - odśwież stronę';
+                realtimeInfo.className = 'alert alert-danger';
+                retrySection.classList.remove('d-none');
+            }
+        } finally {
+            isPolling = false;
+            updateSyncIcon(false);
+        }
+    }
+
+    // Start polling
+    function startPolling(interval = 5000) {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+        }
+
+        // Initial fetch
+        fetchStatus();
+
+        // Set up interval
+        pollingInterval = setInterval(fetchStatus, interval);
+
+        console.log(`Started polling with ${interval}ms interval`);
+    }
+
+    // Stop polling
+    function stopPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+            console.log('Stopped polling');
+        }
+    }
+
+    // Restart polling with new interval
+    function restartPolling(newInterval) {
+        stopPolling();
+        startPolling(newInterval);
+    }
+
+    // Get current polling interval
+    function getCurrentPollingInterval() {
+        // This is a simplified way to track interval - in production you might want to store this
+        return 5000; // Default interval
+    }
+
+    // Retry button handler
+    retryBtn.addEventListener('click', function () {
+        retryCount = 0;
+        retrySection.classList.add('d-none');
+        realtimeInfo.className = 'alert alert-info';
+        statusMessage.textContent = 'Ponowne łączenie...';
+        startPolling();
+    });
+
+    // Page visibility change handler - pause polling when page is hidden
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            console.log('Page hidden - pausing polling');
+            // Don't stop completely, just reduce frequency
+            if (pollingInterval) {
+                restartPolling(30000); // 30 seconds when hidden
+            }
+        } else {
+            console.log('Page visible - resuming normal polling');
+            if (pollingInterval) {
+                restartPolling(5000); // Normal frequency when visible
+            }
+        }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function () {
+        stopPolling();
+    });
+
+    // Start polling on page load
+    startPolling();
 });
 </script>
-{% endif %}
 {% endblock %}

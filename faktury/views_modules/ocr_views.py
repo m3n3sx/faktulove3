@@ -23,7 +23,7 @@ from django.db import models
 
 from ..models import DocumentUpload, OCRResult, OCRValidation, Faktura
 from ..services.file_upload_service import FileUploadService, FileValidationError
-from ..tasks import process_ocr_document
+from ..tasks import process_document_ocr_task
 
 logger = logging.getLogger(__name__)
 
@@ -62,13 +62,13 @@ def handle_file_upload(request):
         # Handle the upload
         document_upload = upload_service.handle_upload(uploaded_file, request.user)
         
-        # Start OCR processing asynchronously
-        task = process_ocr_document.delay(document_upload.id)
+        # OCR processing is now handled automatically by signals
+        # when DocumentUpload status changes to 'completed'
         
         messages.success(
             request, 
             f'Plik "{uploaded_file.name}" został przesłany. '
-            f'Przetwarzanie OCR rozpoczęte (ID: {task.id}).'
+            f'Przetwarzanie OCR rozpocznie się automatycznie.'
         )
         
         return redirect('ocr_status', document_id=document_upload.id)
@@ -102,16 +102,14 @@ def api_upload_document(request):
         # Handle the upload
         document_upload = upload_service.handle_upload(uploaded_file, request.user)
         
-        # Start OCR processing asynchronously
-        task = process_ocr_document.delay(document_upload.id)
+        # OCR processing is now handled automatically by signals
         
         return Response({
             'success': True,
             'document_id': document_upload.id,
-            'task_id': task.id,
             'filename': uploaded_file.name,
             'status': 'uploaded',
-            'message': 'Document uploaded successfully. OCR processing started.'
+            'message': 'Document uploaded successfully. OCR processing will start automatically.'
         }, status=status.HTTP_201_CREATED)
         
     except FileValidationError as e:

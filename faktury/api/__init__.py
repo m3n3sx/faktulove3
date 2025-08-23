@@ -1,0 +1,1 @@
+# API package for FaktuLove OCR REST API

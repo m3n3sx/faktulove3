@@ -1,518 +1,344 @@
 """
-Celery tasks for OCR document processing
+Celery tasks for OCR processing
+
+Handles asynchronous OCR result processing and Faktura creation
 """
 
 import logging
-from datetime import datetime, timedelta
-from decimal import Decimal
-from typing import Dict, Any
-
 from celery import shared_task
-from django.conf import settings
-from django.contrib.auth.models import User
 from django.utils import timezone
-
-from .models import DocumentUpload, OCRResult, OCRProcessingLog, Faktura, Kontrahent, Firma
-from .services.document_ai_service import get_document_ai_service
-from .services.file_upload_service import FileUploadService
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
 
-@shared_task(bind=True, max_retries=3)
-def process_ocr_document(self, document_upload_id: int) -> Dict[str, Any]:
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def process_document_ocr_task(self, document_upload_id):
     """
-    Process uploaded document with OCR
+    Celery task to process uploaded document with OCR and create OCRResult
     
     Args:
         document_upload_id: ID of DocumentUpload to process
         
     Returns:
-        Dictionary with processing results
+        dict: Processing result with status and details
     """
     try:
-        # Get document upload record
-        document_upload = DocumentUpload.objects.get(id=document_upload_id)
+        from .models import DocumentUpload, OCRResult
+        from .services.file_upload_service import FileUploadService
+        from .services.document_ai_service import get_document_ai_service
         
-        # Log processing start
-        _log_processing_event(
-            document_upload, 
-            'INFO', 
-            'OCR processing started',
-            {'task_id': self.request.id}
-        )
+        logger.info(f"Starting document OCR processing task for ID: {document_upload_id}")
+        
+        # Get document upload
+        try:
+            document_upload = DocumentUpload.objects.get(id=document_upload_id)
+        except DocumentUpload.DoesNotExist:
+            logger.error(f"DocumentUpload {document_upload_id} not found")
+            return {
+                'status': 'error',
+                'message': f'DocumentUpload {document_upload_id} not found',
+                'document_upload_id': document_upload_id
+            }
         
         # Mark as processing started
         document_upload.mark_processing_started()
         
-        # Initialize services
-        ai_service = get_document_ai_service()
-        file_service = FileUploadService()
-        
         # Get file content
+        file_service = FileUploadService()
         file_content = file_service.get_file_content(document_upload)
         
-        # Process with Document AI
-        extracted_data = ai_service.process_invoice(
-            file_content=file_content,
-            mime_type=document_upload.content_type
-        )
+        # Process with OCR service
+        ocr_service = get_document_ai_service()
+        extracted_data = ocr_service.process_invoice(file_content, document_upload.content_type)
         
-        # Convert Decimal objects to strings for JSON serialization
-        extracted_data_serializable = _convert_decimals_to_strings(extracted_data)
-        
-        # Store OCR results
+        # Create OCRResult
         ocr_result = OCRResult.objects.create(
             document=document_upload,
             raw_text=extracted_data.get('raw_text', ''),
-            extracted_data=extracted_data_serializable,
+            extracted_data=extracted_data,
             confidence_score=extracted_data.get('confidence_score', 0.0),
             processing_time=extracted_data.get('processing_time', 0.0),
-            field_confidence=extracted_data.get('field_confidence', {}),
-            processor_version=extracted_data.get('processor_version', ''),
-            processing_location=extracted_data.get('processing_location', ''),
+            processor_version=extracted_data.get('processor_version', 'unknown'),
+            processing_location=extracted_data.get('processing_location', 'unknown'),
+            processing_status='pending'  # Will be processed by OCR integration
         )
         
-        # Determine processing workflow based on confidence
-        confidence = extracted_data.get('confidence_score', 0.0)
-        thresholds = settings.OCR_SETTINGS['confidence_thresholds']
-        
-        if confidence >= thresholds['auto_approve']:
-            # High confidence - try to create invoice automatically
-            try:
-                faktura = _create_invoice_from_ocr(ocr_result, document_upload.user)
-                ocr_result.faktura = faktura
-                ocr_result.save()
-                
-                workflow_result = 'auto_created'
-                _log_processing_event(
-                    document_upload,
-                    'INFO',
-                    f'Invoice auto-created: {faktura.numer}',
-                    {'faktura_id': faktura.id, 'confidence': confidence}
-                )
-                
-            except Exception as e:
-                logger.warning(f"Auto-creation failed for document {document_upload_id}: {e}")
-                workflow_result = 'review_required'
-                _log_processing_event(
-                    document_upload,
-                    'WARNING',
-                    f'Auto-creation failed: {str(e)}',
-                    {'confidence': confidence}
-                )
-                
-        elif confidence >= thresholds['review_required']:
-            # Medium confidence - queue for human review
-            workflow_result = 'review_required'
-            _log_processing_event(
-                document_upload,
-                'INFO',
-                'Queued for human review',
-                {'confidence': confidence}
-            )
-            
-        else:
-            # Low confidence - require manual entry
-            workflow_result = 'manual_entry'
-            _log_processing_event(
-                document_upload,
-                'INFO',
-                'Manual entry required',
-                {'confidence': confidence}
-            )
-        
-        # Mark processing as completed
+        # Mark document as completed
         document_upload.mark_processing_completed()
         
-        result = {
+        logger.info(f"Document OCR processing completed for {document_upload_id}, created OCRResult {ocr_result.id}")
+        
+        return {
             'status': 'success',
-            'document_id': document_upload_id,
+            'message': f'OCR processing completed',
+            'document_upload_id': document_upload_id,
             'ocr_result_id': ocr_result.id,
-            'confidence_score': confidence,
-            'workflow_result': workflow_result,
-            'processing_time': extracted_data.get('processing_time', 0.0),
+            'confidence_score': ocr_result.confidence_score
         }
         
-        _log_processing_event(
-            document_upload,
-            'INFO',
-            'OCR processing completed successfully',
-            result
-        )
+    except Exception as exc:
+        logger.error(f"Error in document OCR processing task for {document_upload_id}: {str(exc)}", exc_info=True)
         
-        return result
-        
-    except DocumentUpload.DoesNotExist:
-        error_msg = f"DocumentUpload {document_upload_id} not found"
-        logger.error(error_msg)
-        return {'status': 'error', 'message': error_msg}
-        
-    except Exception as e:
-        error_msg = f"OCR processing failed: {str(e)}"
-        logger.error(error_msg, exc_info=True)
-        
-        # Mark document as failed if it exists
+        # Mark document as failed
         try:
             document_upload = DocumentUpload.objects.get(id=document_upload_id)
-            document_upload.mark_processing_failed(error_msg)
-            
-            _log_processing_event(
-                document_upload,
-                'ERROR',
-                error_msg,
-                {'task_id': self.request.id, 'retry_count': self.request.retries}
-            )
+            document_upload.mark_processing_failed(str(exc))
         except DocumentUpload.DoesNotExist:
             pass
         
-        # Retry if within limits
+        # Retry the task if we haven't exceeded max retries
         if self.request.retries < self.max_retries:
-            # Exponential backoff: 60s, 120s, 240s
-            countdown = 60 * (2 ** self.request.retries)
-            logger.info(f"Retrying OCR processing in {countdown}s (attempt {self.request.retries + 1})")
-            raise self.retry(countdown=countdown, exc=e)
+            logger.info(f"Retrying document OCR processing task for {document_upload_id} (attempt {self.request.retries + 1})")
+            raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
         
         return {
             'status': 'error',
-            'message': error_msg,
-            'document_id': document_upload_id
+            'message': f'Task failed after {self.max_retries} retries: {str(exc)}',
+            'document_upload_id': document_upload_id
         }
 
 
-def _create_invoice_from_ocr(ocr_result: OCRResult, user: User) -> Faktura:
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def process_ocr_result_task(self, ocr_result_id):
     """
-    Create Faktura from OCR results
+    Celery task to process OCR result and create Faktura
     
     Args:
-        ocr_result: OCR result with extracted data
-        user: User who uploaded the document
+        ocr_result_id: ID of OCRResult to process
         
     Returns:
-        Created Faktura instance
+        dict: Processing result with status and details
     """
-    extracted_data = ocr_result.extracted_data
-    
-    # Get or create supplier (sprzedawca)
-    supplier_data = {
-        'nazwa': extracted_data.get('supplier_name', ''),
-        'nip': extracted_data.get('supplier_nip', ''),
-        'ulica': _extract_address_part(extracted_data.get('supplier_address', ''), 'street'),
-        'miejscowosc': extracted_data.get('supplier_city', ''),
-        'kod_pocztowy': extracted_data.get('supplier_postal_code', ''),
-    }
-    
-    # Try to find existing supplier by NIP
-    supplier_firma = None
-    if supplier_data['nip']:
-        try:
-            supplier_firma = Firma.objects.get(nip=supplier_data['nip'])
-        except Firma.DoesNotExist:
-            pass
-    
-    if not supplier_firma:
-        # For now, use user's company as supplier
-        # In production, you might want to create a new Firma or handle differently
-        supplier_firma = user.firma
-    
-    # Get or create buyer (nabywca) 
-    buyer_data = {
-        'nazwa': extracted_data.get('buyer_name', ''),
-        'nip': extracted_data.get('buyer_nip', ''),
-        'ulica': _extract_address_part(extracted_data.get('buyer_address', ''), 'street'),
-        'miejscowosc': extracted_data.get('buyer_city', ''),
-        'kod_pocztowy': extracted_data.get('buyer_postal_code', ''),
-    }
-    
-    # Try to find existing buyer by NIP
-    buyer_kontrahent = None
-    if buyer_data['nip']:
-        try:
-            buyer_kontrahent = Kontrahent.objects.filter(
-                user=user,
-                nip=buyer_data['nip']
-            ).first()
-        except Kontrahent.DoesNotExist:
-            pass
-    
-    if not buyer_kontrahent and buyer_data['nazwa']:
-        # Create new kontrahent
-        buyer_kontrahent = Kontrahent.objects.create(
-            user=user,
-            nazwa=buyer_data['nazwa'],
-            nip=buyer_data['nip'] or '',
-            ulica=buyer_data['ulica'] or '',
-            numer_domu='1',  # Default value
-            miejscowosc=buyer_data['miejscowosc'] or '',
-            kod_pocztowy=buyer_data['kod_pocztowy'] or '',
-            czy_firma=bool(buyer_data['nip']),
-        )
-    
-    if not buyer_kontrahent:
-        raise ValueError("Could not determine buyer for invoice")
-    
-    # Parse dates
-    invoice_date = _parse_date_from_ocr(extracted_data.get('invoice_date'))
-    due_date = _parse_date_from_ocr(extracted_data.get('due_date'))
-    
-    if not invoice_date:
-        invoice_date = timezone.now().date()
-    
-    if not due_date:
-        due_date = invoice_date + timedelta(days=30)  # Default 30 days
-    
-    # Create Faktura
-    faktura = Faktura.objects.create(
-        user=user,
-        numer=extracted_data.get('invoice_number', f'OCR/{timezone.now().strftime("%Y%m%d%H%M%S")}'),
-        data_wystawienia=invoice_date,
-        data_sprzedazy=invoice_date,
-        termin_platnosci=due_date,
-        miejsce_wystawienia=user.firma.miejscowosc if hasattr(user, 'firma') else 'Warszawa',
-        sprzedawca=supplier_firma,
-        nabywca=buyer_kontrahent,
-        typ_faktury='sprzedaz',  # Default
-        waluta=extracted_data.get('currency', 'PLN'),
+    try:
+        from .services.ocr_integration import process_ocr_result
+        from .models import OCRResult
         
-        # OCR metadata
-        source_document=ocr_result.document,
-        ocr_confidence=ocr_result.confidence_score,
-        manual_verification_required=ocr_result.needs_human_review,
-        ocr_processing_time=ocr_result.processing_time,
-        ocr_extracted_at=timezone.now(),
-    )
-    
-    # Create invoice line items
-    line_items = extracted_data.get('line_items', [])
-    if line_items:
-        _create_invoice_line_items(faktura, line_items)
-    else:
-        # Create single line item from totals
-        _create_single_line_item_from_totals(faktura, extracted_data)
-    
-    return faktura
-
-
-def _create_invoice_line_items(faktura: Faktura, line_items: list):
-    """Create PozycjaFaktury from line items"""
-    from .models import PozycjaFaktury
-    
-    for item in line_items:
-        # Parse line item data
-        nazwa = item.get('description', 'Pozycja z OCR')
-        ilosc = _parse_decimal_from_ocr(item.get('quantity', '1'))
-        cena_netto = _parse_decimal_from_ocr(item.get('unit_price', '0'))
-        vat_rate = _parse_vat_rate(item.get('vat_rate', '23'))
+        logger.info(f"Starting OCR result processing task for ID: {ocr_result_id}")
         
-        PozycjaFaktury.objects.create(
-            faktura=faktura,
-            nazwa=nazwa,
-            ilosc=ilosc,
-            cena_netto=cena_netto,
-            vat=vat_rate,
-            jednostka='szt',  # Default unit
-        )
-
-
-def _create_single_line_item_from_totals(faktura: Faktura, extracted_data: dict):
-    """Create single line item from total amounts"""
-    from .models import PozycjaFaktury
-    
-    net_amount = extracted_data.get('net_amount')
-    total_amount = extracted_data.get('total_amount')
-    vat_amount = extracted_data.get('vat_amount')
-    
-    if net_amount:
-        net_amount = _parse_decimal_from_ocr(net_amount)
-    elif total_amount and vat_amount:
-        total_amount = _parse_decimal_from_ocr(total_amount)
-        vat_amount = _parse_decimal_from_ocr(vat_amount)
-        net_amount = total_amount - vat_amount
-    else:
-        net_amount = Decimal('0.00')
-    
-    # Calculate VAT rate
-    vat_rate = '23'  # Default
-    if net_amount > 0 and vat_amount:
-        vat_amount = _parse_decimal_from_ocr(vat_amount)
-        calculated_rate = (vat_amount / net_amount * 100).quantize(Decimal('1'))
-        if calculated_rate in [Decimal('23'), Decimal('8'), Decimal('5'), Decimal('0')]:
-            vat_rate = str(calculated_rate)
-    
-    PozycjaFaktury.objects.create(
-        faktura=faktura,
-        nazwa='Usługa/Towar z OCR',
-        ilosc=Decimal('1.00'),
-        cena_netto=net_amount,
-        vat=vat_rate,
-        jednostka='szt',
-    )
+        # Check if OCR result exists
+        try:
+            ocr_result = OCRResult.objects.get(id=ocr_result_id)
+        except OCRResult.DoesNotExist:
+            logger.error(f"OCR result {ocr_result_id} not found")
+            return {
+                'status': 'error',
+                'message': f'OCR result {ocr_result_id} not found',
+                'ocr_result_id': ocr_result_id
+            }
+        
+        # Process the OCR result
+        faktura = process_ocr_result(ocr_result_id)
+        
+        if faktura:
+            logger.info(f"Successfully processed OCR result {ocr_result_id}, created Faktura {faktura.numer}")
+            return {
+                'status': 'success',
+                'message': f'Created Faktura {faktura.numer}',
+                'ocr_result_id': ocr_result_id,
+                'faktura_id': faktura.id,
+                'faktura_numer': faktura.numer
+            }
+        else:
+            logger.info(f"OCR result {ocr_result_id} processed but no Faktura created")
+            return {
+                'status': 'processed',
+                'message': 'OCR result processed but no Faktura created',
+                'ocr_result_id': ocr_result_id
+            }
+            
+    except Exception as exc:
+        logger.error(f"Error in OCR processing task for {ocr_result_id}: {str(exc)}", exc_info=True)
+        
+        # Retry the task if we haven't exceeded max retries
+        if self.request.retries < self.max_retries:
+            logger.info(f"Retrying OCR processing task for {ocr_result_id} (attempt {self.request.retries + 1})")
+            raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+        
+        # Mark OCR result as failed if all retries exhausted
+        try:
+            from .models import OCRResult
+            ocr_result = OCRResult.objects.get(id=ocr_result_id)
+            ocr_result.mark_processing_failed(f"Task failed after {self.max_retries} retries: {str(exc)}")
+        except OCRResult.DoesNotExist:
+            pass
+        
+        return {
+            'status': 'error',
+            'message': f'Task failed after {self.max_retries} retries: {str(exc)}',
+            'ocr_result_id': ocr_result_id
+        }
 
 
 @shared_task
-def cleanup_old_documents():
-    """Clean up old processed documents"""
+def batch_process_pending_ocr_results():
+    """
+    Celery task to process all pending OCR results
+    
+    This can be run periodically to catch any OCR results that weren't
+    processed automatically due to system issues.
+    
+    Returns:
+        dict: Batch processing results
+    """
     try:
-        cleanup_days = settings.OCR_SETTINGS['cleanup_after_days']
-        cutoff_date = timezone.now() - timedelta(days=cleanup_days)
+        from .models import OCRResult
         
-        # Find old completed documents
-        old_documents = DocumentUpload.objects.filter(
-            processing_status='completed',
-            processing_completed_at__lt=cutoff_date
-        )
+        logger.info("Starting batch processing of pending OCR results")
         
-        file_service = FileUploadService()
-        cleaned_count = 0
+        # Get all pending OCR results
+        pending_results = OCRResult.objects.filter(
+            processing_status='pending'
+        ).select_related('document', 'document__user')
         
-        for document in old_documents:
+        total_count = pending_results.count()
+        processed_count = 0
+        error_count = 0
+        
+        logger.info(f"Found {total_count} pending OCR results to process")
+        
+        for ocr_result in pending_results:
             try:
-                # Clean up files
-                file_service.cleanup_file(document)
-                
-                # Delete database records
-                # Note: OCR results will be cascade deleted
-                document.delete()
-                cleaned_count += 1
+                # Trigger individual processing task
+                process_ocr_result_task.delay(ocr_result.id)
+                processed_count += 1
                 
             except Exception as e:
-                logger.error(f"Failed to cleanup document {document.id}: {e}")
+                logger.error(f"Error queuing OCR result {ocr_result.id}: {str(e)}")
+                error_count += 1
         
-        logger.info(f"Cleaned up {cleaned_count} old documents")
-        return {'cleaned_count': cleaned_count}
+        result = {
+            'status': 'completed',
+            'total_found': total_count,
+            'queued_for_processing': processed_count,
+            'errors': error_count,
+            'timestamp': timezone.now().isoformat()
+        }
         
-    except Exception as e:
-        logger.error(f"Cleanup task failed: {e}")
-        return {'error': str(e)}
+        logger.info(f"Batch processing completed: {result}")
+        return result
+        
+    except Exception as exc:
+        logger.error(f"Error in batch OCR processing task: {str(exc)}", exc_info=True)
+        return {
+            'status': 'error',
+            'message': str(exc),
+            'timestamp': timezone.now().isoformat()
+        }
 
 
 @shared_task
-def cleanup_failed_documents():
-    """Clean up old failed documents"""
-    try:
-        # Clean up failed documents older than 7 days
-        cutoff_date = timezone.now() - timedelta(days=7)
+def cleanup_failed_ocr_results(days_old=7):
+    """
+    Celery task to clean up old failed OCR results
+    
+    Args:
+        days_old: Number of days after which to clean up failed results
         
-        failed_documents = DocumentUpload.objects.filter(
+    Returns:
+        dict: Cleanup results
+    """
+    try:
+        from .models import OCRResult
+        from datetime import timedelta
+        
+        cutoff_date = timezone.now() - timedelta(days=days_old)
+        
+        logger.info(f"Starting cleanup of failed OCR results older than {days_old} days")
+        
+        # Find old failed results
+        failed_results = OCRResult.objects.filter(
             processing_status='failed',
-            processing_completed_at__lt=cutoff_date
+            created_at__lt=cutoff_date
         )
         
-        file_service = FileUploadService()
-        cleaned_count = 0
+        count = failed_results.count()
         
-        for document in failed_documents:
+        if count > 0:
+            # Delete the failed results
+            failed_results.delete()
+            logger.info(f"Cleaned up {count} failed OCR results")
+        else:
+            logger.info("No failed OCR results to clean up")
+        
+        return {
+            'status': 'completed',
+            'cleaned_up_count': count,
+            'cutoff_date': cutoff_date.isoformat(),
+            'timestamp': timezone.now().isoformat()
+        }
+        
+    except Exception as exc:
+        logger.error(f"Error in OCR cleanup task: {str(exc)}", exc_info=True)
+        return {
+            'status': 'error',
+            'message': str(exc),
+            'timestamp': timezone.now().isoformat()
+        }
+
+
+@shared_task
+def generate_ocr_processing_report(user_id=None):
+    """
+    Generate OCR processing statistics report
+    
+    Args:
+        user_id: Optional user ID to generate report for specific user
+        
+    Returns:
+        dict: Processing statistics
+    """
+    try:
+        from .services.ocr_integration import get_ocr_processing_stats
+        from django.contrib.auth.models import User
+        from .models import OCRResult
+        
+        logger.info(f"Generating OCR processing report for user {user_id or 'all users'}")
+        
+        if user_id:
             try:
-                file_service.cleanup_file(document)
-                document.delete()
-                cleaned_count += 1
-            except Exception as e:
-                logger.error(f"Failed to cleanup failed document {document.id}: {e}")
+                user = User.objects.get(id=user_id)
+                stats = get_ocr_processing_stats(user)
+                stats['user_id'] = user_id
+                stats['username'] = user.username
+            except User.DoesNotExist:
+                return {
+                    'status': 'error',
+                    'message': f'User {user_id} not found'
+                }
+        else:
+            # Global statistics
+            from django.db.models import Count, Avg
+            
+            stats = OCRResult.objects.aggregate(
+                total_processed=Count('id'),
+                avg_confidence=Avg('confidence_score'),
+                auto_created_count=Count('id', filter=models.Q(auto_created_faktura=True)),
+                manual_review_count=Count('id', filter=models.Q(processing_status='manual_review')),
+                failed_count=Count('id', filter=models.Q(processing_status='failed')),
+            )
+            
+            # Calculate rates
+            total = stats['total_processed'] or 0
+            if total > 0:
+                stats['success_rate'] = ((stats['auto_created_count'] or 0) / total) * 100
+                stats['manual_review_rate'] = ((stats['manual_review_count'] or 0) / total) * 100
+                stats['failure_rate'] = ((stats['failed_count'] or 0) / total) * 100
+            else:
+                stats['success_rate'] = 0
+                stats['manual_review_rate'] = 0
+                stats['failure_rate'] = 0
         
-        logger.info(f"Cleaned up {cleaned_count} failed documents")
-        return {'cleaned_count': cleaned_count}
+        stats['status'] = 'completed'
+        stats['timestamp'] = timezone.now().isoformat()
         
-    except Exception as e:
-        logger.error(f"Failed document cleanup task failed: {e}")
-        return {'error': str(e)}
-
-
-# Helper functions
-
-def _log_processing_event(document: DocumentUpload, level: str, message: str, details: dict = None):
-    """Log OCR processing event"""
-    try:
-        OCRProcessingLog.objects.create(
-            document=document,
-            level=level,
-            message=message,
-            details=details or {}
-        )
-    except Exception as e:
-        logger.error(f"Failed to log processing event: {e}")
-
-
-def _parse_date_from_ocr(date_string):
-    """Parse date from OCR extracted string"""
-    if not date_string:
-        return None
-    
-    try:
-        # Try ISO format first
-        return datetime.strptime(date_string, '%Y-%m-%d').date()
-    except ValueError:
-        pass
-    
-    # Try other common formats
-    formats = ['%d.%m.%Y', '%d-%m-%Y', '%d/%m/%Y']
-    for fmt in formats:
-        try:
-            return datetime.strptime(date_string, fmt).date()
-        except ValueError:
-            continue
-    
-    logger.warning(f"Could not parse date: {date_string}")
-    return None
-
-
-def _parse_decimal_from_ocr(value) -> Decimal:
-    """Parse decimal value from OCR result"""
-    if isinstance(value, Decimal):
-        return value
-    
-    if isinstance(value, (int, float)):
-        return Decimal(str(value))
-    
-    if isinstance(value, str):
-        # Clean string and convert
-        cleaned = value.replace(',', '.').replace(' ', '')
-        # Remove currency symbols
-        cleaned = ''.join(c for c in cleaned if c.isdigit() or c == '.')
-        try:
-            return Decimal(cleaned)
-        except:
-            return Decimal('0.00')
-    
-    return Decimal('0.00')
-
-
-def _convert_decimals_to_strings(data):
-    """Convert Decimal objects to strings in nested data structures"""
-    if isinstance(data, dict):
-        return {key: _convert_decimals_to_strings(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [_convert_decimals_to_strings(item) for item in data]
-    elif isinstance(data, Decimal):
-        return str(data)
-    else:
-        return data
-
-
-def _parse_vat_rate(vat_string) -> str:
-    """Parse VAT rate from string"""
-    if not vat_string:
-        return '23'
-    
-    # Extract numbers from string
-    import re
-    numbers = re.findall(r'\d+', str(vat_string))
-    
-    if numbers:
-        rate = int(numbers[0])
-        if rate in [23, 8, 5, 0]:
-            return str(rate)
-    
-    return '23'  # Default
-
-
-def _extract_address_part(address_string: str, part: str) -> str:
-    """Extract part of address (simplified)"""
-    if not address_string:
-        return ''
-    
-    if part == 'street':
-        # Return first line of address
-        lines = address_string.split('\n')
-        return lines[0].strip() if lines else ''
-    
-    return address_string
+        logger.info(f"OCR processing report generated: {stats}")
+        return stats
+        
+    except Exception as exc:
+        logger.error(f"Error generating OCR processing report: {str(exc)}", exc_info=True)
+        return {
+            'status': 'error',
+            'message': str(exc),
+            'timestamp': timezone.now().isoformat()
+        }

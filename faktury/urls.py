@@ -2,6 +2,7 @@ from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
 from . import views_modules
+from .views_modules import ocr_status_views
 
 urlpatterns = [
 path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus'),
@@ -117,17 +118,30 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
     # Enhanced invoice system URLs
     path('enhanced/', include('faktury.enhanced_urls')),
     
-    # OCR URLs
+    # OCR URLs - Document processing and status tracking
     path('ocr/', include([
+        # Main OCR views (HTML responses)
         path('upload/', views_modules.ocr_views.ocr_upload_view, name='ocr_upload'),
         path('status/<int:document_id>/', views_modules.ocr_views.ocr_status_view, name='ocr_status'),
         path('results/', views_modules.ocr_views.ocr_results_list, name='ocr_results_list'),
         path('result/<int:result_id>/', views_modules.ocr_views.ocr_result_detail, name='ocr_result_detail'),
         path('create-invoice/<int:result_id>/', views_modules.ocr_views.create_invoice_from_ocr, name='create_invoice_from_ocr'),
         
-        # API endpoints
-        path('api/upload/', views_modules.ocr_views.api_upload_document, name='api_upload_document'),
-        path('api/status/<int:document_id>/', views_modules.ocr_views.api_processing_status, name='api_processing_status'),
-        path('api/statistics/', views_modules.ocr_views.api_ocr_statistics, name='api_ocr_statistics'),
+        # AJAX Status endpoints for real-time updates (JSON responses)
+        # Authentication: @login_required, Parameter validation: <int:document_id>
+        path('ajax/status/<int:document_id>/', ocr_status_views.get_status_ajax, name='ocr_ajax_status'),
+        path('ajax/status/<int:document_id>/display/', ocr_status_views.get_status_display_ajax, name='ocr_ajax_status_display'),
+        path('ajax/status/<int:document_id>/progress/', ocr_status_views.get_progress_ajax, name='ocr_ajax_progress'),
+        
+        # REST API endpoints (JSON responses with DRF authentication)
+        # Authentication: @api_view + @permission_classes([IsAuthenticated])
+        path('api/upload/', views_modules.ocr_views.api_upload_document, name='ocr_api_upload'),
+        path('api/documents/<int:document_id>/status/', views_modules.ocr_views.api_processing_status, name='ocr_api_status'),
+        path('api/documents/<int:document_id>/status/unified/', ocr_status_views.api_get_status, name='ocr_api_status_unified'),
+        path('api/documents/status/bulk/', ocr_status_views.api_bulk_status, name='ocr_api_bulk_status'),
+        path('api/statistics/', views_modules.ocr_views.api_ocr_statistics, name='ocr_api_statistics'),
     ])),
+    
+    # New REST API endpoints for React frontend
+    path('api/', include('faktury.api.urls')),
 ]

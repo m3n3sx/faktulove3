@@ -472,7 +472,35 @@ class Faktura(models.Model):
     uwagi = models.TextField(blank=True, null=True)
     auto_numer = models.BooleanField(default=True, verbose_name="Automatyczna numeracja")
     wlasny_numer = models.CharField(max_length=50, blank=True, null=True, verbose_name="Własny numer faktury")
-    kp = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='powiazana_faktura')
+    kp = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='powiazana_faktury')
+    
+    # OCR Integration Fields
+    source_document = models.ForeignKey(
+        'DocumentUpload', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        verbose_name="Dokument źródłowy OCR"
+    )
+    ocr_confidence = models.FloatField(
+        null=True, 
+        blank=True,
+        verbose_name="Pewność OCR (%)"
+    )
+    manual_verification_required = models.BooleanField(
+        default=False,
+        verbose_name="Wymaga weryfikacji manualnej"
+    )
+    ocr_processing_time = models.FloatField(
+        null=True, 
+        blank=True,
+        verbose_name="Czas przetwarzania OCR (s)"
+    )
+    ocr_extracted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Data ekstrakcji OCR"
+    )
     def clean(self):
         if self.typ_dokumentu == 'KOR' and not self.dokument_podstawowy:
             raise ValidationError("Korekta wymaga wskazania dokumentu podstawowego")
@@ -1134,4 +1162,3 @@ class OCRProcessingLog(models.Model):
     
     def __str__(self):
         return f"{self.level}: {self.document.original_filename} - {self.message[:50]}"
-

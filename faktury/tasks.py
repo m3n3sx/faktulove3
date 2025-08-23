@@ -275,12 +275,11 @@ def _create_invoice_from_ocr(ocr_result: OCRResult, user: User) -> Faktura:
         waluta=extracted_data.get('currency', 'PLN'),
         
         # OCR metadata
-        # Note: These fields need to be added to Faktura model
-        # source_document=ocr_result.document,
-        # ocr_confidence=ocr_result.confidence_score,
-        # manual_verification_required=ocr_result.needs_human_review,
-        # ocr_processing_time=ocr_result.processing_time,
-        # ocr_extracted_at=timezone.now(),
+        source_document=ocr_result.document,
+        ocr_confidence=ocr_result.confidence_score,
+        manual_verification_required=ocr_result.needs_human_review,
+        ocr_processing_time=ocr_result.processing_time,
+        ocr_extracted_at=timezone.now(),
     )
     
     # Create invoice line items

@@ -399,13 +399,32 @@ class MockDocumentAIService:
 
 def get_document_ai_service():
     """Factory function to get Document AI service"""
-    if settings.DEBUG and not settings.GOOGLE_APPLICATION_CREDENTIALS:
-        logger.warning("Using local OCR service in DEBUG mode")
-        try:
-            from .local_ocr_service import get_local_ocr_service
-            return get_local_ocr_service()
-        except Exception as e:
-            logger.warning(f"Local OCR service not available: {e}, falling back to mock service")
-            return MockDocumentAIService()
+    # For testing, always use mock service if no credentials
+    if not settings.GOOGLE_APPLICATION_CREDENTIALS:
+        logger.warning("Google Cloud credentials not configured, using mock service")
+        return MockDocumentAIService()
     
-    return DocumentAIService()
+    # Try to use real Document AI service
+    try:
+        return DocumentAIService()
+    except Exception as e:
+        logger.warning(f"Document AI service not available: {e}, falling back to mock service")
+        return MockDocumentAIService()
+
+
+def create_faktura_from_ocr(ocr_result):
+    """
+    Create Faktura from OCR result
+    
+    Args:
+        ocr_result: OCRResult instance with extracted data
+        
+    Returns:
+        Created Faktura instance or None if creation failed
+    """
+    try:
+        from faktury.tasks import _create_invoice_from_ocr
+        return _create_invoice_from_ocr(ocr_result, ocr_result.document.user)
+    except Exception as e:
+        logger.error(f"Failed to create invoice from OCR: {e}")
+        return None

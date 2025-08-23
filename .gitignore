@@ -57,3 +57,15 @@ backup.json
 # Temporary files
 *.tmp
 *.temp
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
+=======
+
+# Google Cloud service account key
+service-account-key.json
+>>>>>>> Incoming (Background Agent changes)
+=======
+
+# Google Cloud service account key
+service-account-key.json
+>>>>>>> Incoming (Background Agent changes)

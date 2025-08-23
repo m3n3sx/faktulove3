@@ -16,8 +16,27 @@ admin.site.register(Partnerstwo)
 
 @admin.register(Faktura)
 class FakturaAdmin(admin.ModelAdmin):
-    list_filter = ('typ_dokumentu', 'status')
+    list_display = ['numer', 'data_wystawienia', 'sprzedawca', 'nabywca', 'status', 'ocr_confidence', 'manual_verification_required']
+    list_filter = ('typ_dokumentu', 'status', 'manual_verification_required', 'ocr_extracted_at')
+    search_fields = ['numer', 'sprzedawca__nazwa', 'nabywca__nazwa']
+    readonly_fields = ['ocr_confidence', 'ocr_processing_time', 'ocr_extracted_at', 'source_document']
     actions = ['stwórz_korektę']
+    
+    fieldsets = (
+        ('Podstawowe informacje', {
+            'fields': ('numer', 'data_wystawienia', 'data_sprzedazy', 'termin_platnosci', 'status')
+        }),
+        ('Kontrahenci', {
+            'fields': ('sprzedawca', 'nabywca')
+        }),
+        ('Szczegóły', {
+            'fields': ('typ_dokumentu', 'typ_faktury', 'waluta', 'sposob_platnosci', 'uwagi')
+        }),
+        ('OCR Information', {
+            'fields': ('source_document', 'ocr_confidence', 'manual_verification_required', 'ocr_processing_time', 'ocr_extracted_at'),
+            'classes': ('collapse',)
+        }),
+    )
 
     def stworz_korekte(self, request, queryset):
         for faktura in queryset:

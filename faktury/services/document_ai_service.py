@@ -324,7 +324,7 @@ class DocumentAIService:
             extracted_data['amounts_found'] = amounts
             # If total_amount not found, use the largest amount
             if not extracted_data['total_amount'] and amounts:
-                extracted_data['total_amount'] = Decimal(str(max(amounts)))
+                extracted_data['total_amount'] = str(max(amounts))
         
         # Extract NIP using Polish pattern
         nip_pattern = settings.POLISH_OCR_PATTERNS['nip_pattern']
@@ -376,9 +376,9 @@ class MockDocumentAIService:
             'supplier_nip': '1234567890',
             'buyer_name': 'Test Buyer Sp. z o.o.',
             'buyer_nip': '0987654321',
-            'total_amount': Decimal('1230.00'),
-            'net_amount': Decimal('1000.00'),
-            'vat_amount': Decimal('230.00'),
+            'total_amount': '1230.00',
+            'net_amount': '1000.00',
+            'vat_amount': '230.00',
             'currency': 'PLN',
             'line_items': [
                 {
@@ -400,7 +400,12 @@ class MockDocumentAIService:
 def get_document_ai_service():
     """Factory function to get Document AI service"""
     if settings.DEBUG and not settings.GOOGLE_APPLICATION_CREDENTIALS:
-        logger.warning("Using mock Document AI service in DEBUG mode")
-        return MockDocumentAIService()
+        logger.warning("Using local OCR service in DEBUG mode")
+        try:
+            from .local_ocr_service import get_local_ocr_service
+            return get_local_ocr_service()
+        except Exception as e:
+            logger.warning(f"Local OCR service not available: {e}, falling back to mock service")
+            return MockDocumentAIService()
     
     return DocumentAIService()

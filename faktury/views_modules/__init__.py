@@ -19,6 +19,7 @@ from .contractor_views import *
 from .company_views import *
 from .api_views import *
 from .dashboard_views import *
+from .ocr_views import *
 # from .import_export_views import *  # Will be created later
 
 # TODO: Import remaining modules as they are created
@@ -80,4 +81,9 @@ __all__ = [
     'api_faktury_list', 'api_faktura_detail', 'api_kontrahenci_list',
     'api_kontrahent_detail', 'api_produkty_list', 'api_produkt_detail',
     'api_zadania_list', 'api_zadanie_detail', 'check_payment_terms',
+    
+    # OCR views
+    'ocr_upload_view', 'ocr_status_view', 'ocr_results_list', 'ocr_result_detail',
+    'create_invoice_from_ocr', 'api_upload_document', 'api_processing_status',
+    'api_ocr_statistics',
 ]

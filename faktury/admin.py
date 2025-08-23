@@ -133,8 +133,8 @@ class DocumentUploadAdmin(admin.ModelAdmin):
 
 @admin.register(OCRResult)
 class OCRResultAdmin(admin.ModelAdmin):
-    list_display = ['document_filename', 'confidence_score', 'confidence_level', 'processing_time', 'has_invoice', 'created_at']
-    list_filter = ['confidence_level', 'created_at', 'processor_version']
+    list_display = ['document_filename', 'confidence_score', 'processing_time', 'has_invoice', 'created_at']
+    list_filter = ['created_at', 'processor_version']
     search_fields = ['document__original_filename', 'document__user__username', 'faktura__numer']
     readonly_fields = ['created_at', 'processing_time', 'confidence_score', 'raw_text']
     date_hierarchy = 'created_at'

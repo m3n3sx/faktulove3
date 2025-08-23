@@ -58,11 +58,14 @@ def process_ocr_document(self, document_upload_id: int) -> Dict[str, Any]:
             mime_type=document_upload.content_type
         )
         
+        # Convert Decimal objects to strings for JSON serialization
+        extracted_data_serializable = _convert_decimals_to_strings(extracted_data)
+        
         # Store OCR results
         ocr_result = OCRResult.objects.create(
             document=document_upload,
             raw_text=extracted_data.get('raw_text', ''),
-            extracted_data=extracted_data,
+            extracted_data=extracted_data_serializable,
             confidence_score=extracted_data.get('confidence_score', 0.0),
             processing_time=extracted_data.get('processing_time', 0.0),
             field_confidence=extracted_data.get('field_confidence', {}),
@@ -472,6 +475,18 @@ def _parse_decimal_from_ocr(value) -> Decimal:
             return Decimal('0.00')
     
     return Decimal('0.00')
+
+
+def _convert_decimals_to_strings(data):
+    """Convert Decimal objects to strings in nested data structures"""
+    if isinstance(data, dict):
+        return {key: _convert_decimals_to_strings(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [_convert_decimals_to_strings(item) for item in data]
+    elif isinstance(data, Decimal):
+        return str(data)
+    else:
+        return data
 
 
 def _parse_vat_rate(vat_string) -> str:

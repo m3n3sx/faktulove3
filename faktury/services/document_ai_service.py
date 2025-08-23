@@ -6,6 +6,7 @@ import logging
 import time
 from typing import Dict, Any, Optional, Tuple
 from decimal import Decimal
+from .polish_invoice_processor import PolishInvoiceProcessor
 import re
 from datetime import datetime
 
@@ -50,6 +51,9 @@ class DocumentAIService:
                 "Google Cloud credentials not configured. "
                 "Set GOOGLE_APPLICATION_CREDENTIALS environment variable."
             )
+        
+        # Initialize Polish invoice processor
+        self.polish_processor = PolishInvoiceProcessor()
     
     def process_invoice(self, file_content: bytes, mime_type: str) -> Dict[str, Any]:
         """
@@ -290,58 +294,22 @@ class DocumentAIService:
         return nip_string  # Return original if can't clean
     
     def _enhance_with_polish_patterns(self, extracted_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Enhance extraction with Polish-specific patterns"""
+        """Enhance extraction with Polish-specific patterns using specialized processor"""
         raw_text = extracted_data.get('raw_text', '')
         
         if not raw_text:
             return extracted_data
         
-        # Extract VAT rates using Polish patterns
-        vat_patterns = settings.POLISH_OCR_PATTERNS['vat_patterns']
-        vat_rates = []
+        # Use specialized Polish invoice processor for enhancement
+        enhanced_data = self.polish_processor.enhance_extraction(raw_text, extracted_data)
         
-        for pattern in vat_patterns:
-            matches = re.findall(pattern, raw_text)
-            vat_rates.extend(matches)
+        # Add validation results
+        validation_results = self.polish_processor.validate_polish_invoice(enhanced_data)
+        enhanced_data.update(validation_results)
         
-        if vat_rates:
-            extracted_data['vat_rates_found'] = list(set(vat_rates))
+        logger.info(f"Polish enhancement completed. Valid invoice: {validation_results['is_valid_polish_invoice']}")
         
-        # Extract currency amounts using Polish patterns
-        currency_patterns = settings.POLISH_OCR_PATTERNS['currency_patterns']
-        amounts = []
-        
-        for pattern in currency_patterns:
-            matches = re.findall(pattern, raw_text)
-            for match in matches:
-                try:
-                    amount = Decimal(match.replace(',', '.'))
-                    amounts.append(float(amount))
-                except (ValueError, TypeError):
-                    continue
-        
-        if amounts:
-            extracted_data['amounts_found'] = amounts
-            # If total_amount not found, use the largest amount
-            if not extracted_data['total_amount'] and amounts:
-                extracted_data['total_amount'] = str(max(amounts))
-        
-        # Extract NIP using Polish pattern
-        nip_pattern = settings.POLISH_OCR_PATTERNS['nip_pattern']
-        nip_matches = re.findall(nip_pattern, raw_text)
-        
-        if nip_matches:
-            # Clean NIPs
-            clean_nips = [re.sub(r'[^\d]', '', nip) for nip in nip_matches]
-            extracted_data['nips_found'] = clean_nips
-            
-            # If supplier/buyer NIP not found, try to assign
-            if not extracted_data['supplier_nip'] and clean_nips:
-                extracted_data['supplier_nip'] = clean_nips[0]
-            if not extracted_data['buyer_nip'] and len(clean_nips) > 1:
-                extracted_data['buyer_nip'] = clean_nips[1]
-        
-        return extracted_data
+        return enhanced_data
     
     def validate_processor_availability(self) -> bool:
         """Check if Document AI processor is available"""
@@ -364,11 +332,16 @@ class DocumentAIService:
 class MockDocumentAIService:
     """Mock service for testing without Google Cloud credentials"""
     
+    def __init__(self):
+        """Initialize mock service with Polish processor"""
+        self.polish_processor = PolishInvoiceProcessor()
+    
     def process_invoice(self, file_content: bytes, mime_type: str) -> Dict[str, Any]:
-        """Mock processing that returns sample data"""
-        logger.info("Using mock Document AI service")
+        """Mock processing that returns sample data enhanced with Polish patterns"""
+        logger.info("Using mock Document AI service with Polish enhancement")
         
-        return {
+        # Base mock data
+        base_data = {
             'invoice_number': 'FV/001/2024',
             'invoice_date': '2024-01-15',
             'due_date': '2024-02-15',
@@ -393,8 +366,17 @@ class MockDocumentAIService:
             'processing_time': 2.5,
             'processor_version': 'mock',
             'processing_location': 'mock',
-            'raw_text': 'Mock extracted text content',
+            'raw_text': 'Faktura VAT Nr FV/001/2024\nSprzedawca: Test Supplier Sp. z o.o.\nNIP: 123-456-78-90\nNabywca: Test Buyer Sp. z o.o.\nNIP: 098-765-43-21\nDo zapłaty: 1230,00 zł\nNetto: 1000,00 zł\nVAT 23%: 230,00 zł',
         }
+        
+        # Enhance with Polish processor
+        enhanced_data = self.polish_processor.enhance_extraction(base_data['raw_text'], base_data)
+        
+        # Add validation results
+        validation_results = self.polish_processor.validate_polish_invoice(enhanced_data)
+        enhanced_data.update(validation_results)
+        
+        return enhanced_data
 
 
 def get_document_ai_service():

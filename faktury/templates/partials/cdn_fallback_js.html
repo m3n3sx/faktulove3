@@ -1,0 +1,9 @@
+{% comment %}
+JavaScript loading with CDN fallback support
+{% endcomment %}
+<script src="{{ config.url }}" 
+        {% if config.fallback.integrity %}integrity="{{ config.fallback.integrity }}" crossorigin="anonymous"{% endif %}
+        onerror="this.onerror=null; if(window.CDNFallback) { window.CDNFallback.loadAsset('{{ config.path }}'); } else { this.src='{{ config.fallback.cdn }}'; }"
+        data-fallback-url="{{ config.fallback.cdn|default:'' }}"
+        data-critical="{{ config.fallback.critical|default:'false' }}"
+        data-asset-path="{{ config.path }}"></script>

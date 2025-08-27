@@ -1,0 +1,162 @@
+{
+  "high_quality_invoice": {
+    "numer_faktury": "FV/001/2024",
+    "data_wystawienia": "15.01.2024",
+    "data_sprzedazy": "15.01.2024",
+    "sprzedawca_nazwa": "Firma ABC Sp. z o.o.",
+    "sprzedawca_adres": "ul. Testowa 123, 00-001 Warszawa",
+    "sprzedawca_nip": "526-000-12-46",
+    "sprzedawca_regon": "123456789",
+    "nabywca_nazwa": "Klient XYZ S.A.",
+    "nabywca_adres": "ul. Kliencka 456, 00-002 Kraków",
+    "nabywca_nip": "123-456-78-90",
+    "suma_brutto": "1230.00",
+    "suma_netto": "1000.00",
+    "suma_vat": "230.00",
+    "waluta": "PLN",
+    "pozycje": [
+      {
+        "nazwa": "Usługa konsultingowa",
+        "ilosc": "1",
+        "jednostka": "szt",
+        "cena_netto": "1000.00",
+        "wartosc_netto": "1000.00",
+        "stawka_vat": "23%",
+        "kwota_vat": "230.00",
+        "wartosc_brutto": "1230.00"
+      }
+    ],
+    "expected_confidence": 92.0,
+    "expected_processing_time": 1.8
+  },
+  "medium_quality_scan": {
+    "numer_faktury": "FV/002/2024",
+    "data_wystawienia": "16.01.2024",
+    "data_sprzedazy": "16.01.2024",
+    "sprzedawca_nazwa": "Firma DEF Sp. z o.o.",
+    "sprzedawca_nip": "123-456-78-90",
+    "nabywca_nazwa": "Odbiorca GHI Sp. z o.o.",
+    "nabywca_nip": "987-654-32-10",
+    "suma_brutto": "2460.00",
+    "suma_netto": "2000.00",
+    "suma_vat": "460.00",
+    "waluta": "PLN",
+    "pozycje": [
+      {
+        "nazwa": "Produkt A",
+        "ilosc": "10",
+        "jednostka": "szt",
+        "cena_netto": "100.00",
+        "wartosc_netto": "1000.00",
+        "stawka_vat": "23%",
+        "kwota_vat": "230.00",
+        "wartosc_brutto": "1230.00"
+      },
+      {
+        "nazwa": "Produkt B",
+        "ilosc": "5",
+        "jednostka": "szt",
+        "cena_netto": "200.00",
+        "wartosc_netto": "1000.00",
+        "stawka_vat": "23%",
+        "kwota_vat": "230.00",
+        "wartosc_brutto": "1230.00"
+      }
+    ],
+    "expected_confidence": 82.0,
+    "expected_processing_time": 2.5
+  },
+  "low_quality_scan": {
+    "numer_faktury": "FV/003/2024",
+    "data_wystawienia": "17.01.2024",
+    "sprzedawca_nazwa": "Firma JKL",
+    "sprzedawca_nip": "987-654-32-10",
+    "suma_brutto": "615.00",
+    "suma_netto": "500.00",
+    "suma_vat": "115.00",
+    "waluta": "PLN",
+    "expected_confidence": 68.0,
+    "expected_processing_time": 3.8
+  },
+  "handwritten_elements": {
+    "numer_faktury": "FV/004/2024",
+    "data_wystawienia": "18.01.2024",
+    "sprzedawca_nazwa": "Firma MNO Sp. z o.o.",
+    "suma_brutto": "1845.00",
+    "suma_netto": "1500.00",
+    "suma_vat": "345.00",
+    "waluta": "PLN",
+    "uwagi": "Dokument z elementami odręcznymi",
+    "expected_confidence": 58.0,
+    "expected_processing_time": 4.2
+  },
+  "pdf_invoice": {
+    "numer_faktury": "FV/005/2024",
+    "data_wystawienia": "19.01.2024",
+    "data_sprzedazy": "19.01.2024",
+    "sprzedawca_nazwa": "Firma GHI Sp. z o.o.",
+    "sprzedawca_adres": "ul. Cyfrowa 789, 00-003 Gdańsk",
+    "sprzedawca_nip": "111-222-33-44",
+    "sprzedawca_regon": "987654321",
+    "nabywca_nazwa": "Klient PDF Ltd.",
+    "nabywca_adres": "ul. Elektroniczna 101, 00-004 Wrocław",
+    "nabywca_nip": "444-333-22-11",
+    "suma_brutto": "3075.00",
+    "suma_netto": "2500.00",
+    "suma_vat": "575.00",
+    "waluta": "PLN",
+    "pozycje": [
+      {
+        "nazwa": "Licencja oprogramowania",
+        "ilosc": "1",
+        "jednostka": "szt",
+        "cena_netto": "2500.00",
+        "wartosc_netto": "2500.00",
+        "stawka_vat": "23%",
+        "kwota_vat": "575.00",
+        "wartosc_brutto": "3075.00"
+      }
+    ],
+    "expected_confidence": 96.0,
+    "expected_processing_time": 1.2
+  },
+  "performance_thresholds": {
+    "max_processing_time": 5.0,
+    "min_confidence_score": 60.0,
+    "max_memory_usage": 800,
+    "min_accuracy_rate": 85.0,
+    "max_concurrent_requests": 10,
+    "max_error_rate": 10.0,
+    "min_success_rate": 90.0
+  },
+  "polish_patterns": {
+    "nip_valid_examples": [
+      "526-000-12-46",
+      "123-456-78-90",
+      "987-654-32-10",
+      "111-222-33-44",
+      "444-333-22-11"
+    ],
+    "nip_invalid_examples": [
+      "000-000-00-00",
+      "123-456-78-91",
+      "invalid-nip"
+    ],
+    "date_formats": [
+      "DD.MM.YYYY",
+      "DD-MM-YYYY",
+      "DD/MM/YYYY"
+    ],
+    "vat_rates": [
+      "0%",
+      "5%",
+      "8%",
+      "23%"
+    ],
+    "currency_formats": [
+      "1234.56 zł",
+      "1234,56 PLN",
+      "1 234,56 zł"
+    ]
+  }
+}

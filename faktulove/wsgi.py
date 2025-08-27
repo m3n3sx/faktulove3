@@ -1,5 +1,5 @@
 """
-WSGI config for faktury_projekt project.
+WSGI config for faktulove project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'faktury_projekt.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'faktulove.settings')
 
 application = get_wsgi_application()

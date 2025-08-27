@@ -1,13 +1,15 @@
 """
-Celery tasks for OCR processing
+Celery tasks for Ensemble OCR processing
 
-Handles asynchronous OCR result processing and Faktura creation
+Handles asynchronous OCR result processing with ensemble engines and Faktura creation
 """
 
 import logging
+import time
 from celery import shared_task
 from django.utils import timezone
 from django.db import models
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def process_document_ocr_task(self, document_upload_id):
     """
-    Celery task to process uploaded document with OCR and create OCRResult
+    Celery task to process uploaded document with Ensemble OCR and create OCRResult
     
     Args:
         document_upload_id: ID of DocumentUpload to process
@@ -24,11 +26,11 @@ def process_document_ocr_task(self, document_upload_id):
         dict: Processing result with status and details
     """
     try:
-        from .models import DocumentUpload, OCRResult
+        from .models import DocumentUpload, OCRResult, OCREngine, OCRProcessingStep
         from .services.file_upload_service import FileUploadService
-        from .services.document_ai_service import get_document_ai_service
+        from .services.ensemble_ocr_service import EnsembleOCRService
         
-        logger.info(f"Starting document OCR processing task for ID: {document_upload_id}")
+        logger.info(f"Starting ensemble document OCR processing task for ID: {document_upload_id}")
         
         # Get document upload
         try:
@@ -48,55 +50,173 @@ def process_document_ocr_task(self, document_upload_id):
         file_service = FileUploadService()
         file_content = file_service.get_file_content(document_upload)
         
-        # Process with OCR service
-        ocr_service = get_document_ai_service()
-        extracted_data = ocr_service.process_invoice(file_content, document_upload.content_type)
+        # Initialize ensemble OCR service
+        ensemble_config = getattr(settings, 'ENSEMBLE_OCR_CONFIG', {})
+        ensemble_service = EnsembleOCRService(**ensemble_config)
         
-        # Create OCRResult
+        # Process with ensemble OCR
+        start_time = time.time()
+        extracted_data = ensemble_service.process_invoice(file_content, document_upload.content_type)
+        total_processing_time = time.time() - start_time
+        
+        # Track cost savings
+        cost_savings = _calculate_cost_savings(extracted_data)
+        
+        # Create OCRResult with ensemble metadata
         ocr_result = OCRResult.objects.create(
             document=document_upload,
             raw_text=extracted_data.get('raw_text', ''),
-            extracted_data=extracted_data,
+            extracted_data=extracted_data.get('extracted_data', {}),
             confidence_score=extracted_data.get('confidence_score', 0.0),
-            processing_time=extracted_data.get('processing_time', 0.0),
-            processor_version=extracted_data.get('processor_version', 'unknown'),
-            processing_location=extracted_data.get('processing_location', 'unknown'),
-            processing_status='pending'  # Will be processed by OCR integration
+            processing_time=total_processing_time,
+            processor_version=extracted_data.get('processor_version', 'Ensemble-OCR-2.0'),
+            processing_location='local',
+            processing_status='pending',
+            # Ensemble-specific fields
+            engine_results=extracted_data.get('ensemble_results', {}),
+            best_engine_result=extracted_data.get('engine_metadata', {}).get('best_engine', 'unknown'),
+            pipeline_version='2.0',
+            preprocessing_applied=extracted_data.get('preprocessing_applied', []),
+            fallback_used=extracted_data.get('fallback_used', False),
+            ensemble_engines_used=extracted_data.get('engine_metadata', {}).get('ensemble_engines_used', []),
+            vendor_independent=True,
+            cost_savings=cost_savings
         )
         
         # Mark document as completed
         document_upload.mark_processing_completed()
         
-        logger.info(f"Document OCR processing completed for {document_upload_id}, created OCRResult {ocr_result.id}")
+        logger.info(f"Ensemble document OCR processing completed for {document_upload_id}, created OCRResult {ocr_result.id}")
         
         return {
             'status': 'success',
-            'message': f'OCR processing completed',
+            'message': f'Ensemble OCR processing completed',
             'document_upload_id': document_upload_id,
             'ocr_result_id': ocr_result.id,
-            'confidence_score': ocr_result.confidence_score
+            'confidence_score': ocr_result.confidence_score,
+            'cost_savings': cost_savings,
+            'engines_used': extracted_data.get('engine_metadata', {}).get('ensemble_engines_used', []),
+            'vendor_independent': True
         }
         
     except Exception as exc:
         logger.error(f"Error in document OCR processing task for {document_upload_id}: {str(exc)}", exc_info=True)
         
-        # Mark document as failed
+        # Use fallback handler for error recovery
         try:
-            document_upload = DocumentUpload.objects.get(id=document_upload_id)
-            document_upload.mark_processing_failed(str(exc))
-        except DocumentUpload.DoesNotExist:
-            pass
+            from .services.ocr_fallback_handler import OCRFallbackHandler
+            
+            fallback_handler = OCRFallbackHandler()
+            fallback_result = fallback_handler.handle_processing_failure(
+                document_upload_id, exc, {'operation': 'document_ocr_processing', 'task_retry': self.request.retries}
+            )
+            
+            logger.info(f"Fallback handling result for document {document_upload_id}: {fallback_result}")
+            
+            # If fallback suggests retry and we haven't exceeded max retries
+            if (fallback_result.get('next_action') == 'retry_processing' and 
+                self.request.retries < self.max_retries):
+                logger.info(f"Retrying document OCR processing task for {document_upload_id} (attempt {self.request.retries + 1})")
+                raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+            
+            # Return fallback result
+            return {
+                'status': 'fallback_handled',
+                'message': f'Fallback handling completed: {fallback_result.get("strategy", "unknown")}',
+                'document_upload_id': document_upload_id,
+                'fallback_result': fallback_result
+            }
+            
+        except Exception as fallback_exc:
+            logger.error(f"Fallback handling failed for document {document_upload_id}: {fallback_exc}")
+            
+            # Mark document as failed as last resort
+            try:
+                document_upload = DocumentUpload.objects.get(id=document_upload_id)
+                document_upload.mark_processing_failed(str(exc))
+            except DocumentUpload.DoesNotExist:
+                pass
+            
+            return {
+                'status': 'error',
+                'message': f'Task and fallback failed: {str(exc)}',
+                'document_upload_id': document_upload_id,
+                'fallback_error': str(fallback_exc)
+            }
+
+
+def _calculate_cost_savings(extracted_data: dict) -> dict:
+    """
+    Calculate cost savings from using ensemble OCR instead of Google Cloud
+    
+    Args:
+        extracted_data: OCR processing result data
         
-        # Retry the task if we haven't exceeded max retries
-        if self.request.retries < self.max_retries:
-            logger.info(f"Retrying document OCR processing task for {document_upload_id} (attempt {self.request.retries + 1})")
-            raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+    Returns:
+        Dictionary with cost savings information
+    """
+    try:
+        # Google Cloud Document AI pricing (approximate)
+        google_cloud_cost_per_page = 0.15  # USD per page
+        
+        # Ensemble OCR cost (local processing)
+        ensemble_cost_per_page = 0.01  # USD per page (electricity, compute)
+        
+        # Calculate savings
+        pages_processed = 1  # Default to 1 page
+        if 'engine_metadata' in extracted_data:
+            # Try to determine number of pages from metadata
+            metadata = extracted_data['engine_metadata']
+            if 'total_pages' in metadata:
+                pages_processed = metadata['total_pages']
+        
+        google_cost = google_cloud_cost_per_page * pages_processed
+        ensemble_cost = ensemble_cost_per_page * pages_processed
+        savings = google_cost - ensemble_cost
         
         return {
-            'status': 'error',
-            'message': f'Task failed after {self.max_retries} retries: {str(exc)}',
-            'document_upload_id': document_upload_id
+            'google_cloud_cost': google_cost,
+            'ensemble_cost': ensemble_cost,
+            'savings_per_page': savings,
+            'pages_processed': pages_processed,
+            'savings_percentage': (savings / google_cost * 100) if google_cost > 0 else 0
         }
+        
+    except Exception as e:
+        logger.error(f"Error calculating cost savings: {e}")
+        return {
+            'google_cloud_cost': 0.15,
+            'ensemble_cost': 0.01,
+            'savings_per_page': 0.14,
+            'pages_processed': 1,
+            'savings_percentage': 93.33
+        }
+
+
+def _is_retryable_error(exc: Exception) -> bool:
+    """
+    Determine if an error is retryable
+    
+    Args:
+        exc: Exception to check
+        
+    Returns:
+        True if error is retryable, False otherwise
+    """
+    retryable_errors = [
+        'timeout',
+        'connection',
+        'network',
+        'temporary',
+        'rate limit',
+        'service unavailable',
+        'engine failure',
+        'memory',
+        'resource'
+    ]
+    
+    error_str = str(exc).lower()
+    return any(retryable_error in error_str for retryable_error in retryable_errors)
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
@@ -150,12 +270,48 @@ def process_ocr_result_task(self, ocr_result_id):
     except Exception as exc:
         logger.error(f"Error in OCR processing task for {ocr_result_id}: {str(exc)}", exc_info=True)
         
-        # Retry the task if we haven't exceeded max retries
-        if self.request.retries < self.max_retries:
-            logger.info(f"Retrying OCR processing task for {ocr_result_id} (attempt {self.request.retries + 1})")
-            raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+        # Use fallback handler for error recovery
+        try:
+            from .services.ocr_fallback_handler import OCRFallbackHandler
+            from .models import OCRResult
+            
+            # Get the document ID for fallback handling
+            try:
+                ocr_result = OCRResult.objects.get(id=ocr_result_id)
+                document_id = ocr_result.document.id
+                
+                fallback_handler = OCRFallbackHandler()
+                fallback_result = fallback_handler.handle_processing_failure(
+                    document_id, exc, {
+                        'operation': 'ocr_result_processing', 
+                        'ocr_result_id': ocr_result_id,
+                        'task_retry': self.request.retries
+                    }
+                )
+                
+                logger.info(f"Fallback handling result for OCR result {ocr_result_id}: {fallback_result}")
+                
+                # If fallback suggests retry and we haven't exceeded max retries
+                if (fallback_result.get('next_action') == 'retry_processing' and 
+                    self.request.retries < self.max_retries):
+                    logger.info(f"Retrying OCR processing task for {ocr_result_id} (attempt {self.request.retries + 1})")
+                    raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+                
+                # Return fallback result
+                return {
+                    'status': 'fallback_handled',
+                    'message': f'Fallback handling completed: {fallback_result.get("strategy", "unknown")}',
+                    'ocr_result_id': ocr_result_id,
+                    'fallback_result': fallback_result
+                }
+                
+            except OCRResult.DoesNotExist:
+                logger.error(f"OCR result {ocr_result_id} not found for fallback handling")
+                
+        except Exception as fallback_exc:
+            logger.error(f"Fallback handling failed for OCR result {ocr_result_id}: {fallback_exc}")
         
-        # Mark OCR result as failed if all retries exhausted
+        # Mark OCR result as failed as last resort
         try:
             from .models import OCRResult
             ocr_result = OCRResult.objects.get(id=ocr_result_id)
@@ -278,6 +434,137 @@ def cleanup_failed_ocr_results(days_old=7):
 
 
 @shared_task
+def process_retry_queue():
+    """
+    Process documents scheduled for retry
+    
+    Returns:
+        dict: Retry processing results
+    """
+    try:
+        from .models import DocumentUpload
+        from django.utils import timezone
+        
+        logger.info("Starting retry queue processing")
+        
+        # Get documents scheduled for retry
+        retry_documents = DocumentUpload.objects.filter(
+            processing_status='retry_scheduled',
+            next_retry_at__lte=timezone.now()
+        ).select_related('user')
+        
+        total_count = retry_documents.count()
+        processed_count = 0
+        error_count = 0
+        
+        logger.info(f"Found {total_count} documents scheduled for retry")
+        
+        for document in retry_documents:
+            try:
+                # Reset status and trigger processing
+                document.processing_status = 'queued'
+                document.next_retry_at = None
+                document.save(update_fields=['processing_status', 'next_retry_at'])
+                
+                # Trigger document processing task
+                process_document_ocr_task.delay(document.id)
+                processed_count += 1
+                
+                logger.info(f"Queued document {document.id} for retry processing")
+                
+            except Exception as e:
+                logger.error(f"Error processing retry for document {document.id}: {str(e)}")
+                error_count += 1
+        
+        result = {
+            'status': 'completed',
+            'total_found': total_count,
+            'queued_for_retry': processed_count,
+            'errors': error_count,
+            'timestamp': timezone.now().isoformat()
+        }
+        
+        logger.info(f"Retry queue processing completed: {result}")
+        return result
+        
+    except Exception as exc:
+        logger.error(f"Error in retry queue processing task: {str(exc)}", exc_info=True)
+        return {
+            'status': 'error',
+            'message': str(exc),
+            'timestamp': timezone.now().isoformat()
+        }
+
+
+@shared_task
+def process_manual_review_queue_notifications():
+    """
+    Send notifications for documents in manual review queue
+    
+    Returns:
+        dict: Notification processing results
+    """
+    try:
+        from .services.ocr_fallback_handler import ManualReviewQueue
+        from .services.notification_service import NotificationService
+        from django.contrib.auth.models import User
+        
+        logger.info("Processing manual review queue notifications")
+        
+        # Get pending reviews grouped by user
+        all_pending = ManualReviewQueue.get_pending_reviews(limit=1000)
+        
+        # Group by user
+        user_reviews = {}
+        for review in all_pending:
+            user_id = review.get('user_id')  # Assuming this is available
+            if user_id not in user_reviews:
+                user_reviews[user_id] = []
+            user_reviews[user_id].append(review)
+        
+        notification_count = 0
+        error_count = 0
+        
+        for user_id, reviews in user_reviews.items():
+            try:
+                user = User.objects.get(id=user_id)
+                
+                # Send notification about pending reviews
+                NotificationService.send_manual_review_notification(
+                    user, len(reviews), reviews[:5]  # Send details for first 5
+                )
+                
+                notification_count += 1
+                logger.info(f"Sent manual review notification to user {user.username} for {len(reviews)} documents")
+                
+            except User.DoesNotExist:
+                logger.warning(f"User {user_id} not found for manual review notification")
+                error_count += 1
+            except Exception as e:
+                logger.error(f"Error sending notification to user {user_id}: {str(e)}")
+                error_count += 1
+        
+        result = {
+            'status': 'completed',
+            'total_pending_reviews': len(all_pending),
+            'notifications_sent': notification_count,
+            'errors': error_count,
+            'timestamp': timezone.now().isoformat()
+        }
+        
+        logger.info(f"Manual review notifications completed: {result}")
+        return result
+        
+    except Exception as exc:
+        logger.error(f"Error in manual review notification task: {str(exc)}", exc_info=True)
+        return {
+            'status': 'error',
+            'message': str(exc),
+            'timestamp': timezone.now().isoformat()
+        }
+
+
+@shared_task
 def generate_ocr_processing_report(user_id=None):
     """
     Generate OCR processing statistics report
@@ -341,4 +628,150 @@ def generate_ocr_processing_report(user_id=None):
             'status': 'error',
             'message': str(exc),
             'timestamp': timezone.now().isoformat()
+        }
+
+
+@shared_task
+def update_vendor_independence_status():
+    """
+    Task to update vendor independence status and metrics
+    """
+    try:
+        from .models import OCRResult
+        from django.db.models import Count, Avg
+        
+        logger.info("Updating vendor independence status")
+        
+        # Calculate vendor independence metrics
+        total_processed = OCRResult.objects.count()
+        vendor_independent = OCRResult.objects.filter(vendor_independent=True).count()
+        vendor_independence_percentage = (vendor_independent / total_processed * 100) if total_processed > 0 else 0
+        
+        # Calculate cost savings
+        total_cost_savings = OCRResult.objects.aggregate(
+            total_savings=Avg('cost_savings__savings_per_page')
+        )['total_savings'] or 0
+        
+        # Update settings or cache with metrics
+        from django.core.cache import cache
+        cache.set('vendor_independence_metrics', {
+            'total_processed': total_processed,
+            'vendor_independent': vendor_independent,
+            'vendor_independence_percentage': vendor_independence_percentage,
+            'total_cost_savings': total_cost_savings,
+            'last_updated': timezone.now().isoformat()
+        }, timeout=3600)  # Cache for 1 hour
+        
+        logger.info(f"Vendor independence status updated: {vendor_independence_percentage:.1f}% independent")
+        
+        return {
+            'status': 'success',
+            'vendor_independence_percentage': vendor_independence_percentage,
+            'total_cost_savings': total_cost_savings
+        }
+        
+    except Exception as e:
+        logger.error(f"Error updating vendor independence status: {e}")
+        return {
+            'status': 'error',
+            'message': str(e)
+        }
+
+
+@shared_task
+def monitor_ensemble_engine_performance():
+    """
+    Task to monitor ensemble engine performance and health
+    """
+    try:
+        from .services.ensemble_ocr_service import EnsembleOCRService
+        
+        logger.info("Monitoring ensemble engine performance")
+        
+        # Initialize ensemble service
+        ensemble_config = getattr(settings, 'ENSEMBLE_OCR_CONFIG', {})
+        ensemble_service = EnsembleOCRService(**ensemble_config)
+        
+        # Get engine status
+        engine_status = ensemble_service.get_engine_status()
+        
+        # Get performance metrics
+        performance_metrics = ensemble_service.get_performance_metrics()
+        
+        # Store metrics in cache
+        from django.core.cache import cache
+        cache.set('ensemble_engine_status', {
+            'engine_status': engine_status,
+            'performance_metrics': performance_metrics,
+            'last_updated': timezone.now().isoformat()
+        }, timeout=1800)  # Cache for 30 minutes
+        
+        logger.info("Ensemble engine performance monitoring completed")
+        
+        return {
+            'status': 'success',
+            'engines_available': len([e for e in engine_status.values() if e.get('available', False)]),
+            'total_engines': len(engine_status)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error monitoring ensemble engine performance: {e}")
+        return {
+            'status': 'error',
+            'message': str(e)
+        }
+
+
+@shared_task
+def track_cost_savings():
+    """
+    Task to track and aggregate cost savings from ensemble OCR
+    """
+    try:
+        from .models import OCRResult
+        from django.db.models import Sum, Count, Avg
+        
+        logger.info("Tracking cost savings from ensemble OCR")
+        
+        # Calculate total cost savings
+        cost_stats = OCRResult.objects.aggregate(
+            total_documents=Count('id'),
+            total_savings=Sum('cost_savings__savings_per_page'),
+            avg_savings_per_document=Avg('cost_savings__savings_per_page')
+        )
+        
+        # Calculate monthly savings
+        from datetime import datetime, timedelta
+        month_ago = timezone.now() - timedelta(days=30)
+        monthly_stats = OCRResult.objects.filter(
+            created_at__gte=month_ago
+        ).aggregate(
+            monthly_documents=Count('id'),
+            monthly_savings=Sum('cost_savings__savings_per_page')
+        )
+        
+        # Store in cache
+        from django.core.cache import cache
+        cache.set('cost_savings_metrics', {
+            'total_documents': cost_stats['total_documents'] or 0,
+            'total_savings': cost_stats['total_savings'] or 0,
+            'avg_savings_per_document': cost_stats['avg_savings_per_document'] or 0,
+            'monthly_documents': monthly_stats['monthly_documents'] or 0,
+            'monthly_savings': monthly_stats['monthly_savings'] or 0,
+            'last_updated': timezone.now().isoformat()
+        }, timeout=3600)  # Cache for 1 hour
+        
+        logger.info(f"Cost savings tracking completed: ${cost_stats['total_savings']:.2f} total savings")
+        
+        return {
+            'status': 'success',
+            'total_savings': cost_stats['total_savings'] or 0,
+            'monthly_savings': monthly_stats['monthly_savings'] or 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Error tracking cost savings: {e}")
+        return {
+            'status': 'error',
+            'message': str(e)
         }

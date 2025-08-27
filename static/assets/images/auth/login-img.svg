@@ -1,0 +1,6 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f8f9fa"/>
+  <circle cx="200" cy="120" r="40" fill="#667eea"/>
+  <rect x="160" y="180" width="80" height="60" rx="8" fill="#764ba2"/>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial" font-size="16" fill="#6c757d">Logowanie</text>
+</svg>

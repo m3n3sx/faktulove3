@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from faktury.models import Faktura, Firma, DocumentUpload, OCRResult
-from faktury.services.document_ai_service import get_document_ai_service
+from faktury.services.ocr_service_factory import get_ocr_service
 from faktury.services.polish_invoice_processor import PolishInvoiceProcessor
 
 User = get_user_model()
@@ -44,7 +44,7 @@ class OCRIntegrationTestCase(TestCase):
         self.client_instance.force_login(self.user)
         
         # Initialize services
-        self.ocr_service = get_document_ai_service()
+        self.ocr_service = get_ocr_service()
         self.polish_processor = PolishInvoiceProcessor()
         
         # Create test PDF content

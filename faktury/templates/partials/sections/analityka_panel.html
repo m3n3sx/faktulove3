@@ -1,9 +1,288 @@
 {% load static %}
 
-<!-- Apex Chart js -->
-<script src="/static/assets/js/lib/apexcharts.min.js"></script>
-<!-- Apex Chart css -->
+<!-- ApexCharts CSS (loaded via dependency manager) -->
 <link rel="stylesheet" href="{% static 'assets/css/lib/apexcharts.css' %}">
+
+<!-- Analytics initialization script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for charts to be ready before initializing analytics widgets
+    if (window.DependencyManager) {
+        DependencyManager.whenReady('ApexCharts', function(error) {
+            if (error) {
+                console.warn('ApexCharts failed to load, using fallback displays');
+                showAnalyticsFallbacks();
+            } else {
+                console.log('ApexCharts ready, initializing analytics widgets');
+                initializeAnalyticsWidgets();
+            }
+        });
+    } else {
+        // Fallback if dependency manager is not available
+        setTimeout(function() {
+            if (typeof ApexCharts !== 'undefined') {
+                initializeAnalyticsWidgets();
+            } else {
+                showAnalyticsFallbacks();
+            }
+        }, 2000);
+    }
+});
+
+function initializeAnalyticsWidgets() {
+    // Initialize all widget charts
+    try {
+        createWidgetChartWeek('new-user-chart', '#487fff');
+        createWidgetChartMonth('monthly-chart', '#28a745');
+        createWidgetChartQuarter('quarterly-chart', '#ffc107');
+        createWidgetChartYear('yearly-chart', '#dc3545');
+        
+        // Initialize cost charts
+        createWidgetChartWeek('cost-weekly-chart', '#6f42c1');
+        createWidgetChartMonth('cost-monthly-chart', '#fd7e14');
+        createWidgetChartQuarter('cost-quarterly-chart', '#20c997');
+        createWidgetChartYear('cost-yearly-chart', '#e83e8c');
+        
+        console.log('Analytics widgets initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize analytics widgets:', error);
+        showAnalyticsFallbacks();
+    }
+}
+
+function showAnalyticsFallbacks() {
+    // Show fallback content for failed charts
+    const chartIds = [
+        'new-user-chart', 'monthly-chart', 'quarterly-chart', 'yearly-chart',
+        'cost-weekly-chart', 'cost-monthly-chart', 'cost-quarterly-chart', 'cost-yearly-chart'
+    ];
+    
+    chartIds.forEach(function(chartId) {
+        const container = document.getElementById(chartId);
+        if (container) {
+            container.innerHTML = '<div class="text-center text-muted" style="font-size: 12px;">Wykres niedostępny</div>';
+            container.style.height = '42px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'center';
+        }
+    });
+}
+
+// Chart creation functions with error handling
+function createWidgetChartWeek(chartId, chartColor) {
+    try {
+        let currentYear = new Date().getFullYear();
+        
+        var options = {
+            series: [
+                {
+                    name: 'seriesWeek',
+                    data: {{ sales_weekly_series|safe }},
+                },
+            ],
+            chart: {
+                type: 'area',
+                width: '100%',
+                height: 42,
+                sparkline: {
+                    enabled: true
+                },
+                toolbar: {
+                    show: false
+                },
+                padding: {
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2,
+                colors: [chartColor],
+                lineCap: 'round'
+            },
+            grid: {
+                show: true,
+                borderColor: 'transparent',
+                strokeDashArray: 0,
+                position: 'back',
+                xaxis: {
+                    lines: {
+                        show: false
+                    }
+                },   
+                yaxis: {
+                    lines: {
+                        show: false
+                    }
+                },  
+                row: {
+                    colors: undefined,
+                    opacity: 0.5
+                },  
+                column: {
+                    colors: undefined,
+                    opacity: 0.5
+                },  
+                padding: {
+                    top: -3,
+                    right: 0,
+                    bottom: 0,
+                    left: 0
+                },  
+            },
+            fill: {
+                type: 'gradient',
+                colors: [chartColor],
+                gradient: {
+                    shade: 'light',
+                    type: 'vertical',
+                    shadeIntensity: 0.5,
+                    gradientToColors: [`${chartColor}00`],
+                    inverseColors: false,
+                    opacityFrom: .75,
+                    opacityTo: 0.3,
+                    stops: [0, 100],
+                },
+            },
+            markers: {
+                colors: [chartColor],
+                strokeWidth: 2,
+                size: 0,
+                hover: {
+                    size: 8
+                }
+            },
+            xaxis: {
+                labels: {
+                    show: false
+                },
+                categories: [`Jan ${currentYear}`, `Feb ${currentYear}`, `Mar ${currentYear}`, `Apr ${currentYear}`, `May ${currentYear}`, `Jun ${currentYear}`, `Jul ${currentYear}`, `Aug ${currentYear}`, `Sep ${currentYear}`, `Oct ${currentYear}`, `Nov ${currentYear}`, `Dec ${currentYear}`],
+                tooltip: {
+                    enabled: false,
+                },
+            },
+            yaxis: {
+                labels: {
+                    show: false
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'dd/MM/yy HH:mm'
+                },
+            },
+        };
+
+        var chart = new ApexCharts(document.querySelector(`#${chartId}`), options);
+        chart.render();
+    } catch (error) {
+        console.error(`Failed to create widget chart ${chartId}:`, error);
+        const container = document.getElementById(chartId);
+        if (container) {
+            container.innerHTML = '<div class="text-center text-muted" style="font-size: 12px;">Błąd wykresu</div>';
+        }
+    }
+}
+
+function createWidgetChartMonth(chartId, chartColor) {
+    // Similar implementation for monthly chart
+    createWidgetChart(chartId, chartColor, {{ sales_monthly_series|safe }}, 'seriesMonth');
+}
+
+function createWidgetChartQuarter(chartId, chartColor) {
+    // Similar implementation for quarterly chart
+    createWidgetChart(chartId, chartColor, {{ sales_quarterly_series|safe }}, 'seriesQuarter');
+}
+
+function createWidgetChartYear(chartId, chartColor) {
+    // Similar implementation for yearly chart
+    createWidgetChart(chartId, chartColor, {{ sales_yearly_series|safe }}, 'seriesYear');
+}
+
+function createWidgetChart(chartId, chartColor, data, seriesName) {
+    try {
+        let currentYear = new Date().getFullYear();
+        
+        var options = {
+            series: [
+                {
+                    name: seriesName,
+                    data: data || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                },
+            ],
+            chart: {
+                type: 'area',
+                width: '100%',
+                height: 42,
+                sparkline: {
+                    enabled: true
+                },
+                toolbar: {
+                    show: false
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2,
+                colors: [chartColor],
+                lineCap: 'round'
+            },
+            fill: {
+                type: 'gradient',
+                colors: [chartColor],
+                gradient: {
+                    shade: 'light',
+                    type: 'vertical',
+                    shadeIntensity: 0.5,
+                    gradientToColors: [`${chartColor}00`],
+                    inverseColors: false,
+                    opacityFrom: .75,
+                    opacityTo: 0.3,
+                    stops: [0, 100],
+                },
+            },
+            markers: {
+                colors: [chartColor],
+                strokeWidth: 2,
+                size: 0,
+                hover: {
+                    size: 8
+                }
+            },
+            xaxis: {
+                labels: {
+                    show: false
+                },
+                categories: [`Jan ${currentYear}`, `Feb ${currentYear}`, `Mar ${currentYear}`, `Apr ${currentYear}`, `May ${currentYear}`, `Jun ${currentYear}`, `Jul ${currentYear}`, `Aug ${currentYear}`, `Sep ${currentYear}`, `Oct ${currentYear}`, `Nov ${currentYear}`, `Dec ${currentYear}`],
+            },
+            yaxis: {
+                labels: {
+                    show: false
+                }
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector(`#${chartId}`), options);
+        chart.render();
+    } catch (error) {
+        console.error(`Failed to create widget chart ${chartId}:`, error);
+        const container = document.getElementById(chartId);
+        if (container) {
+            container.innerHTML = '<div class="text-center text-muted" style="font-size: 12px;">Błąd wykresu</div>';
+        }
+    }
+}
+</script>
 
 <div class="card h-100 p-0 radius-12">
 	<div class="card-header border-bottom bg-base py-16 px-24">

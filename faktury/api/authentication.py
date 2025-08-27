@@ -231,3 +231,37 @@ def verify_token_view(request):
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def csrf_token_view(request):
+    """
+    Get CSRF token for AJAX requests.
+    """
+    try:
+        from django.middleware.csrf import get_token
+        csrf_token = get_token(request)
+        
+        return Response(
+            {
+                'success': True,
+                'csrf_token': csrf_token,
+                'message': 'CSRF token retrieved successfully'
+            },
+            status=status.HTTP_200_OK
+        )
+        
+    except Exception as e:
+        logger.error(f"CSRF token retrieval error: {str(e)}")
+        return Response(
+            {
+                'success': False,
+                'error': {
+                    'code': 'CSRF_TOKEN_ERROR',
+                    'message': 'Failed to retrieve CSRF token',
+                    'details': {}
+                }
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

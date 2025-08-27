@@ -5,6 +5,10 @@
 {% block title %}Przesyłanie Faktury OCR{% endblock %}
 
 {% block content %}
+<!-- Load essential scripts for OCR upload -->
+<script src="{% static 'assets/js/lib/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'assets/js/csrf-utils.js' %}"></script>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
@@ -159,6 +163,11 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // OCRAJAXHelper should be available now since we loaded csrf-utils.js directly
+    if (!window.OCRAJAXHelper) {
+        console.warn('OCRAJAXHelper not available, will use fallback upload method');
+    }
+    
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('file-input');
     const selectFileBtn = document.getElementById('select-file-btn');
@@ -282,50 +291,126 @@ document.addEventListener('DOMContentLoaded', function() {
     function uploadFile() {
         if (!selectedFile) return;
         
-        const formData = new FormData();
-        formData.append('document', selectedFile);
-        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-        
         // Show progress
         uploadProgress.style.display = 'block';
         uploadActions.style.display = 'none';
         
-        // Create XMLHttpRequest for progress tracking
-        const xhr = new XMLHttpRequest();
-        
-        xhr.upload.addEventListener('progress', function(e) {
-            if (e.lengthComputable) {
-                const percentComplete = (e.loaded / e.total) * 100;
-                progressBar.style.width = percentComplete + '%';
-                progressText.textContent = `Przesyłanie... ${Math.round(percentComplete)}%`;
+        try {
+            // Check if OCRAJAXHelper is available
+            if (!window.OCRAJAXHelper) {
+                throw new Error('OCRAJAXHelper nie jest dostępny. Odśwież stronę i spróbuj ponownie.');
             }
-        });
-        
-        xhr.addEventListener('load', function() {
-            if (xhr.status === 200) {
-                progressText.textContent = 'Przesłano! Przekierowywanie...';
-                progressBar.classList.remove('progress-bar-animated');
-                progressBar.classList.add('bg-success');
-                
-                // Redirect to status page
+            
+            // Use OCRAJAXHelper for proper CSRF and JWT handling
+            const result = await OCRAJAXHelper.uploadDocument(selectedFile, (progress) => {
+                progressBar.style.width = progress + '%';
+                if (progress < 100) {
+                    progressText.textContent = `Przesyłanie... ${Math.round(progress)}%`;
+                } else {
+                    progressText.textContent = 'Przetwarzanie...';
+                }
+            });
+            
+            // Success
+            progressText.textContent = 'Przesłano pomyślnie! Przekierowywanie...';
+            progressBar.classList.remove('progress-bar-animated');
+            progressBar.classList.add('bg-success');
+            
+            // Show success message
+            if (window.Toastify) {
+                Toastify({
+                    text: "Plik został przesłany pomyślnie i jest przetwarzany!",
+                    duration: 5000,
+                    gravity: 'top',
+                    position: 'right',
+                    backgroundColor: '#28a745',
+                    stopOnFocus: true
+                }).showToast();
+            }
+            
+            // Redirect to status page if document_id is available
+            if (result.data && result.data.document_id) {
+                setTimeout(() => {
+                    window.location.href = `/ocr/status/${result.data.document_id}/`;
+                }, 2000);
+            } else {
+                // Fallback: reload page to show in recent uploads
                 setTimeout(() => {
                     window.location.reload();
-                }, 1000);
-            } else {
-                progressText.textContent = 'Błąd podczas przesyłania';
-                progressBar.classList.add('bg-danger');
-                alert('Wystąpił błąd podczas przesyłania pliku');
+                }, 2000);
             }
-        });
-        
-        xhr.addEventListener('error', function() {
-            progressText.textContent = 'Błąd połączenia';
+            
+        } catch (error) {
+            console.error('Upload failed:', error);
+            progressText.textContent = 'Błąd podczas przesyłania';
+            progressBar.classList.remove('progress-bar-animated');
             progressBar.classList.add('bg-danger');
-            alert('Wystąpił błąd połączenia');
-        });
+            
+            // Show error message
+            let errorMessage = 'Wystąpił błąd podczas przesyłania pliku';
+            if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            // If OCRAJAXHelper is not available, try fallback method
+            if (error.message && error.message.includes('OCRAJAXHelper nie jest dostępny')) {
+                console.log('Trying fallback upload method...');
+                try {
+                    fallbackUpload();
+                    return; // Success, don't show error
+                } catch (fallbackError) {
+                    console.error('Fallback upload also failed:', fallbackError);
+                    errorMessage = 'Przesyłanie nie powiodło się. Spróbuj odświeżyć stronę.';
+                }
+            }
+            
+            if (window.Toastify) {
+                Toastify({
+                    text: errorMessage,
+                    duration: 8000,
+                    gravity: 'top',
+                    position: 'right',
+                    backgroundColor: '#dc3545',
+                    stopOnFocus: true
+                }).showToast();
+            } else {
+                alert(errorMessage);
+            }
+            
+            // Reset upload after error
+            setTimeout(() => {
+                resetUpload();
+            }, 3000);
+        }
+    }
+    
+    // Fallback upload method using simple form submission
+    function fallbackUpload() {
+        if (!selectedFile) return;
         
-        xhr.open('POST', window.location.href);
-        xhr.send(formData);
+        // Create a temporary form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "ocr_upload" %}';
+        form.enctype = 'multipart/form-data';
+        
+        // Add CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        form.appendChild(csrfInput);
+        
+        // Add file input
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.name = 'document';
+        fileInput.files = selectedFile;
+        form.appendChild(fileInput);
+        
+        // Submit form
+        document.body.appendChild(form);
+        form.submit();
     }
     
     function resetUpload() {

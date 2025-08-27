@@ -4,7 +4,7 @@ from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
 from .models import (
     Kontrahent, Faktura, Produkt, PozycjaFaktury, Firma, UserProfile, Partnerstwo,
-    DocumentUpload, OCRResult, OCRValidation, OCRProcessingLog
+    DocumentUpload, OCRResult, OCRValidation, OCRProcessingLog, OCREngine, OCRProcessingStep
 )
 
 
@@ -152,9 +152,9 @@ class DocumentUploadAdmin(admin.ModelAdmin):
 
 @admin.register(OCRResult)
 class OCRResultAdmin(admin.ModelAdmin):
-    list_display = ['document_filename', 'confidence_score', 'processing_time', 'has_invoice', 'created_at']
-    list_filter = ['created_at', 'processor_version']
-    search_fields = ['document__original_filename', 'document__user__username', 'faktura__numer']
+    list_display = ['document_filename', 'confidence_score', 'processing_time', 'has_invoice', 'vendor_independent', 'ocr_engine', 'created_at']
+    list_filter = ['created_at', 'processor_version', 'vendor_independent', 'google_cloud_replaced', 'ocr_engine']
+    search_fields = ['document__original_filename', 'document__user__username', 'faktura__numer', 'ocr_engine']
     readonly_fields = ['created_at', 'processing_time', 'confidence_score', 'raw_text']
     date_hierarchy = 'created_at'
     
@@ -169,6 +169,22 @@ class OCRResultAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('document', 'faktura')
+    
+    fieldsets = (
+        ('Podstawowe informacje', {
+            'fields': ('document', 'confidence_score', 'processing_time', 'processing_status')
+        }),
+        ('Dane OCR', {
+            'fields': ('raw_text', 'extracted_data', 'field_confidence')
+        }),
+        ('Vendor Independence', {
+            'fields': ('vendor_independent', 'google_cloud_replaced', 'ocr_engine', 'ensemble_engines_used', 'cost_per_processing'),
+            'classes': ('collapse',)
+        }),
+        ('Powiązania', {
+            'fields': ('faktura', 'auto_created_faktura')
+        }),
+    )
 
 
 @admin.register(OCRValidation)
@@ -209,3 +225,58 @@ class OCRProcessingLogAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('document')
+
+
+@admin.register(OCREngine)
+class OCREngineAdmin(admin.ModelAdmin):
+    list_display = ['name', 'engine_type', 'version', 'is_active', 'priority', 'total_documents_processed', 'average_confidence_score']
+    list_filter = ['engine_type', 'is_active', 'created_at']
+    search_fields = ['name', 'version']
+    readonly_fields = ['created_at', 'updated_at', 'total_documents_processed', 'average_processing_time', 'average_confidence_score', 'success_rate']
+    ordering = ['priority', 'name']
+    
+    fieldsets = (
+        ('Podstawowe informacje', {
+            'fields': ('name', 'engine_type', 'version', 'is_active', 'priority')
+        }),
+        ('Konfiguracja', {
+            'fields': ('configuration',)
+        }),
+        ('Statystyki wydajności', {
+            'fields': ('total_documents_processed', 'average_processing_time', 'average_confidence_score', 'success_rate'),
+            'classes': ('collapse',)
+        }),
+        ('Metadane', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(OCRProcessingStep)
+class OCRProcessingStepAdmin(admin.ModelAdmin):
+    list_display = ['step_name', 'ocr_result_filename', 'engine_used', 'step_status', 'confidence_score', 'processing_time', 'started_at']
+    list_filter = ['step_type', 'step_status', 'engine_used', 'started_at']
+    search_fields = ['step_name', 'ocr_result__document__original_filename', 'engine_used__name']
+    readonly_fields = ['started_at', 'completed_at', 'processing_time']
+    date_hierarchy = 'started_at'
+    
+    def ocr_result_filename(self, obj):
+        return obj.ocr_result.document.original_filename
+    ocr_result_filename.short_description = 'Plik'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('ocr_result__document', 'engine_used')
+    
+    fieldsets = (
+        ('Informacje o kroku', {
+            'fields': ('ocr_result', 'step_name', 'step_type', 'engine_used', 'step_order')
+        }),
+        ('Status i wyniki', {
+            'fields': ('step_status', 'confidence_score', 'processing_time', 'started_at', 'completed_at')
+        }),
+        ('Dane', {
+            'fields': ('input_data', 'output_data', 'step_data', 'error_message'),
+            'classes': ('collapse',)
+        }),
+    )

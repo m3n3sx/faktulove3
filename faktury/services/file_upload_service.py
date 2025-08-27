@@ -27,7 +27,7 @@ class FileUploadService:
     
     def __init__(self):
         self.supported_types = settings.SUPPORTED_DOCUMENT_TYPES
-        self.max_file_size = settings.DOCUMENT_AI_CONFIG['max_file_size']
+        self.max_file_size = settings.OCR_CONFIG['max_file_size']
         
         # Create upload directory if it doesn't exist
         self.upload_dir = Path(settings.MEDIA_ROOT) / 'ocr_uploads'
@@ -272,7 +272,7 @@ class FileUploadService:
         """Trigger OCR processing for uploaded document"""
         try:
             # Import here to avoid circular imports
-            from .document_ai_service import get_document_ai_service
+            from .ocr_service_factory import get_ocr_service
             from ..models import OCRResult
             
             logger.info(f"Starting OCR processing for document {document_upload.id}")
@@ -284,7 +284,7 @@ class FileUploadService:
             file_content = self.get_file_content(document_upload)
             
             # Get OCR service
-            ocr_service = get_document_ai_service()
+            ocr_service = get_ocr_service()
             
             # Process document
             extracted_data = ocr_service.process_invoice(

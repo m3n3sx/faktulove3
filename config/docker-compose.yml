@@ -1,0 +1,160 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: faktulove_postgres
+    environment:
+      POSTGRES_DB: faktulove_db
+      POSTGRES_USER: faktulove_user
+      POSTGRES_PASSWORD: faktulove_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U faktulove_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: faktulove_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  celery_worker:
+    build: .
+    container_name: faktulove_celery_worker
+    command: celery -A faktury_projekt worker -l info -Q ocr,cleanup,paddleocr,paddleocr_batch,paddleocr_maintenance,monitoring
+    environment:
+      - DJANGO_SETTINGS_MODULE=faktury_projekt.settings
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://faktulove_user:faktulove_password@postgres:5432/faktulove_db
+      # PaddleOCR configuration
+      - PADDLEOCR_ENABLED=true
+      - PADDLEOCR_USE_GPU=false
+      - PADDLEOCR_LANGUAGES=pl,en
+      - PADDLEOCR_MAX_MEMORY=800
+      - PADDLEOCR_FALLBACK_ENABLED=true
+      - USE_PADDLEOCR=true
+      - PADDLEOCR_PRIMARY=true
+    volumes:
+      - .:/app
+      - ./media:/app/media
+      - paddle_models:/app/paddle_models
+      - ocr_cache:/app/.ocr_cache
+      - ocr_result_cache:/app/.ocr_result_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    # Resource limits for PaddleOCR processing
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '1.0'
+
+  celery_beat:
+    build: .
+    container_name: faktulove_celery_beat
+    command: celery -A faktury_projekt beat -l info
+    environment:
+      - DJANGO_SETTINGS_MODULE=faktury_projekt.settings
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://faktulove_user:faktulove_password@postgres:5432/faktulove_db
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  flower:
+    build: .
+    container_name: faktulove_flower
+    command: celery -A faktury_projekt flower
+    environment:
+      - DJANGO_SETTINGS_MODULE=faktury_projekt.settings
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # PaddleOCR dedicated service for heavy processing
+  paddleocr_service:
+    build: .
+    container_name: faktulove_paddleocr
+    command: celery -A faktury_projekt worker -l info -Q paddleocr,paddleocr_batch --concurrency=1
+    environment:
+      - DJANGO_SETTINGS_MODULE=faktury_projekt.settings
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://faktulove_user:faktulove_password@postgres:5432/faktulove_db
+      # PaddleOCR optimized configuration
+      - PADDLEOCR_ENABLED=true
+      - PADDLEOCR_USE_GPU=false
+      - PADDLEOCR_LANGUAGES=pl,en
+      - PADDLEOCR_MAX_MEMORY=1200
+      - PADDLEOCR_MAX_WORKERS=1
+      - PADDLEOCR_BATCH_SIZE=1
+      - PADDLEOCR_FALLBACK_ENABLED=true
+      - PADDLEOCR_MEMORY_OPTIMIZATION=aggressive
+      - PADDLEOCR_MODEL_CACHING=true
+      - PADDLEOCR_PERFORMANCE_MONITORING=true
+      - USE_PADDLEOCR=true
+      - PADDLEOCR_PRIMARY=true
+      - OMP_NUM_THREADS=2
+    volumes:
+      - .:/app
+      - ./media:/app/media
+      - paddle_models:/app/paddle_models
+      - ocr_cache:/app/.ocr_cache
+      - ocr_result_cache:/app/.ocr_result_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    # Dedicated resources for PaddleOCR
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '2.0'
+        reservations:
+          memory: 800M
+          cpus: '1.0'
+    # Health check for PaddleOCR service
+    healthcheck:
+      test: ["CMD", "python", "/app/healthcheck.py"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 180s
+
+volumes:
+  postgres_data:
+  redis_data:
+  paddle_models:
+  ocr_cache:
+  ocr_result_cache:

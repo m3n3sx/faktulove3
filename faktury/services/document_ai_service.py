@@ -1,63 +1,144 @@
 """
-Google Document AI Service for Invoice OCR Processing
+Document AI Service - Ensemble OCR Integration
+Replaces Google Cloud Document AI with Ensemble OCR for vendor independence
 """
 
 import logging
 import time
 from typing import Dict, Any, Optional, Tuple
 from decimal import Decimal
-from .polish_invoice_processor import PolishInvoiceProcessor
-import re
 from datetime import datetime
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-try:
-    from google.cloud import documentai
-    from google.auth.exceptions import DefaultCredentialsError
-    GOOGLE_CLOUD_AVAILABLE = True
-except ImportError:
-    GOOGLE_CLOUD_AVAILABLE = False
-    documentai = None
+# Import Ensemble OCR Service
+from .ensemble_ocr_service import EnsembleOCRService
 
 logger = logging.getLogger(__name__)
 
 
 class DocumentAIService:
-    """Google Document AI service for processing invoice documents"""
+    """
+    Document AI Service - Ensemble OCR Integration
+    Replaces Google Cloud Document AI with Ensemble OCR for vendor independence
+    Maintains backward compatibility with existing API
+    """
     
     def __init__(self):
-        if not GOOGLE_CLOUD_AVAILABLE:
+        logger.info("Initializing Document AI Service with Ensemble OCR")
+        
+        # Check if we should use Google Cloud (for backward compatibility)
+        flags = getattr(settings, 'OCR_FEATURE_FLAGS', {})
+        use_google_cloud = flags.get('use_google_cloud', False)
+        
+        if use_google_cloud:
+            # Fallback to Google Cloud if explicitly enabled
+            self._initialize_google_cloud()
+        else:
+            # Use Ensemble OCR by default
+            self._initialize_ensemble_ocr()
+    
+    def _initialize_ensemble_ocr(self):
+        """Initialize Ensemble OCR Service"""
+        try:
+            # Get ensemble configuration
+            ensemble_config = getattr(settings, 'ENSEMBLE_OCR_CONFIG', {})
+            
+            # Initialize ensemble OCR service
+            self.ensemble_service = EnsembleOCRService(**ensemble_config)
+            
+            # Set service type
+            self.service_type = 'ensemble_ocr'
+            
+            logger.info("Document AI Service initialized with Ensemble OCR")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize Ensemble OCR: {e}")
+            raise ImproperlyConfigured(f"Ensemble OCR initialization failed: {e}")
+    
+    def _initialize_google_cloud(self):
+        """Initialize Google Cloud Document AI (for backward compatibility)"""
+        try:
+            from google.cloud import documentai
+            from google.auth.exceptions import DefaultCredentialsError
+            
+            self.client = documentai.DocumentProcessorServiceClient()
+            self.config = getattr(settings, 'DOCUMENT_AI_CONFIG', settings.OCR_CONFIG)
+            self.project_id = self.config.get('project_id', 'default-project')
+            self.location = self.config.get('location', 'us')
+            self.processor_id = self.config.get('processor_id', 'default-processor')
+            
+            if not self.processor_id or self.processor_id == 'default-processor':
+                raise ImproperlyConfigured(
+                    "DOCUMENT_AI_PROCESSOR_ID environment variable not set"
+                )
+            
+            self.service_type = 'google_cloud'
+            logger.info("Document AI Service initialized with Google Cloud (backward compatibility)")
+            
+        except ImportError:
             raise ImproperlyConfigured(
                 "Google Cloud Document AI libraries not installed. "
                 "Run: pip install google-cloud-documentai"
             )
-        
-        try:
-            self.client = documentai.DocumentProcessorServiceClient()
-            self.config = settings.DOCUMENT_AI_CONFIG
-            self.project_id = self.config['project_id']
-            self.location = self.config['location']
-            self.processor_id = self.config['processor_id']
-            
-            if not self.processor_id:
-                raise ImproperlyConfigured(
-                    "DOCUMENT_AI_PROCESSOR_ID environment variable not set"
-                )
-                
         except DefaultCredentialsError:
             raise ImproperlyConfigured(
                 "Google Cloud credentials not configured. "
                 "Set GOOGLE_APPLICATION_CREDENTIALS environment variable."
             )
-        
-        # Initialize Polish invoice processor
-        self.polish_processor = PolishInvoiceProcessor()
+        except Exception as e:
+            logger.error(f"Failed to initialize Google Cloud: {e}")
+            raise ImproperlyConfigured(f"Google Cloud initialization failed: {e}")
     
     def process_invoice(self, file_content: bytes, mime_type: str) -> Dict[str, Any]:
         """
-        Process invoice document with Google Document AI
+        Process invoice document with Ensemble OCR or Google Cloud Document AI
+        
+        Args:
+            file_content: Binary content of the document
+            mime_type: MIME type of the document
+            
+        Returns:
+            Dictionary containing extracted data and metadata
+        """
+        if self.service_type == 'ensemble_ocr':
+            return self._process_with_ensemble_ocr(file_content, mime_type)
+        else:
+            return self._process_with_google_cloud(file_content, mime_type)
+    
+    def _process_with_ensemble_ocr(self, file_content: bytes, mime_type: str) -> Dict[str, Any]:
+        """
+        Process invoice with Ensemble OCR
+        
+        Args:
+            file_content: Binary content of the document
+            mime_type: MIME type of the document
+            
+        Returns:
+            Dictionary containing extracted data and metadata
+        """
+        try:
+            logger.info("Processing invoice with Ensemble OCR")
+            
+            # Process with ensemble OCR
+            result = self.ensemble_service.process_invoice(file_content, mime_type)
+            
+            # Add compatibility layer for existing code
+            result['processor_version'] = 'Ensemble-OCR-2.0'
+            result['processing_location'] = 'local'
+            result['vendor_independent'] = True
+            
+            logger.info("Ensemble OCR processing completed successfully")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Ensemble OCR processing failed: {e}")
+            raise
+    
+    def _process_with_google_cloud(self, file_content: bytes, mime_type: str) -> Dict[str, Any]:
+        """
+        Process invoice with Google Cloud Document AI (backward compatibility)
         
         Args:
             file_content: Binary content of the document
@@ -76,7 +157,7 @@ class DocumentAIService:
             
             # Configure the process request
             name = self.client.processor_path(
-                self.project_id, 
+                self.project_id,
                 self.location, 
                 self.processor_id
             )
@@ -380,7 +461,25 @@ class MockDocumentAIService:
 
 
 def get_document_ai_service():
-    """Factory function to get Document AI service"""
+    """
+    DEPRECATED: Factory function to get Document AI service
+    
+    This function is deprecated and will be removed in a future version.
+    Use faktury.services.ocr_service_factory.get_ocr_service() instead.
+    """
+    import warnings
+    warnings.warn(
+        "get_document_ai_service() is deprecated. Use ocr_service_factory.get_ocr_service() instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
+    # Check feature flags
+    flags = getattr(settings, 'OCR_FEATURE_FLAGS', {})
+    if flags.get('disable_google_cloud', False):
+        logger.warning("Google Cloud disabled, using mock service")
+        return MockDocumentAIService()
+    
     # For testing, always use mock service if no credentials
     if not settings.GOOGLE_APPLICATION_CREDENTIALS:
         logger.warning("Google Cloud credentials not configured, using mock service")

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FaktuLove.pl</title>
+  {% load static %}
+  {% load i18n %}
+  {% load cdn_fallback %}
+
+  <!-- Expose Django static URL to JavaScript -->
+  <script>
+    window.STATIC_URL = '{% get_static_prefix %}';
+    window.CDN_FALLBACK_CONFIG = {% cdn_fallback_config %};
+  </script>
+
+  <!-- Load CDN fallback system first -->
+  <script src="{% static 'assets/js/cdn-fallback.js' %}"></script>
+
+  {% block extra_head %}{% endblock %}
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{% static 'assets/images/logo-icon.png' %}" sizes="16x16">
+  
+  <!-- Critical CSS with fallback -->
+  {% load_css_with_fallback 'assets/css/remixicon.css' %}
+  {% load_css_with_fallback 'assets/css/lib/bootstrap.min.css' %}
+  {% load_css_with_fallback 'assets/css/style.css' %}
+  
+  <!-- Non-critical CSS with fallback -->
+  {% load_css_with_fallback 'assets/css/lib/dataTables.min.css' %}
+  {% load_css_with_fallback 'assets/css/lib/editor-katex.min.css' %}
+  {% load_css_with_fallback 'assets/css/lib/editor.atom-one-dark.min.css' %}
+  {% load_css_with_fallback 'assets/css/lib/editor.quill.snow.css' %}
+  {% load_css_with_fallback 'assets/css/lib/flatpickr.min.css' %}
+  {% load_css_with_fallback 'assets/css/lib/full-calendar.css' %}
+  {% load_css_with_fallback 'assets/css/lib/jquery-jvectormap-2.0.5.css' %}
+  {% load_css_with_fallback 'assets/css/lib/magnific-popup.css' %}
+  {% load_css_with_fallback 'assets/css/lib/slick.css' %}
+  {% load_css_with_fallback 'assets/css/lib/prism.css' %}
+  {% load_css_with_fallback 'assets/css/lib/file-upload.css' %}
+  {% load_css_with_fallback 'assets/css/lib/audioplayer.css' %}
+
+  <!-- Toastify CSS from CDN (already working) -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body>
+  <style>
+    .notification-badge {
+        position: relative;
+        top: -10px;
+        right: -10px;
+        background: red;
+        color: white;
+        border-radius: 50%;
+        padding: 3px 8px;
+        font-size: 12px;
+    }
+    .notification-list {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
+  
+  <div id="new-notifications" class="notification-list"></div>
+  
+  <div class="notification-bell" style="position: fixed; bottom: 20px; right: 20px;">
+      <i class="fas fa-bell fa-2x"></i>
+      <span id="notification-counter" class="notification-badge">0</span>
+  </div>
+  
+  {% include "partials/base/navi-sidebar.html" %}
+
+  <main class="dashboard-main">
+    {% include "partials/base/navi-header.html" %}
+
+    <div class="dashboard-main-body">
+      {% block content %}
+      {% endblock %}
+    </div>
+  </main>
+
+  {% include "partials/base/footer.html" %}
+
+  <!-- Critical JavaScript with fallback -->
+  {% load_js_with_fallback 'assets/js/lib/jquery-3.7.1.min.js' %}
+  {% load_js_with_fallback 'assets/js/lib/bootstrap.bundle.min.js' %}
+  
+  <!-- Non-critical JavaScript with fallback -->
+  {% load_js_with_fallback 'assets/js/lib/dataTables.min.js' %}
+  {% load_js_with_fallback 'assets/js/lib/iconify-icon.min.js' %}
+  {% load_js_with_fallback 'assets/js/lib/jquery-ui.min.js' %}
+  {% load_js_with_fallback 'assets/js/lib/jquery-jvectormap-2.0.5.min.js' %}
+  <script src="{% static 'assets/js/lib/jquery-jvectormap-world-mill-en.js' %}"></script>
+  {% load_js_with_fallback 'assets/js/lib/magnific-popup.min.js' %}
+  {% load_js_with_fallback 'assets/js/lib/slick.min.js' %}
+  {% load_js_with_fallback 'assets/js/lib/prism.js' %}
+  <script src="{% static 'assets/js/lib/file-upload.js' %}"></script>
+  <script src="{% static 'assets/js/lib/audioplayer.js' %}"></script>
+  
+  <!-- ApexCharts with fallback -->
+  {% load_js_with_fallback 'assets/js/lib/apexcharts.min.js' %}
+  
+  <!-- Main application JavaScript -->
+  <script src="{% static 'assets/js/app.js' %}"></script>
+  <script src="{% static 'assets/js/full-calendar-fv.js' %}"></script>
+  
+  <!-- Toastify JS from CDN (already working) -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <!-- Initialize DataTables with error handling -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wait for jQuery and DataTables to be available
+      function initializeDataTables() {
+        if (typeof $ !== 'undefined' && typeof $.fn.DataTable !== 'undefined') {
+          try {
+            if (document.getElementById('dataTable')) {
+              let table = new DataTable('#dataTable');
+            }
+          } catch (error) {
+            console.warn('DataTable initialization failed:', error);
+          }
+        } else {
+          console.warn('jQuery or DataTables not available, skipping table initialization');
+        }
+      }
+
+      // Try to initialize immediately, or wait for fallback loading
+      initializeDataTables();
+      
+      // Also try after a delay in case fallbacks are loading
+      setTimeout(initializeDataTables, 2000);
+    });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

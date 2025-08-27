@@ -922,6 +922,13 @@ class DocumentUpload(models.Model):
         ('completed', 'Zakończony'),
         ('failed', 'Błąd'),
         ('manual_review', 'Wymaga przeglądu'),
+        ('manual_review_required', 'Wymaga przeglądu manualnego'),
+        ('retry_scheduled', 'Zaplanowano ponowną próbę'),
+        ('retry_with_different_engine', 'Ponowna próba z innym silnikiem'),
+        ('retry_with_preprocessing', 'Ponowna próba z przetwarzaniem'),
+        ('partial_success', 'Częściowy sukces'),
+        ('processing_aborted', 'Przetwarzanie przerwane'),
+        ('rejected', 'Odrzucony'),
         ('cancelled', 'Anulowany'),
     ]
     
@@ -932,7 +939,7 @@ class DocumentUpload(models.Model):
     content_type = models.CharField(max_length=100, verbose_name="Typ MIME")
     upload_timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Data przesłania")
     processing_status = models.CharField(
-        max_length=25,
+        max_length=30,
         choices=STATUS_CHOICES,
         default='uploaded',
         verbose_name="Status przetwarzania"
@@ -940,6 +947,19 @@ class DocumentUpload(models.Model):
     processing_started_at = models.DateTimeField(null=True, blank=True, verbose_name="Rozpoczęcie przetwarzania")
     processing_completed_at = models.DateTimeField(null=True, blank=True, verbose_name="Zakończenie przetwarzania")
     error_message = models.TextField(blank=True, null=True, verbose_name="Komunikat błędu")
+    
+    # Fallback handling fields
+    retry_count = models.IntegerField(default=0, verbose_name="Liczba ponownych prób")
+    next_retry_at = models.DateTimeField(null=True, blank=True, verbose_name="Następna próba o")
+    preferred_engine = models.CharField(max_length=50, blank=True, null=True, verbose_name="Preferowany silnik OCR")
+    manual_review_reason = models.TextField(blank=True, null=True, verbose_name="Powód przeglądu manualnego")
+    manual_review_queued_at = models.DateTimeField(null=True, blank=True, verbose_name="Dodano do przeglądu o")
+    manual_review_completed_at = models.DateTimeField(null=True, blank=True, verbose_name="Przegląd zakończono o")
+    manual_review_completed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, 
+        related_name='completed_reviews', verbose_name="Przegląd wykonał"
+    )
+    processing_error = models.TextField(blank=True, null=True, verbose_name="Błąd przetwarzania")
     
     class Meta:
         verbose_name = "Przesłany dokument"
@@ -1175,6 +1195,10 @@ class OCRResult(models.Model):
         ('completed', 'Zakończone'),
         ('failed', 'Błąd'),
         ('manual_review', 'Wymaga przeglądu'),
+        ('manual_review_required', 'Wymaga przeglądu manualnego'),
+        ('partial_success', 'Częściowy sukces'),
+        ('manually_verified', 'Zweryfikowane manualnie'),
+        ('rejected', 'Odrzucone'),
     ]
     
     document = models.OneToOneField(
@@ -1198,7 +1222,7 @@ class OCRResult(models.Model):
     
     # Processing status and error handling
     processing_status = models.CharField(
-        max_length=20,
+        max_length=25,
         choices=PROCESSING_STATUS_CHOICES,
         default='pending',
         verbose_name="Status przetwarzania"
@@ -1213,9 +1237,94 @@ class OCRResult(models.Model):
         verbose_name="Pewność poszczególnych pól"
     )
     
-    # Processing metadata
+    # Enhanced processing metadata for new architecture
+    # primary_engine = models.ForeignKey(
+    #     'OCREngine',
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name='primary_results',
+    #     verbose_name="Główny silnik OCR"
+    # )
+    # engines_used = models.ManyToManyField(
+    #     'OCREngine',
+    #     through='OCRProcessingStep',
+    #     related_name='all_results',
+    #     verbose_name="Użyte silniki"
+    # )
     processor_version = models.CharField(max_length=50, blank=True, verbose_name="Wersja procesora")
     processing_location = models.CharField(max_length=50, blank=True, verbose_name="Lokalizacja przetwarzania")
+    
+    # Multiple engine results support
+    engine_results = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Wyniki z poszczególnych silników"
+    )
+    best_engine_result = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Najlepszy wynik silnika"
+    )
+    
+    # Processing pipeline metadata
+    pipeline_version = models.CharField(
+        max_length=20,
+        default='2.0',
+        verbose_name="Wersja pipeline'u"
+    )
+    preprocessing_applied = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Zastosowane przetwarzanie wstępne"
+    )
+    fallback_used = models.BooleanField(
+        default=False,
+        verbose_name="Użyto mechanizmu fallback"
+    )
+    
+    # Manual verification fields
+    manual_verification_required = models.BooleanField(
+        default=False,
+        verbose_name="Wymaga weryfikacji manualnej"
+    )
+    manually_verified_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='verified_ocr_results', verbose_name="Zweryfikowane przez"
+    )
+    manually_verified_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Data weryfikacji manualnej"
+    )
+    processing_notes = models.TextField(
+        blank=True, null=True, verbose_name="Notatki przetwarzania"
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Data aktualizacji")
+    
+    # Vendor independence tracking fields
+    ocr_engine = models.CharField(
+        max_length=50, 
+        default='ensemble',
+        verbose_name="Silnik OCR"
+    )
+    vendor_independent = models.BooleanField(
+        default=True,
+        verbose_name="Niezależny od dostawcy"
+    )
+    google_cloud_replaced = models.BooleanField(
+        default=True,
+        verbose_name="Google Cloud zastąpiony"
+    )
+    ensemble_engines_used = models.TextField(
+        default='[]',
+        verbose_name="Użyte silniki ensemble"
+    )
+    cost_per_processing = models.DecimalField(
+        max_digits=10, 
+        decimal_places=4, 
+        default=0.0,
+        verbose_name="Koszt przetwarzania"
+    )
     
     class Meta:
         verbose_name = "Wynik OCR"
@@ -1227,6 +1336,12 @@ class OCRResult(models.Model):
             models.Index(fields=['-created_at']),
             models.Index(fields=['confidence_score']),
             models.Index(fields=['processing_status']),
+            # Vendor independence tracking indexes
+            models.Index(fields=['vendor_independent']),
+            models.Index(fields=['google_cloud_replaced']),
+            models.Index(fields=['ocr_engine']),
+            models.Index(fields=['cost_per_processing']),
+            models.Index(fields=['vendor_independent', 'google_cloud_replaced']),
             # Note: Compound index with related fields is created in migration 0024
         ]
     
@@ -1284,6 +1399,68 @@ class OCRResult(models.Model):
         """Mark OCR result as requiring manual review"""
         self.processing_status = 'manual_review'
         self.save(update_fields=['processing_status'])
+    
+    def can_create_faktura(self):
+        """Check if OCR result can be used to create a faktura"""
+        return (
+            self.processing_status in ['completed', 'manually_verified', 'partial_success'] and
+            self.confidence_score >= 50.0 and  # Minimum confidence threshold
+            self.extracted_data and
+            self.extracted_data.get('numer_faktury') and
+            self.extracted_data.get('sprzedawca_nazwa')
+        )
+    
+    def apply_manual_corrections(self, corrections: dict, validated_by: User = None) -> dict:
+        """
+        Apply manual corrections to OCR result
+        
+        Args:
+            corrections: Dictionary of field corrections
+            validated_by: User who performed the validation
+            
+        Returns:
+            Dictionary with update results
+        """
+        if not corrections:
+            return {'updated_fields': [], 'new_confidence_scores': {}}
+        
+        updated_fields = []
+        new_confidence_scores = {}
+        
+        # Apply corrections to extracted data
+        for field, new_value in corrections.items():
+            if field in self.extracted_data:
+                old_value = self.extracted_data[field]
+                if old_value != new_value:
+                    self.extracted_data[field] = new_value
+                    updated_fields.append(field)
+                    # Boost confidence for manually corrected fields
+                    new_confidence_scores[field] = 100.0
+        
+        # Update field confidence scores
+        field_confidence = self.field_confidence or {}
+        field_confidence.update(new_confidence_scores)
+        self.field_confidence = field_confidence
+        
+        # Update overall confidence based on corrections
+        if updated_fields:
+            # Recalculate overall confidence
+            total_fields = len(self.extracted_data)
+            high_confidence_fields = len([f for f, c in field_confidence.items() if c >= 90.0])
+            self.confidence_score = min(95.0, (high_confidence_fields / total_fields) * 100.0)
+        
+        # Mark as manually verified
+        if validated_by:
+            self.manually_verified_by = validated_by
+            self.manually_verified_at = timezone.now()
+            self.processing_status = 'manually_verified'
+        
+        self.save()
+        
+        return {
+            'updated_fields': updated_fields,
+            'new_confidence_scores': new_confidence_scores
+        }
     
     def sync_document_status(self):
         """Sync parent document status"""
@@ -1726,6 +1903,77 @@ class OCRResult(models.Model):
             return f"process_ocr_result_task_{self.id}"
         
         return None
+    
+    def mark_as_vendor_independent(self, engine_name='ensemble', engines_used=None):
+        """
+        Mark OCR result as processed with vendor-independent solution
+        
+        Args:
+            engine_name (str): Name of the OCR engine used
+            engines_used (list): List of engines used in ensemble processing
+        """
+        import json
+        
+        self.vendor_independent = True
+        self.google_cloud_replaced = True
+        self.ocr_engine = engine_name
+        self.cost_per_processing = 0.0  # Open source = no cost
+        
+        if engines_used:
+            self.ensemble_engines_used = json.dumps(engines_used)
+        
+        self.save(update_fields=[
+            'vendor_independent', 'google_cloud_replaced', 'ocr_engine', 
+            'cost_per_processing', 'ensemble_engines_used'
+        ])
+    
+    def get_vendor_status(self):
+        """
+        Get vendor independence status summary
+        
+        Returns:
+            dict: Status information about vendor independence
+        """
+        import json
+        
+        try:
+            engines_used = json.loads(self.ensemble_engines_used) if self.ensemble_engines_used else []
+        except (json.JSONDecodeError, TypeError):
+            engines_used = []
+        
+        return {
+            'is_vendor_independent': self.vendor_independent,
+            'google_cloud_replaced': self.google_cloud_replaced,
+            'ocr_engine': self.ocr_engine,
+            'cost_per_processing': float(self.cost_per_processing),
+            'engines_used': engines_used,
+            'is_open_source': self.vendor_independent and self.cost_per_processing == 0.0
+        }
+    
+    def calculate_cost_savings(self, google_cloud_cost_per_page=0.015):
+        """
+        Calculate cost savings compared to Google Cloud Document AI
+        
+        Args:
+            google_cloud_cost_per_page (float): Cost per page for Google Cloud
+            
+        Returns:
+            dict: Cost savings information
+        """
+        if not self.vendor_independent:
+            return {'savings': 0.0, 'percentage_saved': 0.0}
+        
+        google_cloud_cost = google_cloud_cost_per_page
+        current_cost = float(self.cost_per_processing)
+        savings = google_cloud_cost - current_cost
+        percentage_saved = (savings / google_cloud_cost) * 100 if google_cloud_cost > 0 else 0
+        
+        return {
+            'google_cloud_cost': google_cloud_cost,
+            'current_cost': current_cost,
+            'savings': savings,
+            'percentage_saved': percentage_saved
+        }
 
 
 class OCRValidation(models.Model):
@@ -1815,6 +2063,198 @@ def add_ocr_fields_to_faktura():
     return ocr_fields
 
 
+class OCREngine(models.Model):
+    """Track different OCR engines and their performance"""
+    
+    ENGINE_TYPES = [
+        ('tesseract', 'Tesseract OCR'),
+        ('easyocr', 'EasyOCR'),
+        ('composite', 'Composite Engine'),
+        ('google_cloud', 'Google Cloud Document AI'),  # For backward compatibility
+    ]
+    
+    name = models.CharField(max_length=50, verbose_name="Nazwa silnika")
+    engine_type = models.CharField(max_length=20, choices=ENGINE_TYPES, verbose_name="Typ silnika")
+    version = models.CharField(max_length=20, verbose_name="Wersja")
+    is_active = models.BooleanField(default=True, verbose_name="Aktywny")
+    priority = models.IntegerField(default=1, verbose_name="Priorytet")
+    configuration = models.JSONField(default=dict, blank=True, verbose_name="Konfiguracja")
+    
+    # Performance tracking
+    total_documents_processed = models.PositiveIntegerField(default=0, verbose_name="Przetworzone dokumenty")
+    average_processing_time = models.FloatField(null=True, blank=True, verbose_name="Średni czas przetwarzania (s)")
+    average_confidence_score = models.FloatField(null=True, blank=True, verbose_name="Średnia pewność (%)")
+    success_rate = models.FloatField(null=True, blank=True, verbose_name="Wskaźnik sukcesu (%)")
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data utworzenia")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Data aktualizacji")
+    
+    class Meta:
+        verbose_name = "Silnik OCR"
+        verbose_name_plural = "Silniki OCR"
+        ordering = ['priority', 'name']
+        indexes = [
+            models.Index(fields=['is_active', 'priority']),
+            models.Index(fields=['engine_type']),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'version'], name='unique_engine_version')
+        ]
+    
+    def __str__(self):
+        return f"{self.name} v{self.version} ({self.get_engine_type_display()})"
+    
+    def update_performance_metrics(self):
+        """Update performance metrics based on processing steps"""
+        from django.db.models import Avg, Count, Q
+        
+        # Get processing steps for this engine
+        steps = OCRProcessingStep.objects.filter(engine_used=self)
+        
+        if steps.exists():
+            metrics = steps.aggregate(
+                avg_time=Avg('processing_time'),
+                avg_confidence=Avg('confidence_score'),
+                total_count=Count('id'),
+                success_count=Count('id', filter=Q(step_status='completed'))
+            )
+            
+            self.total_documents_processed = metrics['total_count']
+            self.average_processing_time = metrics['avg_time']
+            self.average_confidence_score = metrics['avg_confidence']
+            
+            if metrics['total_count'] > 0:
+                self.success_rate = (metrics['success_count'] / metrics['total_count']) * 100
+            
+            self.save(update_fields=[
+                'total_documents_processed', 'average_processing_time',
+                'average_confidence_score', 'success_rate'
+            ])
+
+
+class OCRProcessingStep(models.Model):
+    """Track individual processing steps for detailed processing tracking"""
+    
+    STEP_TYPES = [
+        ('preprocessing', 'Preprocessing'),
+        ('ocr_extraction', 'OCR Text Extraction'),
+        ('field_extraction', 'Field Extraction'),
+        ('confidence_calculation', 'Confidence Calculation'),
+        ('validation', 'Data Validation'),
+        ('post_processing', 'Post Processing'),
+    ]
+    
+    STEP_STATUS_CHOICES = [
+        ('pending', 'Oczekuje'),
+        ('processing', 'Przetwarzanie'),
+        ('completed', 'Zakończone'),
+        ('failed', 'Błąd'),
+        ('skipped', 'Pominięte'),
+    ]
+    
+    ocr_result = models.ForeignKey(
+        OCRResult, 
+        on_delete=models.CASCADE,
+        related_name='processing_steps',
+        verbose_name="Wynik OCR"
+    )
+    step_name = models.CharField(max_length=50, verbose_name="Nazwa kroku")
+    step_type = models.CharField(max_length=25, choices=STEP_TYPES, verbose_name="Typ kroku")
+    engine_used = models.ForeignKey(
+        OCREngine, 
+        on_delete=models.CASCADE,
+        verbose_name="Użyty silnik"
+    )
+    step_order = models.PositiveIntegerField(verbose_name="Kolejność kroku")
+    
+    # Processing details
+    step_status = models.CharField(
+        max_length=20, 
+        choices=STEP_STATUS_CHOICES, 
+        default='pending',
+        verbose_name="Status kroku"
+    )
+    processing_time = models.FloatField(verbose_name="Czas przetwarzania (s)")
+    confidence_score = models.FloatField(verbose_name="Pewność kroku (%)")
+    
+    # Step data and metadata
+    step_data = models.JSONField(verbose_name="Dane kroku")
+    input_data = models.JSONField(default=dict, blank=True, verbose_name="Dane wejściowe")
+    output_data = models.JSONField(default=dict, blank=True, verbose_name="Dane wyjściowe")
+    error_message = models.TextField(blank=True, null=True, verbose_name="Komunikat błędu")
+    
+    # Timestamps
+    started_at = models.DateTimeField(verbose_name="Rozpoczęcie")
+    completed_at = models.DateTimeField(null=True, blank=True, verbose_name="Zakończenie")
+    
+    class Meta:
+        verbose_name = "Krok przetwarzania OCR"
+        verbose_name_plural = "Kroki przetwarzania OCR"
+        ordering = ['ocr_result', 'step_order']
+        indexes = [
+            models.Index(fields=['ocr_result', 'step_order']),
+            models.Index(fields=['engine_used', '-started_at']),
+            models.Index(fields=['step_type', 'step_status']),
+            models.Index(fields=['step_status']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ocr_result', 'step_name', 'step_order'], 
+                name='unique_step_per_result'
+            )
+        ]
+    
+    def __str__(self):
+        return f"{self.step_name} ({self.get_step_status_display()}) - {self.ocr_result.document.original_filename}"
+    
+    def mark_started(self):
+        """Mark step as started"""
+        self.step_status = 'processing'
+        self.started_at = timezone.now()
+        self.save(update_fields=['step_status', 'started_at'])
+    
+    def mark_completed(self, output_data=None, confidence_score=None):
+        """Mark step as completed"""
+        self.step_status = 'completed'
+        self.completed_at = timezone.now()
+        
+        if output_data is not None:
+            self.output_data = output_data
+        
+        if confidence_score is not None:
+            self.confidence_score = confidence_score
+        
+        # Calculate processing time
+        if self.started_at:
+            self.processing_time = (self.completed_at - self.started_at).total_seconds()
+        
+        self.save(update_fields=[
+            'step_status', 'completed_at', 'output_data', 
+            'confidence_score', 'processing_time'
+        ])
+    
+    def mark_failed(self, error_message):
+        """Mark step as failed"""
+        self.step_status = 'failed'
+        self.completed_at = timezone.now()
+        self.error_message = error_message
+        
+        # Calculate processing time even for failed steps
+        if self.started_at:
+            self.processing_time = (self.completed_at - self.started_at).total_seconds()
+        
+        self.save(update_fields=[
+            'step_status', 'completed_at', 'error_message', 'processing_time'
+        ])
+    
+    def get_duration(self):
+        """Get step duration in seconds"""
+        if self.started_at and self.completed_at:
+            return (self.completed_at - self.started_at).total_seconds()
+        return None
+
+
 class OCRProcessingLog(models.Model):
     """Log OCR processing events for debugging and monitoring"""
     
@@ -1831,6 +2271,13 @@ class OCRProcessingLog(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Dokument"
     )
+    processing_step = models.ForeignKey(
+        OCRProcessingStep,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Krok przetwarzania"
+    )
     timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Znacznik czasu")
     level = models.CharField(max_length=10, choices=LOG_LEVELS, verbose_name="Poziom")
     message = models.TextField(verbose_name="Wiadomość")
@@ -1842,6 +2289,7 @@ class OCRProcessingLog(models.Model):
         ordering = ['-timestamp']
         indexes = [
             models.Index(fields=['document', '-timestamp']),
+            models.Index(fields=['processing_step', '-timestamp']),
             models.Index(fields=['level']),
         ]
     

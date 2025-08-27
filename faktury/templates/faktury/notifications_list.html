@@ -1,10 +1,112 @@
-{% for notification in notifications %}
-  <div class="notification">
-    <p>{{ notification.message }}</p>
-    <a href="{{ notification.link }}">Zobacz szczegóły</a>
-    <form method="POST" action="{% url 'mark_as_read' notification.id %}">
-      {% csrf_token %}
-      <button type="submit">Oznacz jako przeczytane</button>
-    </form>
-  </div>
-{% endfor %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Powiadomienia{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fas fa-bell text-primary me-2"></i>Powiadomienia</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'panel_uzytkownika' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Powiadomienia</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-inbox me-2"></i>Skrzynka powiadomień</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()">
+                            <i class="fas fa-check-double me-1"></i>Oznacz wszystkie jako przeczytane
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        System powiadomień jest w trakcie rozwoju. Wkrótce będziesz otrzymywać powiadomienia o:
+                        <ul class="mt-2 mb-0">
+                            <li>Nowych fakturach</li>
+                            <li>Terminach płatności</li>
+                            <li>Zakończonych procesach OCR</li>
+                            <li>Aktualizacjach systemu</li>
+                        </ul>
+                    </div>
+
+                    <!-- Przykładowe powiadomienia -->
+                    <div class="list-group">
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Witamy w FaktuLove!
+                                </h6>
+                                <small>Dzisiaj</small>
+                            </div>
+                            <p class="mb-1">Twoje konto zostało pomyślnie utworzone. Możesz teraz korzystać ze wszystkich funkcji systemu.</p>
+                            <small class="text-muted">System</small>
+                        </div>
+
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    <i class="fas fa-info-circle text-info me-2"></i>
+                                    Skonfiguruj swoją firmę
+                                </h6>
+                                <small>Dzisiaj</small>
+                            </div>
+                            <p class="mb-1">Aby w pełni korzystać z systemu, uzupełnij dane swojej firmy w ustawieniach.</p>
+                            <small class="text-muted">
+                                <a href="{% url 'edytuj_firme' %}" class="text-decoration-none">Przejdź do ustawień</a>
+                            </small>
+                        </div>
+
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    <i class="fas fa-camera text-warning me-2"></i>
+                                    Wypróbuj funkcję OCR
+                                </h6>
+                                <small>Dzisiaj</small>
+                            </div>
+                            <p class="mb-1">Automatycznie wyodrębniaj dane z faktur za pomocą naszej technologii OCR.</p>
+                            <small class="text-muted">
+                                <a href="{% url 'ocr_upload' %}" class="text-decoration-none">Prześlij dokument</a>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <p class="text-muted">To wszystkie powiadomienia</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markAllAsRead() {
+    // Placeholder function for marking all notifications as read
+    if (window.Toastify) {
+        Toastify({
+            text: "Wszystkie powiadomienia zostały oznaczone jako przeczytane",
+            duration: 3000,
+            gravity: 'top',
+            position: 'right',
+            backgroundColor: '#28a745',
+            stopOnFocus: true
+        }).showToast();
+    } else {
+        alert('Wszystkie powiadomienia zostały oznaczone jako przeczytane');
+    }
+}
+</script>
+{% endblock %}

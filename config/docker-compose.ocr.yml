@@ -1,0 +1,295 @@
+version: '3.8'
+
+services:
+  # OCR Processing Service
+  ocr-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile.ocr
+    container_name: faktulove-ocr-processor
+    restart: unless-stopped
+    environment:
+      # OCR Engine Configuration
+      - TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+      - OMP_NUM_THREADS=2
+      - EASYOCR_MODULE_PATH=/app/models/easyocr
+      - PADDLEOCR_HOME=/app/models/paddleocr
+      
+      # Performance Tuning
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      
+      # Security
+      - PYTHONPATH=/app
+      
+      # Logging
+      - LOG_LEVEL=INFO
+    
+    volumes:
+      # Persistent model storage
+      - ocr_models:/app/models:rw
+      - ocr_temp:/app/temp:rw
+      - ocr_uploads:/app/uploads:rw
+      - ocr_logs:/app/logs:rw
+      
+      # System temp (for large file processing)
+      - /tmp:/tmp:rw
+    
+    ports:
+      - "8001:8000"
+    
+    # Resource limits to stay under 2GB
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+    
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "python3", "/app/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    networks:
+      - ocr-network
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis for caching and task queuing
+  redis:
+    image: redis:7-alpine
+    container_name: faktulove-redis-ocr
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    
+    volumes:
+      - redis_ocr_data:/data
+    
+    networks:
+      - ocr-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # OCR Task Worker (Celery-like processing)
+  ocr-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.ocr
+    container_name: faktulove-ocr-worker
+    restart: unless-stopped
+    command: python3 -c "
+import time
+import redis
+import json
+import base64
+import tempfile
+import os
+from PIL import Image
+import pytesseract
+import easyocr
+import paddleocr
+
+# Initialize OCR engines
+easyocr_reader = easyocr.Reader(['en', 'pl'], gpu=False)
+paddleocr_engine = paddleocr.PaddleOCR(use_angle_cls=True, lang='en', use_gpu=False)
+
+# Connect to Redis
+r = redis.Redis(host='redis', port=6379, decode_responses=True)
+
+print('OCR Worker started, waiting for tasks...')
+
+while True:
+    try:
+        # Wait for task from Redis queue
+        task = r.blpop('ocr_tasks', timeout=1)
+        if task:
+            task_data = json.loads(task[1])
+            task_id = task_data['id']
+            image_data = base64.b64decode(task_data['image'])
+            engine = task_data.get('engine', 'tesseract')
+            
+            print(f'Processing task {task_id} with {engine}')
+            
+            # Save image to temp file
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+                tmp_file.write(image_data)
+                tmp_path = tmp_file.name
+            
+            try:
+                # Process with selected engine
+                if engine == 'tesseract':
+                    result = pytesseract.image_to_string(Image.open(tmp_path), lang='pol+eng')
+                elif engine == 'easyocr':
+                    result = easyocr_reader.readtext(tmp_path)
+                elif engine == 'paddleocr':
+                    result = paddleocr_engine.ocr(tmp_path, use_angle_cls=True)
+                
+                # Store result in Redis
+                r.setex(f'ocr_result:{task_id}', 3600, json.dumps({
+                    'status': 'completed',
+                    'result': str(result),
+                    'engine': engine
+                }))
+                
+                print(f'Task {task_id} completed')
+                
+            except Exception as e:
+                # Store error in Redis
+                r.setex(f'ocr_result:{task_id}', 3600, json.dumps({
+                    'status': 'error',
+                    'error': str(e),
+                    'engine': engine
+                }))
+                print(f'Task {task_id} failed: {e}')
+            
+            finally:
+                # Clean up temp file
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+        
+    except Exception as e:
+        print(f'Worker error: {e}')
+        time.sleep(5)
+"
+    
+    environment:
+      - TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+      - OMP_NUM_THREADS=1
+      - PYTHONUNBUFFERED=1
+    
+    volumes:
+      - ocr_models:/app/models:ro
+      - ocr_temp:/app/temp:rw
+    
+    depends_on:
+      - redis
+    
+    networks:
+      - ocr-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import redis; r=redis.Redis(host='redis'); r.ping()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Monitoring and metrics
+  ocr-monitor:
+    image: prom/prometheus:latest
+    container_name: faktulove-ocr-monitor
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+    
+    ports:
+      - "9090:9090"
+    
+    volumes:
+      - prometheus_data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    
+    networks:
+      - ocr-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+
+# Network configuration
+networks:
+  ocr-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Persistent volumes
+volumes:
+  # OCR models and data
+  ocr_models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./docker/volumes/ocr_models
+  
+  ocr_temp:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./docker/volumes/ocr_temp
+  
+  ocr_uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./docker/volumes/ocr_uploads
+  
+  ocr_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./docker/volumes/ocr_logs
+  
+  # Redis data
+  redis_ocr_data:
+    driver: local
+  
+  # Monitoring data
+  prometheus_data:
+    driver: local

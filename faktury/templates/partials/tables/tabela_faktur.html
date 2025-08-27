@@ -41,20 +41,20 @@
       </div>
       <div class="card-body">
 
-    <table class="table bordered-table mb-0 compact stripe">
+    <table id="invoicesTable" class="table bordered-table mb-0 compact stripe" data-table="true">
         <thead>
             <tr>
-              	<th scope="col" onclick="sortTable(0)">Typ</th>
-              	<th scope="col" onclick="sortTable(0)">Numer</th>
-              	<th scope="col" onclick="sortTable(0)">Sprzedaż</th>
-              	<th scope="col" onclick="sortTable(0)">Wystawiono</th>
-              	<th scope="col" onclick="sortTable(0)">Termin</th>
-		<th scope="col" onclick="sortTable(0)">Kontrahent</th>
-		<th scope="col" onclick="sortTable(0)">Netto</th>
-		<th scope="col" onclick="sortTable(0)">Brutto</th>
-		<th scope="col" onclick="sortTable(0)">Produkt</th>
-		<th scope="col" onclick="sortTable(0)">Status</th>
-              	<th scope="col">Akcje</th>
+              	<th scope="col" data-sortable="true">Typ</th>
+              	<th scope="col" data-sortable="true">Numer</th>
+              	<th scope="col" data-sortable="true">Sprzedaż</th>
+              	<th scope="col" data-sortable="true">Wystawiono</th>
+              	<th scope="col" data-sortable="true">Termin</th>
+		<th scope="col" data-sortable="true">Kontrahent</th>
+		<th scope="col" data-sortable="true" class="text-end">Netto</th>
+		<th scope="col" data-sortable="true" class="text-end">Brutto</th>
+		<th scope="col" data-sortable="true">Produkt</th>
+		<th scope="col" data-sortable="true" class="text-center">Status</th>
+              	<th scope="col" class="no-sort text-center">Akcje</th>
             </tr>
         </thead>
         <tbody>
@@ -62,17 +62,17 @@
             <tr>
 		<td>{{ faktura.get_typ_dokumentu_display }}</td>
               <td><a href="{% url 'szczegoly_faktury' pk=faktura.pk %}" class="text-primary-600">{{ faktura.numer }}</a></td>
-              <td>{{ faktura.data_sprzedazy|date:"Y-m-d" }}</td>
-              <td>{{ faktura.data_wystawienia|date:"Y-m-d" }}</td>
-<td>{{ faktura.termin_platnosci|date:"Y-m-d" }}</td>
+              <td data-order="{{ faktura.data_sprzedazy|date:'Y-m-d' }}">{{ faktura.data_sprzedazy|date:"Y-m-d" }}</td>
+              <td data-order="{{ faktura.data_wystawienia|date:'Y-m-d' }}">{{ faktura.data_wystawienia|date:"Y-m-d" }}</td>
+<td data-order="{{ faktura.termin_platnosci|date:'Y-m-d' }}">{{ faktura.termin_platnosci|date:"Y-m-d" }}</td>
 <td>{{ faktura.nabywca.nazwa }}</td>
-<td>{{ faktura.suma_netto }}</td>
-<td>{{ faktura.suma_brutto }}</td>
+<td class="text-end" data-order="{{ faktura.suma_netto }}">{{ faktura.suma_netto }} zł</td>
+<td class="text-end" data-order="{{ faktura.suma_brutto }}">{{ faktura.suma_brutto }} zł</td>
               <td>{% for pozycja in faktura.pozycjafaktury_set.all %}
                             {{ pozycja.nazwa }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
 </td>
-              <td> 
+              <td class="text-center" data-order="{{ faktura.status }}"> 
 {% if faktura.status == 'wystawiona' %}
   <span class="bg-danger-focus text-danger-main px-24 py-4 rounded-pill fw-medium text-sm">
     {{ faktura.get_status_display }}
@@ -91,59 +91,199 @@
   </span>
 {% endif %}
  </td>
-              <td>
-                <a href="{% url 'generuj_pdf' pk=faktura.pk%}" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center">
-                  <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
-                </a>
-                <a href="{% url 'update_payment' pk=faktura.pk %}" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center">
-                  <iconify-icon icon="lucide:edit"></iconify-icon>
-                </a>
-                <a href="{% url 'usun_fakture' pk=faktura.pk %}" class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center">
-                  <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
-                </a>
+              <td class="text-center">
+                <div class="d-flex align-items-center justify-content-center gap-1">
+                  <a href="{% url 'generuj_pdf' pk=faktura.pk%}" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center" title="Zobacz PDF">
+                    <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                  </a>
+                  <a href="{% url 'update_payment' pk=faktura.pk %}" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center" title="Edytuj">
+                    <iconify-icon icon="lucide:edit"></iconify-icon>
+                  </a>
+                  <a href="{% url 'usun_fakture' pk=faktura.pk %}" class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center" title="Usuń">
+                    <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                  </a>
+                </div>
               </td>
             </tr>
             {% empty %}
-                <tr><td colspan="12">Brak faktur.</td></tr>
+                <tr><td colspan="11" class="text-center text-muted">Brak faktur do wyświetlenia.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 
 <script>
-        let sortDirection = {}; // Przechowuje stan sortowania dla każdej kolumny
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the invoices table with enhanced functionality
+    initializeInvoicesTable();
+});
 
-        function sortTable(columnIndex) {
-            let table = document.querySelector("table tbody");
-            let rows = Array.from(table.rows);
+function initializeInvoicesTable() {
+    // Wait for TablesManager to be available
+    if (window.TablesManager) {
+        console.log('TablesManager available, initializing invoices table');
+        TablesManager.initializeTable('#invoicesTable', {
+            order: [[3, 'desc']], // Sort by issue date descending
+            pageLength: 25,
+            responsive: true,
+            language: {
+                search: "Szukaj:",
+                lengthMenu: "Pokaż _MENU_ wpisów",
+                info: "Pokazano _START_ do _END_ z _TOTAL_ wpisów",
+                infoEmpty: "Pokazano 0 do 0 z 0 wpisów",
+                infoFiltered: "(filtrowane z _TOTAL_ wszystkich wpisów)",
+                paginate: {
+                    first: "Pierwsza",
+                    last: "Ostatnia",
+                    next: "Następna",
+                    previous: "Poprzednia"
+                },
+                emptyTable: "Brak faktur do wyświetlenia",
+                zeroRecords: "Nie znaleziono pasujących rekordów"
+            },
+            columnDefs: [
+                { targets: [2, 3, 4], type: 'date' }, // Date columns
+                { targets: [6, 7], type: 'num', className: 'text-end' }, // Amount columns
+                { targets: [9], className: 'text-center' }, // Status column
+                { targets: [10], orderable: false, className: 'text-center' } // Actions column
+            ]
+        });
+    } else {
+        // Wait for tables:initialized event
+        document.addEventListener('tables:initialized', function() {
+            console.log('Tables initialized successfully');
+        });
+        
+        // Fallback timeout - use basic table enhancements
+        setTimeout(function() {
+            if (!window.TablesManager) {
+                console.warn('TablesManager not available, using basic table functionality');
+                enhanceTableFallback();
+            }
+        }, 3000);
+    }
+}
 
-            let isAscending = sortDirection[columnIndex] !== "asc";
-            sortDirection[columnIndex] = isAscending ? "asc" : "desc";
+function enhanceTableFallback() {
+    // Add basic sorting functionality if DataTables is not available
+    const table = document.getElementById('invoicesTable');
+    if (!table) return;
+    
+    console.log('Applying fallback table enhancements');
+    
+    // Add sorting indicators to headers
+    const headers = table.querySelectorAll('th[data-sortable="true"]');
+    headers.forEach((header, index) => {
+        header.style.cursor = 'pointer';
+        header.style.userSelect = 'none';
+        
+        // Add sort indicator
+        const indicator = document.createElement('span');
+        indicator.className = 'sort-indicator ms-2';
+        indicator.innerHTML = '↕️';
+        indicator.style.opacity = '0.5';
+        header.appendChild(indicator);
+        
+        header.addEventListener('click', () => {
+            sortTableColumn(table, index, header);
+        });
+    });
+    
+    // Add basic search functionality
+    addBasicTableSearch(table);
+}
 
-            rows.sort((rowA, rowB) => {
-                let cellA = rowA.cells[columnIndex].innerText.trim();
-                let cellB = rowB.cells[columnIndex].innerText.trim();
-
-                let numA = parseFloat(cellA);
-                let numB = parseFloat(cellB);
-
-                if (!isNaN(numA) && !isNaN(numB)) {
-                    return isAscending ? numA - numB : numB - numA;
-                } else {
-                    return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-                }
-            });
-
-            table.append(...rows);
-
-            updateSortIcons(columnIndex, isAscending);
+function sortTableColumn(table, columnIndex, header) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const isAscending = header.getAttribute('data-sort-direction') !== 'asc';
+    
+    // Update sort indicators
+    table.querySelectorAll('.sort-indicator').forEach(indicator => {
+        indicator.innerHTML = '↕️';
+        indicator.style.opacity = '0.5';
+    });
+    
+    const indicator = header.querySelector('.sort-indicator');
+    if (indicator) {
+        indicator.innerHTML = isAscending ? '↑' : '↓';
+        indicator.style.opacity = '1';
+    }
+    
+    header.setAttribute('data-sort-direction', isAscending ? 'asc' : 'desc');
+    
+    // Sort rows
+    rows.sort((a, b) => {
+        const aCell = a.cells[columnIndex];
+        const bCell = b.cells[columnIndex];
+        
+        if (!aCell || !bCell) return 0;
+        
+        // Use data-order attribute if available, otherwise use text content
+        let aValue = aCell.getAttribute('data-order') || aCell.textContent.trim();
+        let bValue = bCell.getAttribute('data-order') || bCell.textContent.trim();
+        
+        // Try to parse as numbers
+        const aNum = parseFloat(aValue.replace(/[^\d.-]/g, ''));
+        const bNum = parseFloat(bValue.replace(/[^\d.-]/g, ''));
+        
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return isAscending ? aNum - bNum : bNum - aNum;
         }
+        
+        // String comparison
+        return isAscending ? 
+            aValue.localeCompare(bValue) : 
+            bValue.localeCompare(aValue);
+    });
+    
+    // Re-append sorted rows
+    rows.forEach(row => tbody.appendChild(row));
+}
 
-        function updateSortIcons(columnIndex, isAscending) {
-            document.querySelectorAll(".sort-icon").forEach(icon => icon.innerHTML = ""); // Reset ikon
+function addBasicTableSearch(table) {
+    // Create search input
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'mb-3 d-flex justify-content-end';
+    searchContainer.innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+            <label class="form-label mb-0">Szukaj:</label>
+            <input type="text" class="form-control" id="tableSearch" placeholder="Wpisz aby wyszukać..." style="width: 200px;">
+        </div>
+    `;
+    
+    // Insert before table
+    table.parentNode.insertBefore(searchContainer, table);
+    
+    // Add search functionality
+    const searchInput = document.getElementById('tableSearch');
+    searchInput.addEventListener('input', (e) => {
+        filterTableRows(table, e.target.value);
+    });
+}
 
-            let th = document.querySelectorAll("th")[columnIndex];
-            let icon = th.querySelector(".sort-icon");
+function filterTableRows(table, searchTerm) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    
+    const rows = tbody.querySelectorAll('tr');
+    const term = searchTerm.toLowerCase();
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(term) ? '' : 'none';
+    });
+}
 
-            icon.innerHTML = isAscending ? " ▲" : " ▼"; // Dodanie strzałki
+// Error handling for table initialization
+window.addEventListener('error', function(event) {
+    if (event.target && event.target.tagName === 'SCRIPT') {
+        const src = event.target.src;
+        if (src.includes('dataTables') || src.includes('tables-manager')) {
+            console.warn('DataTables script failed to load:', src);
+            enhanceTableFallback();
         }
-    </script>
+    }
+});
+</script>

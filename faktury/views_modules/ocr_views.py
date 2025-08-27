@@ -38,11 +38,35 @@ def ocr_upload_view(request):
     # GET request - show upload form
     context = {
         'supported_types': list(settings.SUPPORTED_DOCUMENT_TYPES.keys()),
-        'max_file_size_mb': settings.DOCUMENT_AI_CONFIG['max_file_size'] // (1024 * 1024),
+        'max_file_size_mb': settings.OCR_CONFIG['max_file_size'] // (1024 * 1024),
         'recent_uploads': DocumentUpload.objects.filter(user=request.user)[:10],
     }
     
     return render(request, 'faktury/ocr/upload.html', context)
+
+
+@login_required
+def test_csrf_view(request):
+    """Test page for CSRF token handling"""
+    return render(request, 'ocr/test_csrf.html')
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods
+
+@ensure_csrf_cookie
+@require_http_methods(["GET"])
+def get_csrf_token(request):
+    """Simple CSRF token endpoint for testing - no authentication required"""
+    from django.middleware.csrf import get_token
+    csrf_token = get_token(request)
+    
+    return JsonResponse({
+        'success': True,
+        'csrf_token': csrf_token,
+        'message': 'CSRF token retrieved successfully'
+    })
 
 
 @login_required 

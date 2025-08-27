@@ -48,6 +48,316 @@ from faktury.models import DocumentUpload, OCRResult, OCRValidation
 
 logger = logging.getLogger('faktury.api.views')
 performance_logger = logging.getLogger('faktury.api.performance')
+
+
+class OCRUploadAPIView(APIView, BaseAPIMixin, FileValidationMixin, LoggingMixin):
+    """
+    API endpoint for uploading documents for OCR processing.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [OCRUploadThrottle]
+    
+    @extend_schema(
+        operation_id='ocr_upload_document',
+        summary='Upload document for OCR processing',
+        description='Upload a document (PDF, image) for OCR text extraction and invoice data processing.',
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'file': {
+                        'type': 'string',
+                        'format': 'binary',
+                        'description': 'Document file to process'
+                    }
+                }
+            }
+        },
+        responses={
+            201: OpenApiResponse(
+                response=DocumentUploadSerializer,
+                description='Document uploaded successfully'
+            ),
+            400: OpenApiResponse(description='Invalid file or validation error'),
+            413: OpenApiResponse(description='File too large'),
+            415: OpenApiResponse(description='Unsupported file type'),
+            429: OpenApiResponse(description='Rate limit exceeded'),
+        }
+    )
+    def post(self, request):
+        """Upload document for OCR processing"""
+        try:
+            # Get uploaded file
+            uploaded_file = request.FILES.get('file')
+            if not uploaded_file:
+                return build_error_response(
+                    'No file provided',
+                    status_code=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Validate file
+            self.validate_file(uploaded_file)
+            
+            # Initialize upload service
+            upload_service = FileUploadService()
+            
+            # Handle the upload
+            document_upload = upload_service.handle_upload(uploaded_file, request.user)
+            
+            # Serialize response
+            serializer = DocumentUploadSerializer(document_upload)
+            
+            # Log successful upload
+            self.log_operation(
+                request, 
+                'document_upload', 
+                {'document_id': document_upload.id, 'filename': uploaded_file.name}
+            )
+            
+            return build_success_response(
+                data=serializer.data,
+                message='Document uploaded successfully. OCR processing will start automatically.',
+                status_code=status.HTTP_201_CREATED
+            )
+            
+        except FileValidationError as e:
+            return build_error_response(
+                f'File validation failed: {str(e)}',
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"OCR upload error: {e}", exc_info=True)
+            return build_error_response(
+                'Internal server error during upload',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class OCRStatusAPIView(APIView, BaseAPIMixin, OwnershipMixin, LoggingMixin):
+    """
+    API endpoint for checking OCR processing status.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [OCRAPIThrottle]
+    
+    @extend_schema(
+        operation_id='ocr_check_status',
+        summary='Check OCR processing status',
+        description='Check the processing status of an uploaded document.',
+        parameters=[
+            OpenApiParameter(
+                name='task_id',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='Task ID or document ID to check status for'
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=TaskStatusSerializer,
+                description='Status retrieved successfully'
+            ),
+            404: OpenApiResponse(description='Task or document not found'),
+        }
+    )
+    def get(self, request, task_id):
+        """Check OCR processing status"""
+        try:
+            # Try to find document by ID first
+            try:
+                document_id = int(task_id)
+                document_upload = DocumentUpload.objects.get(
+                    id=document_id,
+                    user=request.user
+                )
+            except (ValueError, DocumentUpload.DoesNotExist):
+                # Try to find by task ID
+                try:
+                    document_upload = DocumentUpload.objects.get(
+                        task_id=task_id,
+                        user=request.user
+                    )
+                except DocumentUpload.DoesNotExist:
+                    return build_not_found_response('Document or task not found')
+            
+            # Build response data
+            response_data = {
+                'document_id': document_upload.id,
+                'task_id': document_upload.task_id,
+                'filename': document_upload.original_filename,
+                'status': document_upload.processing_status,
+                'upload_time': document_upload.upload_timestamp,
+                'processing_started': document_upload.processing_started_at,
+                'processing_completed': document_upload.processing_completed_at,
+                'processing_duration': document_upload.processing_duration,
+                'error_message': document_upload.error_message,
+            }
+            
+            # Add OCR result data if available
+            try:
+                ocr_result = OCRResult.objects.get(document=document_upload)
+                response_data.update({
+                    'ocr_available': True,
+                    'confidence_score': ocr_result.confidence_score,
+                    'confidence_level': ocr_result.confidence_level,
+                    'needs_review': ocr_result.needs_human_review,
+                    'extracted_data': ocr_result.extracted_data,
+                })
+                
+                # Add invoice data if created
+                if ocr_result.faktura:
+                    response_data.update({
+                        'invoice_created': True,
+                        'invoice_id': ocr_result.faktura.id,
+                        'invoice_number': ocr_result.faktura.numer,
+                    })
+                
+            except OCRResult.DoesNotExist:
+                response_data['ocr_available'] = False
+            
+            return build_success_response(data=response_data)
+            
+        except Exception as e:
+            logger.error(f"OCR status check error: {e}", exc_info=True)
+            return build_error_response(
+                'Error checking status',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class OCRResultsListAPIView(generics.ListAPIView, BaseAPIMixin, LoggingMixin):
+    """
+    API endpoint for listing OCR results.
+    """
+    serializer_class = OCRResultListSerializer
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [OCRAPIThrottle]
+    pagination_class = PageNumberPagination
+    
+    def get_queryset(self):
+        """Get OCR results for the authenticated user"""
+        return OCRResult.objects.filter(
+            document__user=self.request.user
+        ).select_related('document', 'faktura').order_by('-created_at')
+    
+    @extend_schema(
+        operation_id='ocr_list_results',
+        summary='List OCR results',
+        description='Get a paginated list of OCR processing results for the authenticated user.',
+        responses={
+            200: OpenApiResponse(
+                response=OCRResultListSerializer(many=True),
+                description='Results retrieved successfully'
+            ),
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class OCRResultDetailAPIView(generics.RetrieveAPIView, BaseAPIMixin, OwnershipMixin, LoggingMixin):
+    """
+    API endpoint for retrieving detailed OCR result.
+    """
+    serializer_class = OCRResultDetailSerializer
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [OCRAPIThrottle]
+    
+    def get_queryset(self):
+        """Get OCR results for the authenticated user"""
+        return OCRResult.objects.filter(
+            document__user=self.request.user
+        ).select_related('document', 'faktura')
+    
+    @extend_schema(
+        operation_id='ocr_get_result_detail',
+        summary='Get OCR result details',
+        description='Get detailed information about a specific OCR processing result.',
+        parameters=[
+            OpenApiParameter(
+                name='result_id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.PATH,
+                description='OCR result ID'
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=OCRResultDetailSerializer,
+                description='Result details retrieved successfully'
+            ),
+            404: OpenApiResponse(description='Result not found'),
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class OCRValidationAPIView(APIView, BaseAPIMixin, OwnershipMixin, LoggingMixin):
+    """
+    API endpoint for validating and correcting OCR results.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [OCRAPIThrottle]
+    
+    @extend_schema(
+        operation_id='ocr_validate_result',
+        summary='Validate OCR result',
+        description='Submit validation and corrections for an OCR result.',
+        request=OCRValidationSerializer,
+        responses={
+            200: OpenApiResponse(description='Validation submitted successfully'),
+            404: OpenApiResponse(description='Result not found'),
+        }
+    )
+    def post(self, request, result_id):
+        """Submit OCR result validation"""
+        try:
+            # Get OCR result
+            ocr_result = OCRResult.objects.get(
+                id=result_id,
+                document__user=request.user
+            )
+            
+            # Validate request data
+            serializer = OCRValidationSerializer(data=request.data)
+            if not serializer.is_valid():
+                return build_error_response(
+                    'Invalid validation data',
+                    errors=serializer.errors,
+                    status_code=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Create validation record
+            validation_data = serializer.validated_data
+            OCRValidation.objects.create(
+                ocr_result=ocr_result,
+                validated_by=request.user,
+                corrections_made=validation_data.get('corrections_made', {}),
+                accuracy_rating=validation_data.get('accuracy_rating', 8),
+                validation_notes=validation_data.get('validation_notes', ''),
+            )
+            
+            # Log validation
+            self.log_operation(
+                request,
+                'ocr_validation',
+                {'result_id': result_id, 'accuracy_rating': validation_data.get('accuracy_rating')}
+            )
+            
+            return build_success_response(
+                message='Validation submitted successfully'
+            )
+            
+        except OCRResult.DoesNotExist:
+            return build_not_found_response('OCR result not found')
+        except Exception as e:
+            logger.error(f"OCR validation error: {e}", exc_info=True)
+            return build_error_response(
+                'Error submitting validation',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+asset_monitor_logger = logging.getLogger('faktury.api.asset_monitor')
 security_logger = get_security_logger()
 
 
@@ -2594,3 +2904,337 @@ class HealthCheckAPIView(APIView):
         return Response(response_data, status=status_code)
 
 
+
+
+@extend_schema_view(
+    post=extend_schema(
+        operation_id='log_asset_monitoring_data',
+        summary='Log asset monitoring data',
+        description='Endpoint for frontend to log asset loading errors, performance metrics, and monitoring data.',
+        tags=['Asset Monitoring'],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'logs': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'eventType': {'type': 'string'},
+                                'data': {'type': 'object'},
+                                'timestamp': {'type': 'string'},
+                                'url': {'type': 'string'},
+                                'userAgent': {'type': 'string'},
+                                'sessionId': {'type': 'string'}
+                            }
+                        }
+                    },
+                    'batchId': {'type': 'string'},
+                    'timestamp': {'type': 'string'}
+                }
+            }
+        },
+        responses={
+            200: OpenApiResponse(
+                description='Monitoring data logged successfully',
+                examples=[
+                    OpenApiExample(
+                        'Success Response',
+                        value={
+                            'success': True,
+                            'message': 'Asset monitoring data logged successfully',
+                            'processed_logs': 5
+                        }
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description='Invalid monitoring data format'
+            )
+        }
+    )
+)
+class AssetMonitoringAPIView(BaseAPIView):
+    """
+    Asset monitoring endpoint for logging frontend asset loading issues.
+    
+    This endpoint receives batched monitoring data from the frontend JavaScript
+    monitoring systems, including 404 errors, performance metrics, and critical
+    asset failures. The data is logged for analysis and alerting.
+    
+    **Authentication Required**: Yes (but allows anonymous for basic monitoring)
+    **Rate Limit**: 100 requests per minute per user
+    **Data Retention**: Logs are kept for 30 days for analysis
+    
+    **Supported Event Types**:
+    - `404_error`: Asset not found errors
+    - `http_error`: Other HTTP errors (500, 503, etc.)
+    - `network_error`: Network connectivity issues
+    - `performance_metric`: Asset loading performance data
+    - `slow_loading`: Assets that load slower than threshold
+    - `critical_failure`: Critical asset loading failures
+    - `retry_success`: Successful retry attempts
+    - `network_status`: Online/offline status changes
+    - `periodic_report`: Periodic summary reports
+    
+    **Security Features**:
+    - Request validation and sanitization
+    - Rate limiting to prevent abuse
+    - User session tracking
+    - Anomaly detection for unusual patterns
+    
+    **Usage**:
+    Frontend monitoring systems automatically send batched data every 10 seconds
+    or when critical events occur. This helps identify infrastructure issues,
+    CDN problems, and performance degradation.
+    """
+    throttle_classes = [OCRAPIThrottle]
+    permission_classes = []  # Allow anonymous monitoring for basic functionality
+    
+    def post(self, request, *args, **kwargs):
+        """
+        Log asset monitoring data from frontend.
+        
+        Expected request format:
+        {
+            "logs": [
+                {
+                    "eventType": "404_error",
+                    "data": {
+                        "url": "https://example.com/missing.js",
+                        "status": 404,
+                        "critical": true
+                    },
+                    "timestamp": "2025-08-23T10:30:00Z",
+                    "url": "https://example.com/page",
+                    "userAgent": "Mozilla/5.0...",
+                    "sessionId": "abc123"
+                }
+            ],
+            "batchId": "batch_123",
+            "timestamp": "2025-08-23T10:30:00Z"
+        }
+        
+        Returns:
+        - Success confirmation
+        - Number of processed logs
+        - Any validation warnings
+        """
+        try:
+            # Validate request data
+            if not request.data or 'logs' not in request.data:
+                return self.error_response(
+                    'INVALID_REQUEST',
+                    'Missing logs data in request',
+                    status_code=APIStatusCode.BAD_REQUEST
+                )
+            
+            logs = request.data.get('logs', [])
+            batch_id = request.data.get('batchId', 'unknown')
+            
+            if not isinstance(logs, list):
+                return self.error_response(
+                    'INVALID_FORMAT',
+                    'Logs must be an array',
+                    status_code=APIStatusCode.BAD_REQUEST
+                )
+            
+            # Process each log entry
+            processed_count = 0
+            warnings = []
+            
+            for log_entry in logs[:50]:  # Limit to 50 logs per batch
+                try:
+                    self._process_log_entry(log_entry, request)
+                    processed_count += 1
+                except Exception as e:
+                    warnings.append(f"Failed to process log entry: {str(e)}")
+                    continue
+            
+            # Log batch summary
+            asset_monitor_logger.info(
+                f"Asset monitoring batch processed - Batch: {batch_id}, "
+                f"Processed: {processed_count}/{len(logs)}, "
+                f"User: {getattr(request.user, 'id', 'anonymous')}, "
+                f"IP: {self._get_client_ip(request)}"
+            )
+            
+            # Return success response
+            response_data = {
+                'processed_logs': processed_count,
+                'total_logs': len(logs),
+                'batch_id': batch_id
+            }
+            
+            if warnings:
+                response_data['warnings'] = warnings[:10]  # Limit warnings
+            
+            return self.success_response(
+                data=response_data,
+                message='Asset monitoring data logged successfully'
+            )
+            
+        except Exception as e:
+            asset_monitor_logger.error(f"Error processing asset monitoring data: {str(e)}", exc_info=True)
+            return self.error_response(
+                'PROCESSING_ERROR',
+                'Failed to process monitoring data',
+                details={'error': str(e)},
+                status_code=APIStatusCode.INTERNAL_SERVER_ERROR
+            )
+    
+    def _process_log_entry(self, log_entry, request):
+        """
+        Process individual log entry.
+        
+        Args:
+            log_entry: Dictionary containing log data
+            request: HTTP request object
+        """
+        event_type = log_entry.get('eventType', 'unknown')
+        data = log_entry.get('data', {})
+        timestamp = log_entry.get('timestamp')
+        page_url = log_entry.get('url')
+        user_agent = log_entry.get('userAgent')
+        session_id = log_entry.get('sessionId')
+        
+        # Add request context
+        context = {
+            'user_id': getattr(request.user, 'id', None) if hasattr(request, 'user') and request.user.is_authenticated else None,
+            'ip_address': self._get_client_ip(request),
+            'page_url': page_url,
+            'user_agent': user_agent,
+            'session_id': session_id,
+            'timestamp': timestamp
+        }
+        
+        # Log based on event type
+        if event_type == '404_error':
+            self._log_404_error(data, context)
+        elif event_type == 'critical_failure':
+            self._log_critical_failure(data, context)
+        elif event_type == 'performance_metric':
+            self._log_performance_metric(data, context)
+        elif event_type == 'slow_loading':
+            self._log_slow_loading(data, context)
+        elif event_type == 'network_error':
+            self._log_network_error(data, context)
+        elif event_type == 'periodic_report':
+            self._log_periodic_report(data, context)
+        else:
+            # Log generic monitoring event
+            asset_monitor_logger.info(
+                f"Asset monitoring event - Type: {event_type}, "
+                f"Data: {data}, Context: {context}"
+            )
+    
+    def _log_404_error(self, data, context):
+        """Log 404 asset errors."""
+        asset_url = data.get('url', 'unknown')
+        is_critical = data.get('critical', False)
+        
+        log_level = logging.ERROR if is_critical else logging.WARNING
+        
+        asset_monitor_logger.log(
+            log_level,
+            f"ASSET_404_ERROR - URL: {asset_url}, Critical: {is_critical}, "
+            f"Page: {context.get('page_url')}, User: {context.get('user_id')}, "
+            f"Session: {context.get('session_id')}"
+        )
+        
+        # Alert for critical 404s
+        if is_critical:
+            asset_monitor_logger.error(
+                f"CRITICAL_ASSET_404 - {asset_url} - This may cause significant functionality issues"
+            )
+    
+    def _log_critical_failure(self, data, context):
+        """Log critical asset failures."""
+        asset_url = data.get('url', 'unknown')
+        error_message = data.get('error', 'Unknown error')
+        
+        asset_monitor_logger.error(
+            f"CRITICAL_ASSET_FAILURE - URL: {asset_url}, Error: {error_message}, "
+            f"Page: {context.get('page_url')}, User: {context.get('user_id')}"
+        )
+    
+    def _log_performance_metric(self, data, context):
+        """Log performance metrics."""
+        asset_url = data.get('url', 'unknown')
+        duration = data.get('duration', 0)
+        transfer_size = data.get('transferSize', 0)
+        
+        asset_monitor_logger.info(
+            f"ASSET_PERFORMANCE - URL: {asset_url}, Duration: {duration}ms, "
+            f"Size: {transfer_size}bytes, Page: {context.get('page_url')}"
+        )
+    
+    def _log_slow_loading(self, data, context):
+        """Log slow loading assets."""
+        asset_url = data.get('url', 'unknown')
+        duration = data.get('duration', 0)
+        threshold = data.get('threshold', 0)
+        is_critical = data.get('critical', False)
+        
+        log_level = logging.WARNING if is_critical else logging.INFO
+        
+        asset_monitor_logger.log(
+            log_level,
+            f"SLOW_ASSET_LOADING - URL: {asset_url}, Duration: {duration}ms, "
+            f"Threshold: {threshold}ms, Critical: {is_critical}, "
+            f"Page: {context.get('page_url')}"
+        )
+    
+    def _log_network_error(self, data, context):
+        """Log network errors."""
+        asset_url = data.get('url', 'unknown')
+        error_message = data.get('errorMessage', 'Network error')
+        
+        asset_monitor_logger.warning(
+            f"ASSET_NETWORK_ERROR - URL: {asset_url}, Error: {error_message}, "
+            f"Page: {context.get('page_url')}, User: {context.get('user_id')}"
+        )
+    
+    def _log_periodic_report(self, data, context):
+        """Log periodic monitoring reports."""
+        summary = data.get('summary', {})
+        
+        asset_monitor_logger.info(
+            f"PERIODIC_MONITORING_REPORT - "
+            f"404_Errors: {summary.get('total404Errors', 0)}, "
+            f"Critical_Failures: {summary.get('criticalFailures', 0)}, "
+            f"Performance_Metrics: {summary.get('performanceMetrics', 0)}, "
+            f"Page: {context.get('page_url')}, User: {context.get('user_id')}"
+        )
+    
+    def _get_client_ip(self, request):
+        """Get client IP address from request."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
+    def _get_specific_metrics(self, request, response, *args, **kwargs):
+        """Get asset monitoring specific metrics."""
+        metrics = {}
+        
+        if hasattr(request, 'data') and 'logs' in request.data:
+            logs = request.data['logs']
+            metrics.update({
+                'log_count': len(logs),
+                'batch_id': request.data.get('batchId'),
+                'monitoring_success': response.status_code == 200,
+            })
+            
+            # Count event types
+            event_types = {}
+            for log in logs:
+                event_type = log.get('eventType', 'unknown')
+                event_types[event_type] = event_types.get(event_type, 0) + 1
+            
+            metrics['event_types'] = event_types
+        
+        return metrics

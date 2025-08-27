@@ -48,6 +48,85 @@ import datetime
 import json
 from decimal import Decimal
 from io import BytesIO
+
+
+@login_required
+def test_cdn_fallback(request):
+    """
+    Test page for CDN fallback system
+    """
+    return render(request, 'test_fallback.html')
+
+
+@login_required
+def company_dashboard(request):
+    """
+    Company dashboard view - alias for main dashboard
+    """
+    return redirect('panel_uzytkownika')
+
+
+@login_required
+def company_info(request):
+    """
+    Company information view
+    """
+    try:
+        firma = Firma.objects.get(user=request.user)
+    except Firma.DoesNotExist:
+        return redirect('dodaj_firme')
+    
+    return render(request, 'faktury/company_info.html', {'firma': firma})
+
+
+@login_required
+def company_settings(request):
+    """
+    Company settings view
+    """
+    try:
+        firma = Firma.objects.get(user=request.user)
+    except Firma.DoesNotExist:
+        return redirect('dodaj_firme')
+    
+    return render(request, 'faktury/company_settings.html', {'firma': firma})
+
+
+@login_required
+def company_api_status(request):
+    """
+    Company API status view
+    """
+    return JsonResponse({
+        'status': 'active',
+        'user': request.user.username,
+        'timestamp': timezone.now().isoformat()
+    })
+
+
+@login_required
+def view_profile(request):
+    """
+    User profile view
+    """
+    return render(request, 'faktury/view_profile.html', {'user': request.user})
+
+
+@login_required
+def email_inbox(request):
+    """
+    Email inbox view
+    """
+    # For now, redirect to notifications
+    return redirect('notifications:list')
+
+
+@login_required
+def notifications_list(request):
+    """
+    Notifications list view
+    """
+    return render(request, 'faktury/notifications_list.html')
 import zipfile
 import requests
 from weasyprint import HTML
@@ -2694,3 +2773,110 @@ def dodaj_produkt_ajax(request):
             return JsonResponse({'error': f'Błąd podczas dodawania produktu: {str(e)}'}, status=500)
     
     return JsonResponse({'error': 'Metoda nie jest obsługiwana'}, status=405)
+
+@login_required
+def twoje_sprawy(request):
+    """
+    Display user's tasks and calendar events
+    """
+    # Get user's tasks
+    zadania_uzytkownika = ZadanieUzytkownika.objects.filter(user=request.user).order_by('-data_utworzenia')
+    
+    # Get team tasks assigned to user
+    try:
+        firma = Firma.objects.get(user=request.user)
+        czlonkowie = CzlonekZespolu.objects.filter(user=request.user)
+        zadania_zespolowe = Zadanie.objects.filter(przypisane_do__in=czlonkowie).order_by('-data_utworzenia')
+    except Firma.DoesNotExist:
+        zadania_zespolowe = []
+    
+    context = {
+        'zadania_uzytkownika': zadania_uzytkownika,
+        'zadania_zespolowe': zadania_zespolowe,
+    }
+    return render(request, 'faktury/twoje_sprawy.html', context)
+
+@login_required
+def get_events(request):
+    """
+    API endpoint for calendar events
+    """
+    events = []
+    
+    # Get user's tasks as events
+    zadania = ZadanieUzytkownika.objects.filter(user=request.user)
+    for zadanie in zadania:
+        events.append({
+            'id': f'task_{zadanie.id}',
+            'title': zadanie.opis,
+            'start': zadanie.data_utworzenia.isoformat(),
+            'color': '#007bff' if not zadanie.wykonane else '#28a745',
+            'url': f'/zadania_uzytkownika/{zadanie.id}/'
+        })
+    
+    # Get invoices as events
+    faktury = Faktura.objects.filter(user=request.user)
+    for faktura in faktury:
+        events.append({
+            'id': f'invoice_{faktura.id}',
+            'title': f'Faktura {faktura.numer}',
+            'start': faktura.data_wystawienia.isoformat(),
+            'color': '#dc3545' if faktura.status == 'nieoplacona' else '#28a745',
+            'url': f'/faktura/{faktura.id}/'
+        })
+    
+    return JsonResponse(events, safe=False)
+
+@login_required
+def moje_zadania(request):
+    """
+    Display user's personal tasks
+    """
+    zadania = ZadanieUzytkownika.objects.filter(user=request.user).order_by('-data_utworzenia')
+    
+    context = {
+        'zadania': zadania,
+    }
+    return render(request, 'faktury/moje_zadania.html', context)
+
+@login_required
+def szczegoly_zadania_uzytkownika(request, pk):
+    """
+    Display details of a personal task
+    """
+    zadanie = get_object_or_404(ZadanieUzytkownika, pk=pk, user=request.user)
+    
+    return render(request, 'faktury/szczegoly_zadania_uzytkownika.html', {'zadanie': zadanie})
+
+@login_required
+def lista_wiadomosci(request):
+    """
+    Display list of messages
+    """
+    wiadomosci = Wiadomosc.objects.filter(
+        Q(nadawca=request.user) | Q(odbiorca=request.user)
+    ).order_by('-data_wyslania')
+    
+    context = {
+        'wiadomosci': wiadomosci,
+    }
+    return render(request, 'faktury/lista_wiadomosci.html', context)
+
+@login_required
+def szczegoly_wiadomosci(request, pk):
+    """
+    Display the details of a message.
+    """
+    wiadomosc = get_object_or_404(Wiadomosc, pk=pk)
+    
+    # Check if user has access to this message
+    if wiadomosc.nadawca != request.user and wiadomosc.odbiorca != request.user:
+        messages.error(request, 'Nie masz dostępu do tej wiadomości.')
+        return redirect('lista_wiadomosci')
+    
+    # Mark the message as read if it wasn't already
+    if not wiadomosc.przeczytana and wiadomosc.odbiorca == request.user:
+        wiadomosc.przeczytana = True
+        wiadomosc.save()
+
+    return render(request, 'faktury/szczegoly_wiadomosci.html', {'wiadomosc': wiadomosc})

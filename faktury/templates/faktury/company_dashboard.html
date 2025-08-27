@@ -190,6 +190,101 @@
         </div>
     </div>
 
+    <!-- Analytics Charts -->
+    <div class="row mb-24">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0 fw-bold">Przychody miesięczne</h6>
+                </div>
+                <div class="card-body">
+                    <div id="revenueChart" 
+                         data-chart='{"series":[{"name":"Przychody","data":[{{ stats.monthly_revenue|join:"," }}]}],"categories":["Sty","Lut","Mar","Kwi","Maj","Cze","Lip","Sie","Wrz","Paź","Lis","Gru"]}'
+                         style="min-height: 300px;">
+                        <!-- Fallback content -->
+                        <div class="d-flex align-items-center justify-content-center" style="height: 300px;">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Ładowanie wykresu...</span>
+                                </div>
+                                <p class="text-muted">Ładowanie wykresu przychodów...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0 fw-bold">Status faktur</h6>
+                </div>
+                <div class="card-body">
+                    <div id="invoiceStatusChart" 
+                         data-chart='{"series":[{{ stats.paid_count|default:0 }},{{ stats.pending_count|default:0 }},{{ stats.overdue_count|default:0 }},{{ stats.draft_count|default:0 }}],"labels":["Opłacone","Oczekujące","Przeterminowane","Szkice"]}'
+                         style="min-height: 250px;">
+                        <!-- Fallback content -->
+                        <div class="d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Ładowanie wykresu...</span>
+                                </div>
+                                <p class="text-muted">Ładowanie wykresu statusów...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-24">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0 fw-bold">Faktury miesięczne</h6>
+                </div>
+                <div class="card-body">
+                    <div id="monthlyInvoicesChart" 
+                         data-chart='{"series":[{"name":"Liczba faktur","data":[{{ stats.monthly_invoices|join:"," }}]}],"categories":["Sty","Lut","Mar","Kwi","Maj","Cze","Lip","Sie","Wrz","Paź","Lis","Gru"]}'
+                         style="min-height: 250px;">
+                        <!-- Fallback content -->
+                        <div class="d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Ładowanie wykresu...</span>
+                                </div>
+                                <p class="text-muted">Ładowanie wykresu faktur...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom-0 pb-0">
+                    <h6 class="mb-0 fw-bold">Przetwarzanie OCR</h6>
+                </div>
+                <div class="card-body">
+                    <div id="ocrProcessingChart" 
+                         data-chart='{"series":[{"name":"Dokumenty przetworzone","data":[{{ stats.monthly_ocr|join:"," }}]}],"categories":["Sty","Lut","Mar","Kwi","Maj","Cze","Lip","Sie","Wrz","Paź","Lis","Gru"]}'
+                         style="min-height: 250px;">
+                        <!-- Fallback content -->
+                        <div class="d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Ładowanie wykresu...</span>
+                                </div>
+                                <p class="text-muted">Ładowanie wykresu OCR...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Company Information Summary -->
     <div class="row">
         <div class="col-lg-8">
@@ -243,6 +338,10 @@
                         <div class="w-8-px h-8-px bg-{% if stats.kontrahenci_count > 0 %}success{% else %}warning{% endif %} rounded-circle"></div>
                         <span class="text-sm">Kontrahenci: {{ stats.kontrahenci_count }}</span>
                     </div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="w-8-px h-8-px bg-{% if stats.ocr_processed > 0 %}success{% else %}secondary{% endif %} rounded-circle"></div>
+                        <span class="text-sm">OCR: {{ stats.ocr_processed|default:0 }} dokumentów</span>
+                    </div>
                     <div class="mt-3">
                         <a href="{% url 'panel_uzytkownika' %}" class="btn btn-primary btn-sm w-100">
                             Przejdź do panelu głównego
@@ -256,6 +355,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts when dependencies are ready
+    initializeDashboardCharts();
+    
     // Load real-time company status
     fetchCompanyStatus();
     
@@ -263,18 +365,116 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(fetchCompanyStatus, 30000);
 });
 
+function initializeDashboardCharts() {
+    // Wait for ChartsManager to be available
+    if (window.ChartsManager) {
+        console.log('ChartsManager available, initializing charts');
+        ChartsManager.init();
+    } else {
+        // Wait for charts:initialized event
+        document.addEventListener('charts:initialized', function() {
+            console.log('Charts initialized successfully');
+        });
+        
+        // Fallback timeout
+        setTimeout(function() {
+            if (!window.ChartsManager) {
+                console.warn('ChartsManager not available, charts may not display properly');
+                showChartFallbacks();
+            }
+        }, 5000);
+    }
+}
+
+function showChartFallbacks() {
+    // Show fallback content for charts that failed to load
+    const chartContainers = ['#revenueChart', '#invoiceStatusChart', '#monthlyInvoicesChart', '#ocrProcessingChart'];
+    
+    chartContainers.forEach(function(selector) {
+        const container = document.querySelector(selector);
+        if (container) {
+            const fallbackContent = container.querySelector('.d-flex');
+            if (fallbackContent) {
+                fallbackContent.innerHTML = `
+                    <div class="text-center">
+                        <iconify-icon icon="solar:chart-outline" class="text-muted" style="font-size: 48px;"></iconify-icon>
+                        <p class="text-muted mt-2">Wykres niedostępny</p>
+                        <small class="text-secondary">Dane są dostępne w kartach powyżej</small>
+                    </div>
+                `;
+            }
+        }
+    });
+}
+
 function fetchCompanyStatus() {
     fetch('{% url "company_api_status" %}')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 console.log('Company status updated:', data.stats);
-                // You can update UI elements here if needed
+                updateDashboardData(data.stats);
             }
         })
         .catch(error => {
             console.log('Error fetching company status:', error);
         });
 }
+
+function updateDashboardData(stats) {
+    // Update statistics cards
+    updateStatCard('faktury_count', stats.faktury_count);
+    updateStatCard('kontrahenci_count', stats.kontrahenci_count);
+    updateStatCard('total_revenue', stats.total_revenue + ' zł');
+    updateStatCard('outstanding_amount', stats.outstanding_amount + ' zł');
+    
+    // Update charts if ChartsManager is available
+    if (window.ChartsManager && stats.monthly_revenue) {
+        try {
+            ChartsManager.updateChart('#revenueChart', {
+                series: [{
+                    name: 'Przychody',
+                    data: stats.monthly_revenue
+                }]
+            });
+        } catch (error) {
+            console.warn('Failed to update revenue chart:', error);
+        }
+    }
+    
+    if (window.ChartsManager && stats.invoice_status) {
+        try {
+            ChartsManager.updateChart('#invoiceStatusChart', {
+                series: [
+                    stats.paid_count || 0,
+                    stats.pending_count || 0,
+                    stats.overdue_count || 0,
+                    stats.draft_count || 0
+                ]
+            });
+        } catch (error) {
+            console.warn('Failed to update invoice status chart:', error);
+        }
+    }
+}
+
+function updateStatCard(statName, value) {
+    // Find and update stat card values
+    const elements = document.querySelectorAll(`[data-stat="${statName}"]`);
+    elements.forEach(function(element) {
+        element.textContent = value;
+    });
+}
+
+// Error handling for chart initialization
+window.addEventListener('error', function(event) {
+    if (event.target && event.target.tagName === 'SCRIPT') {
+        const src = event.target.src;
+        if (src.includes('apexcharts') || src.includes('charts-manager')) {
+            console.warn('Chart script failed to load:', src);
+            showChartFallbacks();
+        }
+    }
+});
 </script>
 {% endblock %}

@@ -22,12 +22,22 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
     path('company/info/', views.company_info, name='company_info'),
     path('company/settings/', views.company_settings, name='company_settings'),
     path('company/status/', views.company_api_status, name='company_api_status'),
+    
+    # Profile and user pages
+    path('view-profile.html', views.view_profile, name='view_profile_html'),
+    path('profile/', views.view_profile, name='view_profile'),
+    
+    # Email and notifications
+    path('email.html', views.email_inbox, name='email_html'),
+    path('email/', views.email_inbox, name='email_inbox'),
+    path('notifications/', views.notifications_list, name='notifications_list'),
     path('firma/', views.edytuj_firme, name='firma'),
     path('dodaj_produkt/', views.dodaj_produkt, name='dodaj_produkt'),
     path('edytuj_produkt/<int:pk>/', views.edytuj_produkt, name='edytuj_produkt'),
     path('usun_produkt/<int:pk>/', views.usun_produkt, name='usun_produkt'),
     path('pobierz_dane_z_gus/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus'),
     path('generuj_pdf/<int:pk>/', views.generuj_pdf, name='generuj_pdf'),
+    path('test-cdn-fallback/', views.test_cdn_fallback, name='test_cdn_fallback'),
     path('pobierz_dane_kontrahenta/', views.pobierz_dane_kontrahenta, name='pobierz_dane_kontrahenta'),
     path('update_payment/<int:pk>/', views.update_payment, name='update_payment'),
     path('dodaj_kontrahenta_ajax/', views.dodaj_kontrahenta_ajax, name='dodaj_kontrahenta_ajax'),
@@ -97,6 +107,16 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
     path('check-payment-terms/', views.check_payment_terms, name='check-payment-terms'),
     path('api/faktury/', views.api_faktury_list, name='api_faktury_list'),
     path('api/faktury/<int:pk>/', views.api_faktura_detail, name='api_faktura_detail'),
+    
+    # OCR URLs
+    path('ocr/', views_modules.ocr_views.ocr_upload_view, name='ocr_upload'),
+    path('ocr/upload/', views_modules.ocr_views.ocr_upload_view, name='ocr_upload_alt'),
+    path('ocr/status/<int:document_id>/', views_modules.ocr_views.ocr_status_view, name='ocr_status'),
+    path('ocr/results/', views_modules.ocr_views.ocr_results_list, name='ocr_results'),
+    path('ocr/result/<int:result_id>/', views_modules.ocr_views.ocr_result_detail, name='ocr_result_detail'),
+    path('ocr/create-invoice/<int:result_id>/', views_modules.ocr_views.create_invoice_from_ocr, name='create_invoice_from_ocr'),
+    path('ocr/test-csrf/', views_modules.ocr_views.test_csrf_view, name='ocr_test_csrf'),
+    path('ocr/get-csrf-token/', views_modules.ocr_views.get_csrf_token, name='get_csrf_token'),
     path('api/kontrahenci/', views.api_kontrahenci_list, name='api_kontrahenci_list'),
     path('api/kontrahenci/<int:pk>/', views.api_kontrahent_detail, name='api_kontrahent_detail'),
     path('api/produkty/', views.api_produkty_list, name='api_produkty_list'),
@@ -126,6 +146,8 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
         path('results/', views_modules.ocr_views.ocr_results_list, name='ocr_results_list'),
         path('result/<int:result_id>/', views_modules.ocr_views.ocr_result_detail, name='ocr_result_detail'),
         path('create-invoice/<int:result_id>/', views_modules.ocr_views.create_invoice_from_ocr, name='create_invoice_from_ocr'),
+        path('test-csrf/', views_modules.ocr_views.test_csrf_view, name='test_csrf'),
+        path('get-csrf-token/', views_modules.ocr_views.get_csrf_token, name='get_csrf_token'),
         
         # AJAX Status endpoints for real-time updates (JSON responses)
         # Authentication: @login_required, Parameter validation: <int:document_id>
@@ -142,6 +164,5 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
         path('api/statistics/', views_modules.ocr_views.api_ocr_statistics, name='ocr_api_statistics'),
     ])),
     
-    # New REST API endpoints for React frontend
-    path('api/', include('faktury.api.urls')),
+    # REST API endpoints are included in main project URLs (faktulove/urls.py)
 ]

@@ -4,11 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <!-- Bootstrap will be loaded locally via static files -->
   <title>FaktuLove.pl Test</title>
   {% load static %}
   {% load i18n %}
+
+  <!-- Expose Django static URL to JavaScript -->
+  <script>
+    window.STATIC_URL = '{% get_static_prefix %}';
+  </script>
 
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"> <!- Dodaj CSS Toastify -->
   {% block extra_head %}{% endblock %}
@@ -41,6 +46,10 @@
   <link rel="stylesheet" href="{% static 'assets/css/lib/audioplayer.css' %}">
   <!-- main css -->
   <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+  <!-- page enhancements css -->
+  <link rel="stylesheet" href="{% static 'assets/css/page-enhancements.css' %}">
+  <!-- error handling css -->
+  <link rel="stylesheet" href="{% static 'assets/css/error-handling.css' %}">
 </head>
   <body>
     <style>
@@ -90,38 +99,110 @@
 
 </main>
   
-  <!-- jQuery library js -->
-  <script src="{% static 'assets/js/lib/jquery-3.7.1.min.js' %}"></script>
-  <!-- Bootstrap js -->
-  <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
-  <!-- Data Table js -->
-  <script src="{% static 'assets/js/lib/dataTables.min.js' %}"></script>
-  <!-- Iconify Font js -->
-  <script src="{% static 'assets/js/lib/iconify-icon.min.js' %}"></script>
-  <!-- jQuery UI js -->
-  <script src="{% static 'assets/js/lib/jquery-ui.min.js' %}"></script>
-  <!-- Vector Map js -->
-  <script src="{% static 'assets/js/lib/jquery-jvectormap-2.0.5.min.js' %}"></script>
-  <script src="{% static 'assets/js/lib/jquery-jvectormap-world-mill-en.js' %}"></script>
-  <!-- Popup js -->
-  <script src="{% static 'assets/js/lib/magnifc-popup.min.js' %}"></script>
-  <!-- Slick Slider js -->
-  <script src="{% static 'assets/js/lib/slick.min.js' %}"></script>
-  <!-- prism js -->
-  <script src="{% static 'assets/js/lib/prism.js' %}"></script>
-  <!-- file upload js -->
-  <script src="{% static 'assets/js/lib/file-upload.js' %}"></script>
-  <!-- audioplayer -->
-  <script src="{% static 'assets/js/lib/audioplayer.js' %}"></script>
+  <!-- Error Handler - DISABLED due to infinite loop issues -->
+  <!-- <script src="{% static 'assets/js/error-handler.js' %}"></script> -->
   
-  <!-- main js -->
-  <script src="{% static 'assets/js/app.js' %}"></script>
-  <script src="{% static 'assets/js/full-calendar-fv.js' %}"></script>
+  <!-- Asset Monitor (load after error handler) -->
+  <!-- Asset Monitor - DISABLED due to infinite loop issues -->
+  <!-- <script src="{% static 'assets/js/asset-monitor.js' %}"></script> -->
+  
+  <!-- Asset Loading Monitor - DISABLED due to infinite loop issues -->
+  <!-- <script src="{% static 'assets/js/asset-loading-monitor.js' %}"></script> -->
+  
+  <!-- Error Dashboard - DISABLED due to infinite loop issues -->
+  <!-- <script src="{% static 'assets/js/error-dashboard.js' %}"></script> -->
+  
+  <!-- Bootstrap JavaScript -->
+  <script src="{% static 'assets/js/lib/bootstrap.bundle.min.js' %}"></script>
+  
+  <!-- Dependency Manager - DISABLED due to infinite loop issues -->
+  <!-- <script src="{% static 'assets/js/dependency-manager.js' %}"></script> -->
+  
+  <!-- CDN Fallback System - DISABLED due to infinite loop issues -->
+  <!-- <script src="{% static 'assets/js/cdn-fallback.js' %}"></script> -->
+  
+  <!-- Core application scripts (load after dependencies are ready) -->
+  <script>
+    // Load CSRF utilities and OCR handler directly
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load CSRF utilities
+      const csrfScript = document.createElement('script');
+      csrfScript.src = "{% static 'assets/js/csrf-utils.js' %}";
+      document.head.appendChild(csrfScript);
+      
+      // Load OCR handler after CSRF utils
+      csrfScript.onload = function() {
+        const ocrScript = document.createElement('script');
+        ocrScript.src = "{% static 'assets/js/ocr-handler.js' %}";
+        document.head.appendChild(ocrScript);
+      };
+    });
+  </script>
+  
+  <!-- Navigation Manager -->
+  <script src="{% static 'assets/js/navigation-manager.js' %}"></script>
+  
+  <!-- Charts Manager -->
+  <script src="{% static 'assets/js/charts-manager.js' %}"></script>
+  
+  <!-- Tables Manager -->
+  <script src="{% static 'assets/js/tables-manager.js' %}"></script>
+  
+  <!-- Invoice Form Manager -->
+  <script src="{% static 'assets/js/invoice-form-manager.js' %}"></script>
+  
+  <!-- Page Manager -->
+  <script src="{% static 'assets/js/page-manager.js' %}"></script>
+  
+  <!-- Main application script (load after all dependencies) -->
+  <script>
+    // Load application scripts directly
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load jQuery-dependent libraries
+      const fileUploadScript = document.createElement('script');
+      fileUploadScript.src = "{% static 'assets/js/lib/file-upload.js' %}";
+      document.head.appendChild(fileUploadScript);
+      
+      const audioPlayerScript = document.createElement('script');
+      audioPlayerScript.src = "{% static 'assets/js/lib/audioplayer.js' %}";
+      document.head.appendChild(audioPlayerScript);
+      
+      // Load main app script
+      const appScript = document.createElement('script');
+      appScript.src = "{% static 'assets/js/app.js' %}";
+      document.head.appendChild(appScript);
+      
+      // Load calendar script if needed
+      if (document.querySelector('[data-calendar]')) {
+        const calendarScript = document.createElement('script');
+        calendarScript.src = "{% static 'assets/js/full-calendar-fv.js' %}";
+        document.head.appendChild(calendarScript);
+      }
+    });
+  </script>
+  
+  <!-- Toastify for notifications -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-<script>
-  let table = new DataTable('#dataTable');
-</script>
+  <!-- Enhanced DataTable initialization with error handling -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize DataTable if element exists
+      const dataTableElement = document.getElementById('dataTable');
+      if (dataTableElement && typeof $.fn.DataTable !== 'undefined') {
+        try {
+          let table = new DataTable('#dataTable');
+          console.log('DataTable initialized successfully');
+        } catch (error) {
+          console.error('DataTable initialization failed:', error);
+          // Fallback to basic table enhancement
+          if (window.TablesManager) {
+            TablesManager.initializeTable('#dataTable');
+          }
+        }
+      }
+    });
+  </script>
 
 </body>
 </html>

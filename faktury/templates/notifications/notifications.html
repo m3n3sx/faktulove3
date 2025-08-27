@@ -70,51 +70,103 @@ function getCookie(name) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const csrftoken = getCookie('csrftoken');
-
     // Oznaczanie powiadomień jako przeczytane
     document.querySelectorAll('.mark-as-read').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             const id = this.dataset.id;
-            fetch(`/notifications/mark_as_read/${id}/`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': csrftoken
-                }
-            })
-            .then(response => {
+            
+            try {
+                const response = await AJAXHelper.request(`/notifications/mark_as_read/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
                 if (response.ok) {
                     // Remove the notification element from DOM
                     const notificationElem = this.closest('.list-group-item');
                     if (notificationElem) {
                         notificationElem.remove();
                     }
+                    
+                    // Show success message
+                    if (window.Toastify) {
+                        Toastify({
+                            text: "Powiadomienie oznaczone jako przeczytane",
+                            duration: 3000,
+                            gravity: 'top',
+                            position: 'right',
+                            backgroundColor: '#28a745',
+                            stopOnFocus: true
+                        }).showToast();
+                    }
                 }
-            });
+            } catch (error) {
+                console.error('Failed to mark notification as read:', error);
+                if (window.Toastify) {
+                    Toastify({
+                        text: "Błąd podczas oznaczania powiadomienia",
+                        duration: 5000,
+                        gravity: 'top',
+                        position: 'right',
+                        backgroundColor: '#dc3545',
+                        stopOnFocus: true
+                    }).showToast();
+                }
+            }
         });
     });
 
     // Usuwanie powiadomień
     document.querySelectorAll('.delete-notification').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             const id = this.dataset.id;
-            fetch(`/notifications/delete/${id}/`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': csrftoken
-                }
-            })
-            .then(response => {
+            
+            if (!confirm('Czy na pewno chcesz usunąć to powiadomienie?')) {
+                return;
+            }
+            
+            try {
+                const response = await AJAXHelper.request(`/notifications/delete/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
                 if (response.ok) {
                     // Remove the notification element from DOM
                     const notificationElem = this.closest('.list-group-item');
                     if (notificationElem) {
                         notificationElem.remove();
                     }
+                    
+                    // Show success message
+                    if (window.Toastify) {
+                        Toastify({
+                            text: "Powiadomienie zostało usunięte",
+                            duration: 3000,
+                            gravity: 'top',
+                            position: 'right',
+                            backgroundColor: '#28a745',
+                            stopOnFocus: true
+                        }).showToast();
+                    }
                 }
-            });
+            } catch (error) {
+                console.error('Failed to delete notification:', error);
+                if (window.Toastify) {
+                    Toastify({
+                        text: "Błąd podczas usuwania powiadomienia",
+                        duration: 5000,
+                        gravity: 'top',
+                        position: 'right',
+                        backgroundColor: '#dc3545',
+                        stopOnFocus: true
+                    }).showToast();
+                }
+            }
         });
     });
 });

@@ -43,7 +43,7 @@ def handle_document_upload_created(sender, instance, created, **kwargs):
             
             try:
                 with transaction.atomic():
-                    from .services.document_ai_service import get_document_ai_service
+                    from .services.ocr_service_factory import get_ocr_service
                     from .services.file_upload_service import FileUploadService
                     from .models import OCRResult
                     
@@ -54,7 +54,7 @@ def handle_document_upload_created(sender, instance, created, **kwargs):
                     file_service = FileUploadService()
                     file_content = file_service.get_file_content(instance)
                     
-                    ocr_service = get_document_ai_service()
+                    ocr_service = get_ocr_service()
                     extracted_data = ocr_service.process_invoice(file_content, instance.content_type)
                     
                     # Create OCRResult - this will trigger the OCR result signals

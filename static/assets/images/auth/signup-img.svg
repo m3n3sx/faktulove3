@@ -1,0 +1,8 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f8f9fa"/>
+  <circle cx="200" cy="100" r="30" fill="#28a745"/>
+  <rect x="170" y="150" width="60" height="40" rx="6" fill="#20c997"/>
+  <circle cx="150" cy="200" r="15" fill="#17a2b8"/>
+  <circle cx="250" cy="200" r="15" fill="#ffc107"/>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial" font-size="16" fill="#6c757d">Rejestracja</text>
+</svg>

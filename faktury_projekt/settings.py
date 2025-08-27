@@ -162,6 +162,7 @@ SITE_ID = 1 # Potrzebne dla django-allauth
 
 LOGIN_REDIRECT_URL = '/'  # Gdzie przekierować po zalogowaniu
 LOGOUT_REDIRECT_URL = '/' # Gdzie przekierować po wylogowaniu
+LOGIN_URL = '/accounts/login/'  # Gdzie przekierować gdy wymagane logowanie
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -219,18 +220,16 @@ DEFAULT_FROM_EMAIL = 'xo@ooxo.pl' # Domyślny adres "Od"
 # OCR AND AI CONFIGURATION
 # ============================================================================
 
-# Google Cloud Configuration
-GOOGLE_CLOUD_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', 'faktulove-ocr')
-GOOGLE_APPLICATION_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-
-# Document AI Configuration
-DOCUMENT_AI_CONFIG = {
-    'project_id': GOOGLE_CLOUD_PROJECT,
-    'location': 'eu',  # Europe for GDPR compliance
-    'processor_id': os.getenv('DOCUMENT_AI_PROCESSOR_ID'),
-    'processor_version': 'rc',  # Release candidate for latest features
-    'timeout': 30,  # seconds
-    'max_file_size': 10 * 1024 * 1024,  # 10MB limit
+# Feature flags for OCR system
+OCR_FEATURE_FLAGS = {
+    'use_opensource_ocr': os.getenv('USE_OPENSOURCE_OCR', 'True').lower() in ('true', '1', 'yes', 'on'),
+    'disable_google_cloud': os.getenv('DISABLE_GOOGLE_CLOUD', 'True').lower() in ('true', '1', 'yes', 'on'),
+    'validate_ocr_config': os.getenv('VALIDATE_OCR_CONFIG', 'True').lower() in ('true', '1', 'yes', 'on'),
+    'use_paddleocr': os.getenv('PADDLEOCR_ENABLED', 'True').lower() in ('true', '1', 'yes', 'on'),
+    'paddleocr_primary': os.getenv('PADDLEOCR_PRIMARY', 'True').lower() in ('true', '1', 'yes', 'on'),
+    'enable_gpu_acceleration': os.getenv('PADDLEOCR_USE_GPU', 'False').lower() in ('true', '1', 'yes', 'on'),
+    'advanced_preprocessing': True,
+    'polish_pattern_enhancement': True,
 }
 
 # Supported file types for OCR
@@ -332,3 +331,42 @@ POLISH_OCR_PATTERNS = {
         r'(\d+[,.]?\d*)\s*zł',
     ],
 }
+
+# PaddleOCR Configuration
+PADDLEOCR_CONFIG = {
+    'enabled': os.getenv('PADDLEOCR_ENABLED', 'True').lower() in ('true', '1', 'yes', 'on'),
+    'languages': os.getenv('PADDLEOCR_LANGUAGES', 'pl,en').split(','),
+    'use_gpu': os.getenv('PADDLEOCR_USE_GPU', 'False').lower() in ('true', '1', 'yes', 'on'),
+    'model_dir': os.getenv('PADDLEOCR_MODEL_DIR', os.path.join(BASE_DIR, 'paddle_models')),
+    'det_model_name': 'pl_PP-OCRv4_det',
+    'rec_model_name': 'pl_PP-OCRv4_rec', 
+    'cls_model_name': 'ch_ppocr_mobile_v2.0_cls',
+    'max_text_length': 25000,
+    'use_angle_cls': True,
+    'use_space_char': True,
+    'drop_score': 0.5,
+    'max_memory': int(os.getenv('PADDLEOCR_MAX_MEMORY', '800')),
+    'max_workers': int(os.getenv('PADDLEOCR_MAX_WORKERS', '2')),
+    'timeout': int(os.getenv('PADDLEOCR_TIMEOUT', '10')),
+    'batch_size': int(os.getenv('PADDLEOCR_BATCH_SIZE', '1')),
+    'preprocessing': {
+        'enabled': True,
+        'noise_reduction': True,
+        'contrast_enhancement': True,
+        'skew_correction': True,
+        'resolution_optimization': True
+    },
+    'polish_optimization': {
+        'enabled': True,
+        'nip_validation': True,
+        'date_format_enhancement': True,
+        'currency_parsing': True,
+        'spatial_analysis': True
+    }
+}
+
+# OCR Engine Priority (PaddleOCR first if enabled)
+OCR_ENGINE_PRIORITY = []
+if PADDLEOCR_CONFIG['enabled']:
+    OCR_ENGINE_PRIORITY.append('paddleocr')
+OCR_ENGINE_PRIORITY.extend(['tesseract', 'easyocr'])

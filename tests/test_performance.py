@@ -14,7 +14,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from faktury.models import DocumentUpload, OCRResult, Faktura, Firma
-from faktury.services.document_ai_service import get_document_ai_service
+from faktury.services.ocr_service_factory import get_ocr_service
 from faktury.services.polish_invoice_processor import PolishInvoiceProcessor
 
 User = get_user_model()
@@ -37,7 +37,7 @@ class OCRPerformanceTestCase(TestCase):
             user=self.user
         )
         
-        self.ocr_service = get_document_ai_service()
+        self.ocr_service = get_ocr_service()
         self.polish_processor = PolishInvoiceProcessor()
         
         # Create test PDF content

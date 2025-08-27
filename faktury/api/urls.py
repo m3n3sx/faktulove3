@@ -13,7 +13,8 @@ from .authentication import (
     CustomTokenObtainPairView,
     CustomTokenRefreshView,
     logout_view,
-    verify_token_view
+    verify_token_view,
+    csrf_token_view
 )
 
 app_name = 'api'
@@ -23,6 +24,7 @@ auth_patterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', verify_token_view, name='token_verify'),
+    path('csrf/', csrf_token_view, name='csrf_token'),
     path('logout/', logout_view, name='logout'),
 ]
 

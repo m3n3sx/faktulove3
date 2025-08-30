@@ -1,0 +1,11 @@
+[phases.install]
+cmds = ["pip install -r requirements-deploy.txt"]
+
+[phases.build]
+cmds = ["python manage.py collectstatic --noinput --settings=settings_deploy"]
+
+[start]
+cmd = "python manage.py migrate --settings=settings_deploy && gunicorn faktulove.wsgi:application --bind 0.0.0.0:$PORT"
+
+[variables]
+DJANGO_SETTINGS_MODULE = "settings_deploy"

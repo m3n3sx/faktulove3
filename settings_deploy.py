@@ -1,4 +1,7 @@
 import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings_deploy')
+
+from django.conf import settings
 from faktulove.settings import *
 
 DEBUG = False

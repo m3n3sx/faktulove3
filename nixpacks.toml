@@ -4,9 +4,6 @@ nixPkgs = ["python3", "postgresql_16.dev"]
 [phases.install]
 cmds = ["python -m venv --copies /opt/venv", ". /opt/venv/bin/activate && pip install -r requirements-deploy.txt"]
 
-[phases.build]
-cmds = []
-
 [start]
 cmd = ". /opt/venv/bin/activate && python manage.py migrate --settings=settings_deploy && python manage.py collectstatic --noinput --settings=settings_deploy && gunicorn faktulove.wsgi:application --bind 0.0.0.0:$PORT"
 

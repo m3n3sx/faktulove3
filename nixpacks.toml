@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["python3", "postgresql_16.dev"]
+nixPkgs = ["python3", "postgresql_16.dev", "cairo", "pango", "gdk-pixbuf", "libffi", "shared-mime-info"]
 
 [phases.install]
 cmds = ["python -m venv --copies /opt/venv", ". /opt/venv/bin/activate && pip install -r requirements-deploy.txt"]

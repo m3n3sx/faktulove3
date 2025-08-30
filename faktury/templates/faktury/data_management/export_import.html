@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Eksport i Import Danych - FaktuLove{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/data-export-import.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header mb-4">
+                <h1 class="page-title">
+                    <i class="fas fa-exchange-alt"></i>
+                    Eksport i Import Danych
+                </h1>
+                <p class="page-description">
+                    Zarządzaj danymi - eksportuj do różnych formatów i importuj z plików zewnętrznych
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Export Section -->
+        <div class="col-lg-6">
+            <div class="card export-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-download text-success"></i>
+                        Eksport Danych
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="export-form">
+                        <!-- Data Type Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Typ danych do eksportu</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="export_data_type" id="export-invoices" value="invoices" checked>
+                                <label class="btn btn-outline-primary" for="export-invoices">
+                                    <i class="fas fa-file-invoice"></i>
+                                    Faktury
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="export_data_type" id="export-companies" value="companies">
+                                <label class="btn btn-outline-primary" for="export-companies">
+                                    <i class="fas fa-building"></i>
+                                    Kontrahenci
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="export_data_type" id="export-products" value="products">
+                                <label class="btn btn-outline-primary" for="export-products">
+                                    <i class="fas fa-box"></i>
+                                    Produkty
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Format Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Format eksportu</label>
+                            <select class="form-select" id="export-format" name="format">
+                                <option value="excel">Excel (.xlsx)</option>
+                                <option value="csv">CSV (.csv)</option>
+                                <option value="pdf">PDF (.pdf)</option>
+                                <option value="json">JSON (.json)</option>
+                            </select>
+                        </div>
+
+                        <!-- Export Filters -->
+                        <div id="export-filters">
+                            <!-- Invoice Filters -->
+                            <div id="invoice-export-filters">
+                                <div class="mb-3">
+                                    <label class="form-label">Zakres dat</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="date" class="form-control" id="export-date-from" name="date_from">
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="date" class="form-control" id="export-date-to" name="date_to">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Status faktur</label>
+                                    <select class="form-select" id="export-status" name="status" multiple>
+                                        <option value="wystawiona">Wystawiona</option>
+                                        <option value="oplacona">Opłacona</option>
+                                        <option value="cz_oplacona">Częściowo opłacona</option>
+                                        <option value="anulowana">Anulowana</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Typ dokumentu</label>
+                                    <select class="form-select" id="export-doc-type" name="typ_dokumentu" multiple>
+                                        <option value="FV">Faktura VAT</option>
+                                        <option value="FP">Faktura Proforma</option>
+                                        <option value="KOR">Korekta Faktury</option>
+                                        <option value="RC">Rachunek</option>
+                                        <option value="PAR">Paragon</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Company Filters -->
+                            <div id="company-export-filters" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label">Typ kontrahenta</label>
+                                    <select class="form-select" id="export-company-type" name="czy_firma">
+                                        <option value="">Wszystkie</option>
+                                        <option value="true">Firmy</option>
+                                        <option value="false">Osoby fizyczne</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Miasto</label>
+                                    <input type="text" class="form-control" id="export-city" name="miasto" placeholder="Filtruj według miasta">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Export Actions -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-download"></i>
+                                Eksportuj Dane
+                            </button>
+                            <button type="button" class="btn btn-outline-info" id="download-template">
+                                <i class="fas fa-file-download"></i>
+                                Pobierz Szablon
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Export Progress -->
+                    <div id="export-progress" class="mt-3" style="display: none;">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 0%">
+                                0%
+                            </div>
+                        </div>
+                        <small class="text-muted" id="export-progress-text">Przygotowywanie eksportu...</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup Section -->
+            <div class="card backup-card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt text-info"></i>
+                        Kopia Zapasowa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Utwórz kompletną kopię zapasową wszystkich danych
+                    </p>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="include-files">
+                        <label class="form-check-label" for="include-files">
+                            Dołącz pliki (dokumenty, zdjęcia)
+                        </label>
+                    </div>
+
+                    <button type="button" class="btn btn-info w-100" id="create-backup">
+                        <i class="fas fa-archive"></i>
+                        Utwórz Kopię Zapasową
+                    </button>
+
+                    <!-- Backup Progress -->
+                    <div id="backup-progress" class="mt-3" style="display: none;">
+                        <div class="progress">
+                            <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 0%">
+                                0%
+                            </div>
+                        </div>
+                        <small class="text-muted" id="backup-progress-text">Tworzenie kopii zapasowej...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Section -->
+        <div class="col-lg-6">
+            <div class="card import-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-upload text-warning"></i>
+                        Import Danych
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="import-form" enctype="multipart/form-data">
+                        <!-- Data Type Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Typ danych do importu</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="import_data_type" id="import-invoices" value="invoices">
+                                <label class="btn btn-outline-warning" for="import-invoices">
+                                    <i class="fas fa-file-invoice"></i>
+                                    Faktury
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="import_data_type" id="import-companies" value="companies" checked>
+                                <label class="btn btn-outline-warning" for="import-companies">
+                                    <i class="fas fa-building"></i>
+                                    Kontrahenci
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="import_data_type" id="import-products" value="products">
+                                <label class="btn btn-outline-warning" for="import-products">
+                                    <i class="fas fa-box"></i>
+                                    Produkty
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Format Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Format pliku</label>
+                            <select class="form-select" id="import-format" name="format_type">
+                                <option value="csv">CSV (.csv)</option>
+                                <option value="excel">Excel (.xlsx)</option>
+                                <option value="json">JSON (.json)</option>
+                            </select>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="mb-3">
+                            <label class="form-label">Wybierz plik</label>
+                            <div class="file-upload-area" id="file-upload-area">
+                                <input type="file" class="form-control" id="import-file" name="file" accept=".csv,.xlsx,.json">
+                                <div class="file-upload-text">
+                                    <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                                    <p>Przeciągnij plik tutaj lub kliknij aby wybrać</p>
+                                    <small class="text-muted">Obsługiwane formaty: CSV, Excel, JSON</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Import Options -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="update-existing" checked>
+                                <label class="form-check-label" for="update-existing">
+                                    Aktualizuj istniejące rekordy
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="validate-only">
+                                <label class="form-check-label" for="validate-only">
+                                    Tylko walidacja (bez importu)
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Import Actions -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg" disabled>
+                                <i class="fas fa-upload"></i>
+                                Importuj Dane
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Import Progress -->
+                    <div id="import-progress" class="mt-3" style="display: none;">
+                        <div class="progress">
+                            <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 0%">
+                                0%
+                            </div>
+                        </div>
+                        <small class="text-muted" id="import-progress-text">Przygotowywanie importu...</small>
+                    </div>
+
+                    <!-- Import Results -->
+                    <div id="import-results" class="mt-3" style="display: none;">
+                        <!-- Results will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restore Section -->
+            <div class="card restore-card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-undo text-danger"></i>
+                        Przywracanie z Kopii Zapasowej
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Przywróć dane z wcześniej utworzonej kopii zapasowej
+                    </p>
+                    
+                    <form id="restore-form" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Plik kopii zapasowej</label>
+                            <input type="file" class="form-control" id="restore-file" name="file" accept=".zip">
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Uwaga:</strong> Przywracanie kopii zapasowej może nadpisać istniejące dane.
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100" disabled>
+                            <i class="fas fa-undo"></i>
+                            Przywróć z Kopii Zapasowej
+                        </button>
+                    </form>
+
+                    <!-- Restore Progress -->
+                    <div id="restore-progress" class="mt-3" style="display: none;">
+                        <div class="progress">
+                            <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 0%">
+                                0%
+                            </div>
+                        </div>
+                        <small class="text-muted" id="restore-progress-text">Przywracanie danych...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card statistics-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar"></i>
+                        Statystyki Danych
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="statistics-content">
+                        <!-- Statistics will be loaded by JavaScript -->
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-file-invoice text-primary"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-invoices">-</h3>
+                                    <p>Faktury</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-building text-success"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-companies">-</h3>
+                                    <p>Kontrahenci</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-box text-warning"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-products">-</h3>
+                                    <p>Produkty</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-database text-info"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-records">-</h3>
+                                    <p>Łącznie rekordów</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle"></i>
+                    Operacja Zakończona Pomyślnie
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="success-message">Operacja została zakończona pomyślnie.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Wystąpił Błąd
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="error-message">Wystąpił nieoczekiwany błąd.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/data-export-import.js' %}"></script>
+{% endblock %}

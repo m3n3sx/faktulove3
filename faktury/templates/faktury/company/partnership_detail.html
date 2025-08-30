@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Szczegóły Partnerstwa{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/partnership-detail.css' %}" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">Szczegóły Partnerstwa</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}">Panel główny</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'partnership_management' %}">Partnerstwa</a></li>
+                            <li class="breadcrumb-item active">{{ partnership.firma2.nazwa }}</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a href="{% url 'partnership_management' %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-1"></i>Powrót
+                    </a>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-1"></i>Akcje
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'edytuj_partnerstwo' partnership.id %}">
+                                    <i class="fas fa-edit me-2"></i>Edytuj partnerstwo
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'przelacz_auto_ksiegowanie' partnership.id %}">
+                                    <i class="fas fa-toggle-{% if partnership.auto_ksiegowanie %}off{% else %}on{% endif %} me-2"></i>
+                                    {% if partnership.auto_ksiegowanie %}Wyłącz{% else %}Włącz{% endif %} auto-księgowanie
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exportReportModal">
+                                    <i class="fas fa-download me-2"></i>Eksportuj raport
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'usun_partnerstwo' partnership.id %}">
+                                    <i class="fas fa-trash me-2"></i>Usuń partnerstwo
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Partnership Info Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-handshake me-2"></i>
+                        Informacje o partnerstwie
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Firma partnerska</h6>
+                            <h4 class="mb-3">{{ partnership.firma2.nazwa }}</h4>
+                            
+                            <div class="partnership-details">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>NIP:</strong></div>
+                                    <div class="col-sm-8">{{ partnership.firma2.nip }}</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>REGON:</strong></div>
+                                    <div class="col-sm-8">{{ partnership.firma2.regon|default:"Brak" }}</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Adres:</strong></div>
+                                    <div class="col-sm-8">
+                                        {{ partnership.firma2.ulica }} {{ partnership.firma2.numer_domu }}{% if partnership.firma2.numer_mieszkania %}/{{ partnership.firma2.numer_mieszkania }}{% endif %}<br>
+                                        {{ partnership.firma2.kod_pocztowy }} {{ partnership.firma2.miejscowosc }}
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Typ partnerstwa:</strong></div>
+                                    <div class="col-sm-8">
+                                        <span class="badge bg-info">{{ partnership.get_typ_partnerstwa_display }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Status i ustawienia</h6>
+                            
+                            <div class="partnership-status mb-3">
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>Status:</strong></div>
+                                    <div class="col-sm-6">
+                                        <span class="badge bg-{% if partnership.aktywne %}success{% else %}secondary{% endif %}">
+                                            {% if partnership.aktywne %}Aktywne{% else %}Nieaktywne{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>Auto-księgowanie:</strong></div>
+                                    <div class="col-sm-6">
+                                        <span class="badge bg-{% if partnership.auto_ksiegowanie %}success{% else %}warning{% endif %}">
+                                            {% if partnership.auto_ksiegowanie %}Włączone{% else %}Wyłączone{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>Data utworzenia:</strong></div>
+                                    <div class="col-sm-6">{{ partnership.data_utworzenia|date:"d.m.Y H:i" }}</div>
+                                </div>
+                                {% if partnership.data_rozpoczecia %}
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>Data rozpoczęcia:</strong></div>
+                                    <div class="col-sm-6">{{ partnership.data_rozpoczecia|date:"d.m.Y" }}</div>
+                                </div>
+                                {% endif %}
+                                {% if partnership.data_zakonczenia %}
+                                <div class="row mb-2">
+                                    <div class="col-sm-6"><strong>Data zakończenia:</strong></div>
+                                    <div class="col-sm-6">{{ partnership.data_zakonczenia|date:"d.m.Y" }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if partnership.opis %}
+                            <div class="partnership-description">
+                                <h6 class="text-muted">Opis</h6>
+                                <p class="text-muted">{{ partnership.opis }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ details.company1_sales_count|default:0 }}</h4>
+                            <p class="card-text">Faktury wysłane</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-arrow-up fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ details.company2_sales_count|default:0 }}</h4>
+                            <p class="card-text">Faktury otrzymane</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-arrow-down fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ details.total_value|floatformat:0|default:"0" }} zł</h4>
+                            <p class="card-text">Łączna wartość</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-{% if details.balance > 0 %}success{% elif details.balance < 0 %}danger{% else %}secondary{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ details.balance|floatformat:0|default:"0" }} zł</h4>
+                            <p class="card-text">Saldo</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-balance-scale fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Analytics -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Analiza transakcji
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="transactionChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Rekomendacje
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if report.recommendations %}
+                    <ul class="list-unstyled">
+                        {% for recommendation in report.recommendations %}
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {{ recommendation }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">Brak rekomendacji. Partnerstwo działa optymalnie!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Ostatnie transakcje
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if details.recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Numer</th>
+                                    <th>Kierunek</th>
+                                    <th>Data</th>
+                                    <th>Kwota</th>
+                                    <th>Status</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in details.recent_transactions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'szczegoly_faktury' transaction.id %}" class="text-decoration-none">
+                                            {{ transaction.numer }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if transaction.sprzedawca == user_company %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-arrow-up me-1"></i>Wysłana
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-arrow-down me-1"></i>Otrzymana
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ transaction.data_wystawienia|date:"d.m.Y" }}</td>
+                                    <td>{{ transaction.suma_brutto|floatformat:2 }} zł</td>
+                                    <td>
+                                        <span class="badge bg-{% if transaction.status == 'oplacona' %}success{% elif transaction.status == 'wystawiona' %}warning{% else %}secondary{% endif %}">
+                                            {{ transaction.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'szczegoly_faktury' transaction.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Brak transakcji</h5>
+                        <p class="text-muted">Nie ma jeszcze żadnych transakcji z tym partnerem.</p>
+                        <a href="{% url 'dodaj_fakture' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Utwórz pierwszą fakturę
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Report Modal -->
+<div class="modal fade" id="exportReportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-download me-2"></i>
+                    Eksportuj raport partnerstwa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="exportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Format eksportu</label>
+                        <select class="form-select" name="format">
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Zakres dat</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="date" class="form-control" name="date_from" placeholder="Od">
+                            </div>
+                            <div class="col-6">
+                                <input type="date" class="form-control" name="date_to" placeholder="Do">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Zawartość raportu</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="include_summary" checked>
+                            <label class="form-check-label">Podsumowanie partnerstwa</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="include_transactions" checked>
+                            <label class="form-check-label">Lista transakcji</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="include_analytics" checked>
+                            <label class="form-check-label">Analityka i wykresy</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="include_recommendations">
+                            <label class="form-check-label">Rekomendacje</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-primary" onclick="exportReport()">
+                    <i class="fas fa-download me-2"></i>Eksportuj
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize transaction chart
+    const ctx = document.getElementById('transactionChart').getContext('2d');
+    
+    // Get monthly breakdown data from transaction_tracking
+    const monthlyData = {{ transaction_tracking.monthly_breakdown|safe }};
+    
+    const labels = monthlyData.map(item => item.month);
+    const sentData = monthlyData.map(item => item.company1_to_company2);
+    const receivedData = monthlyData.map(item => item.company2_to_company1);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Faktury wysłane',
+                data: sentData,
+                backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Faktury otrzymane',
+                data: receivedData,
+                backgroundColor: 'rgba(23, 162, 184, 0.8)',
+                borderColor: 'rgba(23, 162, 184, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('pl-PL') + ' zł';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + 
+                                   context.parsed.y.toLocaleString('pl-PL') + ' zł';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+function exportReport() {
+    const form = document.getElementById('exportForm');
+    const formData = new FormData(form);
+    
+    // Add partnership ID
+    formData.append('partnership_id', '{{ partnership.id }}');
+    
+    // Create download link
+    const params = new URLSearchParams(formData);
+    const url = `/api/partnerships/{{ partnership.id }}/export/?${params.toString()}`;
+    
+    // Trigger download
+    window.open(url, '_blank');
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('exportReportModal'));
+    modal.hide();
+}
+</script>
+{% endblock %}

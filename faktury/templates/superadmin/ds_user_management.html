@@ -1,0 +1,524 @@
+{% extends "superadmin/base.html" %}
+{% load humanize %}
+{% load design_system_tags %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    {% ds_button_start variant="secondary" size="md" %}
+        <iconify-icon icon="solar:bolt-linear" class="me-2"></iconify-icon>
+        <span data-bs-toggle="modal" data-bs-target="#massActionsModal">Mass Actions</span>
+    {% end_ds_button %}
+    
+    <div class="btn-group" role="group">
+        {% ds_button_start variant="ghost" size="md" class="dropdown-toggle" %}
+            <iconify-icon icon="solar:download-linear" class="me-2"></iconify-icon>
+            <span data-bs-toggle="dropdown">Export</span>
+        {% end_ds_button %}
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item" href="{% url 'superadmin:export_data' %}?type=users">
+                    <iconify-icon icon="solar:file-text-linear" class="me-2"></iconify-icon>
+                    Export Users
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search and Filters -->
+{% ds_card variant="outlined" class="mb-4" %}
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                {% ds_input 
+                    name="search"
+                    type="search"
+                    placeholder="Szukaj użytkowników..."
+                    value=search_query|default:""
+                    icon="solar:magnifer-linear"
+                    icon_position="start"
+                    size="md"
+                %}
+            </div>
+            <div class="col-md-4">
+                {% ds_select 
+                    name="status"
+                    id="statusFilter"
+                    options='<option value="">Wszyscy użytkownicy</option><option value="active"{% if status_filter == "active" %} selected{% endif %}>Tylko aktywni</option><option value="inactive"{% if status_filter == "inactive" %} selected{% endif %}>Tylko nieaktywni</option><option value="superuser"{% if status_filter == "superuser" %} selected{% endif %}>Tylko superużytkownicy</option><option value="staff"{% if status_filter == "staff" %} selected{% endif %}>Tylko personel</option>'
+                %}
+            </div>
+            <div class="col-md-2">
+                {% ds_button type="submit" variant="primary" size="md" class="w-100" %}
+                    <iconify-icon icon="solar:filter-linear" class="me-2"></iconify-icon>
+                    Filtruj
+                {% end_ds_button %}
+            </div>
+        </form>
+    </div>
+{% end_ds_card %}
+
+<!-- Users Table -->
+{% ds_card variant="elevated" %}
+    <div class="card-header d-flex justify-content-between align-items-center bg-transparent border-bottom">
+        {% ds_typography variant="heading-md" element="h5" class="mb-0" %}
+            <iconify-icon icon="solar:users-group-rounded-linear" class="me-2"></iconify-icon>
+            Użytkownicy ({{ users.paginator.count|intcomma }} łącznie)
+        {% end_ds_typography %}
+        <div class="d-flex gap-2">
+            {% ds_button variant="ghost" size="sm" onclick="selectAllUsers()" %}
+                <iconify-icon icon="solar:check-square-linear" class="me-1"></iconify-icon>
+                Zaznacz wszystkich
+            {% end_ds_button %}
+            {% ds_button variant="ghost" size="sm" onclick="clearSelection()" %}
+                <iconify-icon icon="solar:close-square-linear" class="me-1"></iconify-icon>
+                Wyczyść zaznaczenie
+            {% end_ds_button %}
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            {% ds_table_start %}
+                <thead class="table-light">
+                    <tr>
+                        <th width="50">
+                            {% ds_checkbox name="selectAll" id="selectAll" %}
+                        </th>
+                        <th>Użytkownik</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Firma</th>
+                        <th>Aktywność</th>
+                        <th>Dołączył</th>
+                        <th width="150">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr class="user-row" data-user-id="{{ user.id }}">
+                            <td>
+                                {% ds_checkbox name="user_checkbox" value=user.id class="user-checkbox" %}
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-3">
+                                        {% ds_badge user.username.0|upper variant="primary" size="lg" class="rounded-circle" %}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">
+                                            <a href="{% url 'superadmin:user_detail' user.id %}" 
+                                               class="text-decoration-none">
+                                                {{ user.username }}
+                                            </a>
+                                        </div>
+                                        {% if user.first_name or user.last_name %}
+                                            {% ds_typography variant="body-sm" class="text-muted" %}
+                                                {{ user.first_name }} {{ user.last_name }}
+                                            {% end_ds_typography %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if user.email %}
+                                    <a href="mailto:{{ user.email }}" class="text-decoration-none">
+                                        {{ user.email }}
+                                    </a>
+                                {% else %}
+                                    {% ds_typography variant="body-sm" class="text-muted" %}
+                                        Brak email
+                                    {% end_ds_typography %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    {% if user.is_active %}
+                                        {% ds_badge "Aktywny" variant="success" size="sm" %}
+                                    {% else %}
+                                        {% ds_badge "Nieaktywny" variant="neutral" size="sm" %}
+                                    {% endif %}
+                                    {% if user.is_superuser %}
+                                        {% ds_badge "Superuser" variant="error" size="sm" %}
+                                    {% elif user.is_staff %}
+                                        {% ds_badge "Personel" variant="warning" size="sm" %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if user.firma %}
+                                    <div class="fw-bold">{{ user.firma.nazwa|truncatechars:20 }}</div>
+                                    {% if user.firma.nip %}
+                                        {% ds_typography variant="body-sm" class="text-muted" %}
+                                            NIP: {% ds_nip_format user.firma.nip %}
+                                        {% end_ds_typography %}
+                                    {% endif %}
+                                {% else %}
+                                    {% ds_typography variant="body-sm" class="text-muted" %}
+                                        Brak firmy
+                                    {% end_ds_typography %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% ds_typography variant="body-sm" %}
+                                    <strong>{{ user.invoice_count }}</strong> faktur
+                                {% end_ds_typography %}
+                                {% if user.last_login %}
+                                    {% ds_typography variant="body-xs" class="text-muted" %}
+                                        Ostatnio: {{ user.last_login|naturaltime }}
+                                    {% end_ds_typography %}
+                                {% else %}
+                                    {% ds_typography variant="body-xs" class="text-muted" %}
+                                        Nigdy nie zalogowany
+                                    {% end_ds_typography %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% ds_typography variant="body-sm" %}
+                                    {% ds_date_format user.date_joined %}
+                                {% end_ds_typography %}
+                                {% ds_typography variant="body-xs" class="text-muted" %}
+                                    {{ user.date_joined|naturaltime }}
+                                {% end_ds_typography %}
+                            </td>
+                            <td>
+                                <div class="action-buttons d-flex gap-1">
+                                    {% ds_button variant="ghost" size="xs" %}
+                                        <a href="{% url 'superadmin:user_detail' user.id %}" 
+                                           class="text-decoration-none" title="Zobacz szczegóły">
+                                            <iconify-icon icon="solar:eye-linear"></iconify-icon>
+                                        </a>
+                                    {% end_ds_button %}
+                                    
+                                    {% if user != request.user %}
+                                        {% ds_button variant="ghost" size="xs" onclick="toggleUserStatus({{ user.id }}, '{{ user.username }}', {{ user.is_active|yesno:'true,false' }})" %}
+                                            <iconify-icon icon="solar:power-linear" title="Przełącz status"></iconify-icon>
+                                        {% end_ds_button %}
+                                        
+                                        {% ds_button variant="ghost" size="xs" %}
+                                            <a href="{% url 'superadmin:user_reset_password' user.id %}" 
+                                               class="text-decoration-none text-danger" title="Resetuj hasło">
+                                                <iconify-icon icon="solar:key-linear"></iconify-icon>
+                                            </a>
+                                        {% end_ds_button %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="text-muted">
+                                    <iconify-icon icon="solar:users-group-rounded-linear" class="display-1 text-muted"></iconify-icon>
+                                    {% ds_typography variant="body-lg" class="mt-2" %}
+                                        Nie znaleziono użytkowników
+                                    {% end_ds_typography %}
+                                    {% if search_query %}
+                                        {% ds_typography variant="body-sm" class="text-muted" %}
+                                            Spróbuj zmienić kryteria wyszukiwania
+                                        {% end_ds_typography %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            {% end_ds_table %}
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if users.has_other_pages %}
+        <div class="card-footer bg-transparent">
+            {% ds_pagination users %}
+        </div>
+    {% endif %}
+{% end_ds_card %}
+
+<!-- Mass Actions Modal -->
+<div class="modal fade" id="massActionsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                {% ds_typography variant="heading-md" element="h5" class="modal-title" %}
+                    <iconify-icon icon="solar:bolt-linear" class="me-2"></iconify-icon>
+                    Akcje masowe
+                {% end_ds_typography %}
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'superadmin:mass_actions' %}" id="massActionsForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% ds_alert "Zaznaczeni użytkownicy: <span id='selectedCount'>0</span>" variant="info" %}
+                    
+                    <div class="mb-3">
+                        {% ds_select 
+                            name="action"
+                            id="actionSelect"
+                            options='<option value="">Wybierz akcję...</option><option value="activate">Aktywuj użytkowników</option><option value="deactivate">Dezaktywuj użytkowników</option><option value="delete_inactive">Usuń nieaktywnych użytkowników (bez danych)</option>'
+                        %}
+                    </div>
+                    
+                    {% ds_alert "Uwaga: Akcje masowe nie mogą być cofnięte. Sprawdź dokładnie swój wybór." variant="warning" %}
+                </div>
+                <div class="modal-footer">
+                    {% ds_button type="button" variant="secondary" %}
+                        <span data-bs-dismiss="modal">Anuluj</span>
+                    {% end_ds_button %}
+                    {% ds_button type="submit" variant="danger" id="executeAction" disabled=True %}
+                        Wykonaj akcję
+                    {% end_ds_button %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedUsers = new Set();
+
+function toggleAll(checkbox) {
+    const userCheckboxes = document.querySelectorAll('.user-checkbox input');
+    userCheckboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+        if (checkbox.checked) {
+            selectedUsers.add(cb.value);
+        } else {
+            selectedUsers.delete(cb.value);
+        }
+    });
+    updateSelectionCount();
+}
+
+function updateSelectionCount() {
+    const checkboxes = document.querySelectorAll('.user-checkbox input:checked');
+    selectedUsers.clear();
+    checkboxes.forEach(cb => selectedUsers.add(cb.value));
+    
+    document.getElementById('selectedCount').textContent = selectedUsers.size;
+    document.getElementById('executeAction').disabled = selectedUsers.size === 0;
+    
+    // Update select all checkbox
+    const allCheckboxes = document.querySelectorAll('.user-checkbox input');
+    const selectAllCheckbox = document.querySelector('#selectAll input');
+    if (allCheckboxes.length > 0 && selectAllCheckbox) {
+        selectAllCheckbox.indeterminate = selectedUsers.size > 0 && selectedUsers.size < allCheckboxes.length;
+        selectAllCheckbox.checked = selectedUsers.size === allCheckboxes.length;
+    }
+}
+
+function selectAllUsers() {
+    const selectAllCheckbox = document.querySelector('#selectAll input');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = true;
+        toggleAll(selectAllCheckbox);
+    }
+}
+
+function clearSelection() {
+    const selectAllCheckbox = document.querySelector('#selectAll input');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = false;
+        toggleAll(selectAllCheckbox);
+    }
+}
+
+function toggleUserStatus(userId, username, isActive) {
+    const action = isActive ? 'dezaktywować' : 'aktywować';
+    const confirmMessage = `Czy na pewno chcesz ${action} użytkownika "${username}"?`;
+    
+    if (confirm(confirmMessage)) {
+        // Show loading state
+        const userRow = document.querySelector(`[data-user-id="${userId}"]`);
+        if (userRow) {
+            userRow.style.opacity = '0.6';
+        }
+        
+        fetch(`/superadmin/users/${userId}/toggle-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                // Reload page to update status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showMessage(data.error || 'Błąd podczas aktualizacji statusu użytkownika', 'danger');
+                if (userRow) {
+                    userRow.style.opacity = '1';
+                }
+            }
+        })
+        .catch(error => {
+            showMessage('Błąd: ' + error.message, 'danger');
+            if (userRow) {
+                userRow.style.opacity = '1';
+            }
+        });
+    }
+}
+
+// Handle mass actions form submission
+document.getElementById('massActionsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (selectedUsers.size === 0) {
+        alert('Proszę wybrać co najmniej jednego użytkownika.');
+        return;
+    }
+    
+    const actionSelect = document.getElementById('actionSelect');
+    const action = actionSelect.value;
+    if (!action) {
+        alert('Proszę wybrać akcję.');
+        return;
+    }
+    
+    const confirmMessage = `Czy na pewno chcesz wykonać akcję "${actionSelect.options[actionSelect.selectedIndex].text}" dla ${selectedUsers.size} wybranych użytkowników?`;
+    if (confirm(confirmMessage)) {
+        // Add selected users to form
+        selectedUsers.forEach(userId => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'selected_users';
+            input.value = userId;
+            this.appendChild(input);
+        });
+        
+        this.submit();
+    }
+});
+
+// Auto-submit search form with delay
+let searchTimeout;
+const searchInput = document.querySelector('input[name="search"]');
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            this.form.submit();
+        }, 500);
+    });
+}
+
+// Handle checkbox changes
+document.addEventListener('change', function(e) {
+    if (e.target.matches('.user-checkbox input')) {
+        updateSelectionCount();
+    }
+    
+    if (e.target.matches('#selectAll input')) {
+        toggleAll(e.target);
+    }
+});
+
+// Initialize selection count
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectionCount();
+});
+
+// Show message function
+function showMessage(message, type) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}
+
+<style>
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.action-buttons .btn {
+    padding: 4px 8px;
+}
+
+.user-row:hover {
+    background-color: #f8fafc;
+}
+
+.theme-dark .user-row:hover {
+    background-color: #1e293b;
+}
+
+.theme-dark .user-avatar {
+    background-color: #475569;
+    color: #f1f5f9;
+}
+
+/* High contrast mode */
+.contrast-high .user-row:hover {
+    background-color: #e2e8f0;
+}
+
+.contrast-high.theme-dark .user-row:hover {
+    background-color: #475569;
+}
+
+/* Reduced motion */
+.motion-reduced .user-row {
+    transition: none !important;
+}
+
+.motion-reduced * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Loading states */
+.user-row[data-loading="true"] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .table-responsive {
+        font-size: 14px;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+}
+</style>

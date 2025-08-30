@@ -9,6 +9,7 @@ from drf_spectacular.views import (
     SpectacularRedocView
 )
 from . import views
+from . import performance_views
 from .authentication import (
     CustomTokenObtainPairView,
     CustomTokenRefreshView,
@@ -39,6 +40,11 @@ v1_patterns = [
     path('ocr/results/', views.OCRResultsListAPIView.as_view(), name='ocr-results'),
     path('ocr/result/<int:result_id>/', views.OCRResultDetailAPIView.as_view(), name='ocr-result-detail'),
     path('ocr/validate/<int:result_id>/', views.OCRValidationAPIView.as_view(), name='ocr-validate'),
+    
+    # Performance monitoring endpoints
+    path('performance-metrics/', performance_views.collect_performance_metrics, name='performance-metrics'),
+    path('performance-dashboard/', performance_views.get_performance_dashboard, name='performance-dashboard'),
+    path('performance-metric/', performance_views.collect_single_metric, name='single-metric'),
 ]
 
 urlpatterns = [

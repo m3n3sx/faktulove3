@@ -11,6 +11,7 @@ import {
   User,
   Key
 } from 'lucide-react';
+import { Button, Grid, Stack, Select, Input, Textarea, Checkbox, Form, FormField } from '../design-system';
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState({
@@ -61,13 +62,22 @@ const SettingsPage = () => {
     }));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (formData) => {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    // In a real app, this would save to backend
-    console.log('Settings saved:', settings);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update settings with form data
+      setSettings(formData);
+      
+      // In a real app, this would save to backend
+      console.log('Settings saved:', formData);
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -127,117 +137,98 @@ const SettingsPage = () => {
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
-              <button
+              <Button
                 key={tab.id}
+                variant={activeTab === tab.id ? 'primary' : 'ghost'}
+                size="sm"
                 onClick={() => setActiveTab(tab.id)}
+                startIcon={<Icon className="h-4 w-4" />}
                 className={`
-                  py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2
+                  py-2 px-1 border-b-2 font-medium text-sm
                   ${activeTab === tab.id
                     ? 'border-primary-500 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }
                 `}
               >
-                <Icon className="h-4 w-4" />
-                <span>{tab.name}</span>
-              </button>
+                {tab.name}
+              </Button>
             );
           })}
         </nav>
       </div>
 
       {/* Settings Content */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-md-lg shadow-sm">
         {/* OCR Settings */}
         {activeTab === 'ocr' && (
           <div className="p-6 space-y-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">OCR Processing Settings</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Confidence Threshold (%)
-                  </label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="100"
-                    value={settings.ocr.confidence_threshold}
-                    onChange={(e) => handleSettingChange('ocr', 'confidence_threshold', parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>50%</span>
-                    <span className="font-medium">{settings.ocr.confidence_threshold}%</span>
-                    <span>100%</span>
+              <Stack gap="lg">
+                <Grid cols={2} gap="md">
+                  <div>
+                    <Input
+                      type="range"
+                      label="Confidence Threshold (%)"
+                      min="50"
+                      max="100"
+                      value={settings.ocr.confidence_threshold}
+                      onChange={(e) => handleSettingChange('ocr', 'confidence_threshold', parseInt(e.target.value))}
+                      helperText={`Current: ${settings.ocr.confidence_threshold}% - Documents below this confidence will require manual review`}
+                      error={settings.ocr.confidence_threshold < 50 || settings.ocr.confidence_threshold > 100}
+                      errorMessage={settings.ocr.confidence_threshold < 50 || settings.ocr.confidence_threshold > 100 ? 'Wartość musi być między 50 a 100' : undefined}
+                    />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Documents below this confidence will require manual review
-                  </p>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Manual Review Threshold (%)
-                  </label>
-                  <input
-                    type="range"
-                    min="70"
-                    max="100"
-                    value={settings.ocr.manual_review_threshold}
-                    onChange={(e) => handleSettingChange('ocr', 'manual_review_threshold', parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>70%</span>
-                    <span className="font-medium">{settings.ocr.manual_review_threshold}%</span>
-                    <span>100%</span>
+                  <div>
+                    <Input
+                      type="range"
+                      label="Manual Review Threshold (%)"
+                      min="70"
+                      max="100"
+                      value={settings.ocr.manual_review_threshold}
+                      onChange={(e) => handleSettingChange('ocr', 'manual_review_threshold', parseInt(e.target.value))}
+                      helperText={`Current: ${settings.ocr.manual_review_threshold}%`}
+                      error={settings.ocr.manual_review_threshold < 70 || settings.ocr.manual_review_threshold > 100}
+                      errorMessage={settings.ocr.manual_review_threshold < 70 || settings.ocr.manual_review_threshold > 100 ? 'Wartość musi być między 70 a 100' : undefined}
+                    />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Processing Timeout (seconds)
-                  </label>
-                  <input
-                    type="number"
-                    min="10"
-                    max="120"
-                    value={settings.ocr.processing_timeout}
-                    onChange={(e) => handleSettingChange('ocr', 'processing_timeout', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
+                  <div>
+                    <Input
+                      type="number"
+                      label="Processing Timeout (seconds)"
+                      min="10"
+                      max="120"
+                      value={settings.ocr.processing_timeout}
+                      onChange={(e) => handleSettingChange('ocr', 'processing_timeout', parseInt(e.target.value))}
+                      error={settings.ocr.processing_timeout < 10 || settings.ocr.processing_timeout > 120}
+                      errorMessage={settings.ocr.processing_timeout < 10 || settings.ocr.processing_timeout > 120 ? 'Wartość musi być między 10 a 120 sekund' : undefined}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Maximum File Size (MB)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="50"
-                    value={settings.ocr.max_file_size}
-                    onChange={(e) => handleSettingChange('ocr', 'max_file_size', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
-              </div>
+                  <div>
+                    <Input
+                      type="number"
+                      label="Maximum File Size (MB)"
+                      min="1"
+                      max="50"
+                      value={settings.ocr.max_file_size}
+                      onChange={(e) => handleSettingChange('ocr', 'max_file_size', parseInt(e.target.value))}
+                      error={settings.ocr.max_file_size < 1 || settings.ocr.max_file_size > 50}
+                      errorMessage={settings.ocr.max_file_size < 1 || settings.ocr.max_file_size > 50 ? 'Wartość musi być między 1 a 50 MB' : undefined}
+                    />
+                  </div>
+                </Grid>
 
-              <div className="mt-6">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.ocr.auto_create_invoices}
-                    onChange={(e) => handleSettingChange('ocr', 'auto_create_invoices', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">
-                    Automatically create invoices from high-confidence OCR results
-                  </span>
-                </label>
-              </div>
+                <Checkbox
+                  checked={settings.ocr.auto_create_invoices}
+                  onChange={(checked) => handleSettingChange('ocr', 'auto_create_invoices', checked)}
+                  label="Automatically create invoices from high-confidence OCR results"
+                />
+              </Stack>
             </div>
           </div>
         )}
@@ -248,77 +239,64 @@ const SettingsPage = () => {
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">System Configuration</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Auto Cleanup (days)
-                  </label>
-                  <input
-                    type="number"
-                    min="30"
-                    max="365"
-                    value={settings.system.auto_cleanup_days}
-                    onChange={(e) => handleSettingChange('system', 'auto_cleanup_days', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Automatically delete old documents after this many days
-                  </p>
-                </div>
+              <Stack gap="lg">
+                <Grid cols={2} gap="md">
+                  <div>
+                    <Input
+                      type="number"
+                      label="Auto Cleanup (days)"
+                      min="30"
+                      max="365"
+                      value={settings.system.auto_cleanup_days}
+                      onChange={(e) => handleSettingChange('system', 'auto_cleanup_days', parseInt(e.target.value))}
+                      helperText="Automatically delete old documents after this many days"
+                      error={settings.system.auto_cleanup_days < 30 || settings.system.auto_cleanup_days > 365}
+                      errorMessage={settings.system.auto_cleanup_days < 30 || settings.system.auto_cleanup_days > 365 ? 'Wartość musi być między 30 a 365 dni' : undefined}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Backup Frequency
-                  </label>
-                  <select
-                    value={settings.system.backup_frequency}
-                    onChange={(e) => handleSettingChange('system', 'backup_frequency', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
-                </div>
+                  <div>
+                    <Select
+                      label="Backup Frequency"
+                      value={settings.system.backup_frequency}
+                      onChange={(value) => handleSettingChange('system', 'backup_frequency', value)}
+                      options={[
+                        { value: 'daily', label: 'Codziennie' },
+                        { value: 'weekly', label: 'Tygodniowo' },
+                        { value: 'monthly', label: 'Miesięcznie' }
+                      ]}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Log Level
-                  </label>
-                  <select
-                    value={settings.system.log_level}
-                    onChange={(e) => handleSettingChange('system', 'log_level', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="debug">Debug</option>
-                    <option value="info">Info</option>
-                    <option value="warning">Warning</option>
-                    <option value="error">Error</option>
-                  </select>
-                </div>
-              </div>
+                  <div>
+                    <Select
+                      label="Log Level"
+                      value={settings.system.log_level}
+                      onChange={(value) => handleSettingChange('system', 'log_level', value)}
+                      options={[
+                        { value: 'debug', label: 'Debug' },
+                        { value: 'info', label: 'Info' },
+                        { value: 'warning', label: 'Ostrzeżenia' },
+                        { value: 'error', label: 'Błędy' }
+                      ]}
+                    />
+                  </div>
+                </Grid>
 
-              <div className="mt-6 space-y-4">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
+                <Stack gap="md">
+                  <Checkbox
                     checked={settings.system.backup_enabled}
-                    onChange={(e) => handleSettingChange('system', 'backup_enabled', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    onChange={(checked) => handleSettingChange('system', 'backup_enabled', checked)}
+                    label="Włącz automatyczne kopie zapasowe"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Enable automatic backups</span>
-                </label>
 
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={settings.system.debug_mode}
-                    onChange={(e) => handleSettingChange('system', 'debug_mode', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    onChange={(checked) => handleSettingChange('system', 'debug_mode', checked)}
+                    label="Włącz tryb debugowania"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Enable debug mode</span>
-                </label>
-              </div>
+                </Stack>
+              </Stack>
             </div>
           </div>
         )}
@@ -327,59 +305,39 @@ const SettingsPage = () => {
         {activeTab === 'notifications' && (
           <div className="p-6 space-y-6">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Notification Preferences</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Preferencje powiadomień</h3>
               
-              <div className="space-y-4">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.notifications.email_notifications}
-                    onChange={(e) => handleSettingChange('notifications', 'email_notifications', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Enable email notifications</span>
-                </label>
+              <Stack gap="md">
+                <Checkbox
+                  checked={settings.notifications.email_notifications}
+                  onChange={(checked) => handleSettingChange('notifications', 'email_notifications', checked)}
+                  label="Włącz powiadomienia e-mail"
+                />
 
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.notifications.processing_complete}
-                    onChange={(e) => handleSettingChange('notifications', 'processing_complete', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Notify when processing completes</span>
-                </label>
+                <Checkbox
+                  checked={settings.notifications.processing_complete}
+                  onChange={(checked) => handleSettingChange('notifications', 'processing_complete', checked)}
+                  label="Powiadom o zakończeniu przetwarzania"
+                />
 
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.notifications.processing_failed}
-                    onChange={(e) => handleSettingChange('notifications', 'processing_failed', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Notify when processing fails</span>
-                </label>
+                <Checkbox
+                  checked={settings.notifications.processing_failed}
+                  onChange={(checked) => handleSettingChange('notifications', 'processing_failed', checked)}
+                  label="Powiadom o błędach przetwarzania"
+                />
 
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.notifications.low_confidence_alert}
-                    onChange={(e) => handleSettingChange('notifications', 'low_confidence_alert', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Alert for low confidence results</span>
-                </label>
+                <Checkbox
+                  checked={settings.notifications.low_confidence_alert}
+                  onChange={(checked) => handleSettingChange('notifications', 'low_confidence_alert', checked)}
+                  label="Ostrzeż o niskiej pewności wyników"
+                />
 
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={settings.notifications.daily_summary}
-                    onChange={(e) => handleSettingChange('notifications', 'daily_summary', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Send daily summary reports</span>
-                </label>
-              </div>
+                <Checkbox
+                  checked={settings.notifications.daily_summary}
+                  onChange={(checked) => handleSettingChange('notifications', 'daily_summary', checked)}
+                  label="Wysyłaj dzienne raporty podsumowujące"
+                />
+              </Stack>
             </div>
           </div>
         )}
@@ -388,92 +346,72 @@ const SettingsPage = () => {
         {activeTab === 'security' && (
           <div className="p-6 space-y-6">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Security Configuration</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Konfiguracja bezpieczeństwa</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Session Timeout (minutes)
-                  </label>
-                  <input
-                    type="number"
-                    min="15"
-                    max="480"
-                    value={settings.security.session_timeout}
-                    onChange={(e) => handleSettingChange('security', 'session_timeout', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
+              <Stack gap="lg">
+                <Grid cols={2} gap="md">
+                  <div>
+                    <Input
+                      type="number"
+                      label="Timeout sesji (minuty)"
+                      min="15"
+                      max="480"
+                      value={settings.security.session_timeout}
+                      onChange={(e) => handleSettingChange('security', 'session_timeout', parseInt(e.target.value))}
+                      error={settings.security.session_timeout < 15 || settings.security.session_timeout > 480}
+                      errorMessage={settings.security.session_timeout < 15 || settings.security.session_timeout > 480 ? 'Wartość musi być między 15 a 480 minut' : undefined}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    IP Whitelist
-                  </label>
-                  <textarea
-                    value={settings.security.ip_whitelist}
-                    onChange={(e) => handleSettingChange('security', 'ip_whitelist', e.target.value)}
-                    placeholder="Enter IP addresses (one per line)"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Leave empty to allow all IPs
-                  </p>
-                </div>
-              </div>
+                  <div>
+                    <Textarea
+                      label="Lista dozwolonych IP"
+                      value={settings.security.ip_whitelist}
+                      onChange={(e) => handleSettingChange('security', 'ip_whitelist', e.target.value)}
+                      placeholder="Wprowadź adresy IP (jeden na linię)"
+                      rows={3}
+                      helperText="Pozostaw puste aby zezwolić na wszystkie IP"
+                    />
+                  </div>
+                </Grid>
 
-              <div className="mt-6 space-y-4">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
+                <Stack gap="md">
+                  <Checkbox
                     checked={settings.security.require_2fa}
-                    onChange={(e) => handleSettingChange('security', 'require_2fa', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    onChange={(checked) => handleSettingChange('security', 'require_2fa', checked)}
+                    label="Wymagaj uwierzytelniania dwuskładnikowego"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Require two-factor authentication</span>
-                </label>
 
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={settings.security.audit_logging}
-                    onChange={(e) => handleSettingChange('security', 'audit_logging', e.target.checked)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    onChange={(checked) => handleSettingChange('security', 'audit_logging', checked)}
+                    label="Włącz logowanie audytu"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Enable audit logging</span>
-                </label>
-              </div>
+                </Stack>
+              </Stack>
             </div>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
-          <button
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+          <Button
             onClick={handleReset}
-            className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            variant="secondary"
+            startIcon={<RefreshCw className="h-4 w-4" />}
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Reset to Defaults
-          </button>
+            Przywróć domyślne
+          </Button>
           
-          <button
-            onClick={handleSave}
+          <Button
+            onClick={() => handleSave(settings)}
             disabled={isSaving}
-            className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+            variant="primary"
+            loading={isSaving}
+            startIcon={isSaving ? undefined : <Save className="h-4 w-4" />}
           >
-            {isSaving ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Save Settings
-              </>
-            )}
-          </button>
+            {isSaving ? 'Zapisywanie...' : 'Zapisz ustawienia'}
+          </Button>
         </div>
       </div>
     </div>

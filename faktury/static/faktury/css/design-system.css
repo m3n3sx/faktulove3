@@ -1,0 +1,996 @@
+/* FaktuLove Design System - Django Integration */
+
+/* Import design system tokens */
+/* Design system tokens - inline fallbacks */
+:root {
+  /* Basic color tokens */
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-text-inverse: #ffffff;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f9fafb;
+  --color-background-muted: #f3f4f6;
+  --color-background-hover: #f9fafb;
+  --color-border-default: #e5e7eb;
+  --color-border-strong: #d1d5db;
+  --color-border-muted: #f3f4f6;
+  --color-interactive: #3b82f6;
+  --color-interactive-hover: #2563eb;
+  --color-interactive-active: #1d4ed8;
+  
+  /* Spacing tokens */
+  --spacing-0-5: 0.125rem;
+  --spacing-1: 0.25rem;
+  --spacing-1-5: 0.375rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  
+  /* Typography tokens */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --line-height-normal: 1.5;
+  
+  /* Border radius tokens */
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.375rem;
+  --border-radius-full: 9999px;
+  
+  /* Animation tokens */
+  --animation-duration-fast: 150ms;
+  --animation-duration-normal: 300ms;
+  --animation-easing-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  
+  /* Focus ring */
+  --focus-ring-default: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  
+  /* Status colors */
+  --color-status-success: #059669;
+  --color-status-success-background: #d1fae5;
+  --color-status-success-border: #86efac;
+  --color-status-warning: #d97706;
+  --color-status-warning-background: #fef3c7;
+  --color-status-warning-border: #fcd34d;
+  --color-status-error: #dc2626;
+  --color-status-error-background: #fee2e2;
+  --color-status-error-border: #fca5a5;
+  --color-status-info: #2563eb;
+  --color-status-info-background: #dbeafe;
+  --color-status-info-border: #93c5fd;
+}
+
+/* Django-specific design system integration */
+.django-design-system {
+  /* Apply design system base styles to Django templates */
+  font-family: var(--font-family-sans);
+  color: var(--color-text-primary);
+  background-color: var(--color-background-primary);
+  
+  /* Ensure proper integration with React components */
+  --design-system-integration: 'django';
+  
+  /* Polish business context */
+  --polish-business-context: 'enabled';
+}
+
+/* Integration bridge for React components in Django templates */
+.django-react-bridge {
+  /* Ensure consistent styling between Django and React */
+  font-family: inherit;
+  color: inherit;
+  background-color: inherit;
+  
+  /* Reset any conflicting styles */
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Design system initialization indicator */
+.design-system-initialized .django-design-system {
+  /* Enhanced styles when design system is fully loaded */
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+/* Theme integration classes */
+.django-design-system.theme-light {
+  color-scheme: light;
+}
+
+.django-design-system.theme-dark {
+  color-scheme: dark;
+}
+
+.django-design-system.theme-high-contrast {
+  /* High contrast mode adjustments */
+  --color-border-default: var(--color-text-primary);
+  --color-border-strong: var(--color-text-primary);
+}
+
+.django-design-system.theme-reduced-motion {
+  /* Disable animations for reduced motion */
+  --animation-duration-fast: 0ms;
+  --animation-duration-normal: 0ms;
+  --animation-duration-slow: 0ms;
+}
+
+.django-design-system.theme-reduced-motion *,
+.django-design-system.theme-reduced-motion *::before,
+.django-design-system.theme-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Django form integration with design system */
+.django-form .form-control,
+.django-form input[type="text"],
+.django-form input[type="email"],
+.django-form input[type="password"],
+.django-form input[type="number"],
+.django-form input[type="tel"],
+.django-form input[type="url"],
+.django-form input[type="date"],
+.django-form input[type="datetime-local"],
+.django-form input[type="time"],
+.django-form select,
+.django-form textarea {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2) var(--spacing-3);
+  background-color: var(--color-background-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+.django-form .form-control:hover,
+.django-form input:hover,
+.django-form select:hover,
+.django-form textarea:hover {
+  border-color: var(--color-border-strong);
+}
+
+.django-form .form-control:focus,
+.django-form input:focus,
+.django-form select:focus,
+.django-form textarea:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-color: var(--color-interactive);
+  box-shadow: var(--focus-ring-default);
+}
+
+.django-form .form-control:disabled,
+.django-form input:disabled,
+.django-form select:disabled,
+.django-form textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-background-muted);
+}
+
+/* Django form labels */
+.django-form label {
+  font-size: var(--typography-form-label-size);
+  font-weight: var(--typography-form-label-weight);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-1);
+  display: block;
+}
+
+.django-form .required label::after {
+  content: " *";
+  color: var(--color-status-error);
+}
+
+/* Django form errors */
+.django-form .errorlist,
+.django-form .form-errors {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-1) 0 0 0;
+}
+
+.django-form .errorlist li,
+.django-form .form-errors li {
+  color: var(--color-status-error);
+  font-size: var(--typography-form-error-size);
+  font-weight: var(--typography-form-error-weight);
+}
+
+/* Django form help text */
+.django-form .helptext {
+  font-size: var(--typography-form-helper-size);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-1);
+}
+
+/* Django buttons integration */
+.django-btn,
+.django-form button,
+.django-form input[type="submit"],
+.django-form input[type="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2) var(--spacing-4);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease-out);
+  min-height: var(--spacing-10);
+}
+
+.django-btn:focus,
+.django-form button:focus,
+.django-form input[type="submit"]:focus,
+.django-form input[type="button"]:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring-default);
+}
+
+/* Primary button */
+.django-btn-primary,
+.django-form .btn-primary {
+  background-color: var(--color-interactive);
+  color: var(--color-text-inverse);
+  border-color: var(--color-interactive);
+}
+
+.django-btn-primary:hover,
+.django-form .btn-primary:hover {
+  background-color: var(--color-interactive-hover);
+  border-color: var(--color-interactive-hover);
+}
+
+.django-btn-primary:active,
+.django-form .btn-primary:active {
+  background-color: var(--color-interactive-active);
+  border-color: var(--color-interactive-active);
+}
+
+/* Secondary button */
+.django-btn-secondary,
+.django-form .btn-secondary {
+  background-color: var(--color-background-primary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-default);
+}
+
+.django-btn-secondary:hover,
+.django-form .btn-secondary:hover {
+  background-color: var(--color-background-hover);
+  border-color: var(--color-border-strong);
+}
+
+/* Danger button */
+.django-btn-danger,
+.django-form .btn-danger {
+  background-color: var(--color-status-error);
+  color: var(--color-text-inverse);
+  border-color: var(--color-status-error);
+}
+
+.django-btn-danger:hover,
+.django-form .btn-danger:hover {
+  background-color: var(--color-error-700);
+  border-color: var(--color-error-700);
+}
+
+/* Django admin integration */
+.django-admin {
+  font-family: var(--font-family-sans);
+}
+
+.django-admin .module h2,
+.django-admin .module caption,
+.django-admin .inline-group h2 {
+  background-color: var(--color-background-secondary);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.django-admin .button,
+.django-admin input[type="submit"],
+.django-admin input[type="button"],
+.django-admin .submit-row input {
+  background-color: var(--color-interactive);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-interactive);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+}
+
+.django-admin .button:hover,
+.django-admin input[type="submit"]:hover,
+.django-admin input[type="button"]:hover {
+  background-color: var(--color-interactive-hover);
+  border-color: var(--color-interactive-hover);
+}
+
+/* Django messages integration */
+.django-messages {
+  margin-bottom: var(--spacing-4);
+}
+
+.django-messages .alert {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  border: 1px solid transparent;
+  margin-bottom: var(--spacing-2);
+}
+
+.django-messages .alert-success {
+  background-color: var(--color-status-success-background);
+  color: var(--color-status-success);
+  border-color: var(--color-status-success-border);
+}
+
+.django-messages .alert-warning {
+  background-color: var(--color-status-warning-background);
+  color: var(--color-status-warning);
+  border-color: var(--color-status-warning-border);
+}
+
+.django-messages .alert-error,
+.django-messages .alert-danger {
+  background-color: var(--color-status-error-background);
+  color: var(--color-status-error);
+  border-color: var(--color-status-error-border);
+}
+
+.django-messages .alert-info {
+  background-color: var(--color-status-info-background);
+  color: var(--color-status-info);
+  border-color: var(--color-status-info-border);
+}
+
+/* Django tables integration */
+.django-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--color-background-primary);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.django-table th {
+  background-color: var(--color-background-secondary);
+  color: var(--color-text-primary);
+  font-size: var(--typography-table-header-size);
+  font-weight: var(--typography-table-header-weight);
+  letter-spacing: var(--typography-table-header-letter-spacing);
+  padding: var(--spacing-table-cell);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.django-table td {
+  padding: var(--spacing-table-cell);
+  border-bottom: 1px solid var(--color-border-muted);
+  color: var(--color-text-primary);
+}
+
+.django-table tbody tr:hover {
+  background-color: var(--color-background-hover);
+}
+
+/* Polish business specific Django integration */
+.django-polish-business {
+  /* Currency formatting */
+}
+
+.django-polish-business .currency {
+  font-family: var(--typography-currency-family);
+  font-size: var(--typography-currency-size);
+  font-weight: var(--typography-currency-weight);
+  text-align: right;
+  color: var(--color-currency-neutral);
+}
+
+.django-polish-business .currency.positive {
+  color: var(--color-currency-positive);
+}
+
+.django-polish-business .currency.negative {
+  color: var(--color-currency-negative);
+}
+
+.django-polish-business .currency.large {
+  font-size: var(--typography-currency-large-size);
+  font-weight: var(--typography-currency-large-weight);
+}
+
+/* NIP formatting */
+.django-polish-business .nip {
+  font-family: var(--typography-nip-family);
+  font-size: var(--typography-nip-size);
+  font-weight: var(--typography-nip-weight);
+  letter-spacing: var(--typography-nip-letter-spacing);
+  color: var(--color-text-secondary);
+}
+
+/* Date formatting */
+.django-polish-business .date {
+  font-family: var(--typography-date-family);
+  font-size: var(--typography-date-size);
+  color: var(--color-text-secondary);
+}
+
+/* Invoice specific styling */
+.django-polish-business .invoice-number {
+  font-family: var(--typography-invoice-number-family);
+  font-size: var(--typography-invoice-number-size);
+  font-weight: var(--typography-invoice-number-weight);
+  letter-spacing: var(--typography-invoice-number-letter-spacing);
+  color: var(--color-text-primary);
+}
+
+.django-polish-business .company-name {
+  font-size: var(--typography-company-name-size);
+  font-weight: var(--typography-company-name-weight);
+  line-height: var(--typography-company-name-line-height);
+  color: var(--color-text-primary);
+}
+
+/* Status badges */
+.django-polish-business .status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-full);
+  font-size: var(--typography-status-badge-size);
+  font-weight: var(--typography-status-badge-weight);
+  letter-spacing: var(--typography-status-badge-letter-spacing);
+  text-transform: uppercase;
+}
+
+.django-polish-business .status-badge.draft {
+  background-color: var(--color-invoice-draft-background);
+  color: var(--color-invoice-draft);
+}
+
+.django-polish-business .status-badge.sent {
+  background-color: var(--color-invoice-sent-background);
+  color: var(--color-invoice-sent);
+}
+
+.django-polish-business .status-badge.paid {
+  background-color: var(--color-invoice-paid-background);
+  color: var(--color-invoice-paid);
+}
+
+.django-polish-business .status-badge.overdue {
+  background-color: var(--color-invoice-overdue-background);
+  color: var(--color-invoice-overdue);
+}
+
+.django-polish-business .status-badge.cancelled {
+  background-color: var(--color-invoice-cancelled-background);
+  color: var(--color-invoice-cancelled);
+}
+
+/* Responsive design for Django templates */
+@media (max-width: 768px) {
+  .django-form .form-control,
+  .django-form input,
+  .django-form select,
+  .django-form textarea {
+    font-size: var(--font-size-base);
+  }
+  
+  .django-btn,
+  .django-form button {
+    width: 100%;
+    margin-bottom: var(--spacing-2);
+  }
+  
+  .django-table {
+    font-size: var(--font-size-sm);
+  }
+  
+  .django-table th,
+  .django-table td {
+    padding: var(--spacing-table-cell-compact);
+  }
+}
+
+/* Print styles for Django templates */
+@media print {
+  .django-design-system {
+    color: black;
+    background: white;
+  }
+  
+  .django-btn,
+  .django-form button {
+    display: none;
+  }
+  
+  .django-table {
+    box-shadow: none;
+    border: 1px solid black;
+  }
+  
+  .django-table th,
+  .django-table td {
+    border: 1px solid black;
+  }
+  
+  .django-polish-business .invoice-number,
+  .django-polish-business .company-name {
+    color: black;
+  }
+}
+
+/* Dark mode support for Django templates */
+@media (prefers-color-scheme: dark) {
+  .django-design-system {
+    color: var(--color-text-primary);
+    background-color: var(--color-background-primary);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .django-form .form-control:focus,
+  .django-form input:focus,
+  .django-form select:focus,
+  .django-form textarea:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+  
+  .django-btn:focus,
+  .django-form button:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Advanced component styles */
+.grid {
+  display: grid;
+  gap: var(--spacing-4);
+}
+
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+.gap-xs { gap: var(--spacing-1); }
+.gap-sm { gap: var(--spacing-2); }
+.gap-md { gap: var(--spacing-4); }
+.gap-lg { gap: var(--spacing-6); }
+.gap-xl { gap: var(--spacing-8); }
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.stack.align-start { align-items: flex-start; }
+.stack.align-center { align-items: center; }
+.stack.align-end { align-items: flex-end; }
+.stack.align-stretch { align-items: stretch; }
+
+.flex {
+  display: flex;
+}
+
+.flex-row { flex-direction: row; }
+.flex-col { flex-direction: column; }
+
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+.items-stretch { align-items: stretch; }
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-full);
+  font-size: var(--typography-status-badge-size);
+  font-weight: var(--typography-status-badge-weight);
+  letter-spacing: var(--typography-status-badge-letter-spacing);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.badge-default {
+  background-color: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+}
+
+.badge-primary {
+  background-color: var(--color-interactive);
+  color: var(--color-text-inverse);
+}
+
+.badge-secondary {
+  background-color: var(--color-background-muted);
+  color: var(--color-text-muted);
+}
+
+.badge-success {
+  background-color: var(--color-status-success-background);
+  color: var(--color-status-success);
+}
+
+.badge-warning {
+  background-color: var(--color-status-warning-background);
+  color: var(--color-status-warning);
+}
+
+.badge-danger {
+  background-color: var(--color-status-error-background);
+  color: var(--color-status-error);
+}
+
+.badge-info {
+  background-color: var(--color-status-info-background);
+  color: var(--color-status-info);
+}
+
+.badge-sm {
+  padding: var(--spacing-0-5) var(--spacing-1);
+  font-size: var(--font-size-xs);
+}
+
+.badge-lg {
+  padding: var(--spacing-1-5) var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
+/* Alert styles */
+.alert {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  border: 1px solid transparent;
+  margin-bottom: var(--spacing-4);
+  position: relative;
+}
+
+.alert-info {
+  background-color: var(--color-status-info-background);
+  color: var(--color-status-info);
+  border-color: var(--color-status-info-border);
+}
+
+.alert-success {
+  background-color: var(--color-status-success-background);
+  color: var(--color-status-success);
+  border-color: var(--color-status-success-border);
+}
+
+.alert-warning {
+  background-color: var(--color-status-warning-background);
+  color: var(--color-status-warning);
+  border-color: var(--color-status-warning-border);
+}
+
+.alert-danger {
+  background-color: var(--color-status-error-background);
+  color: var(--color-status-error);
+  border-color: var(--color-status-error-border);
+}
+
+.alert-dismissible {
+  padding-right: var(--spacing-10);
+}
+
+.btn-close {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-2);
+  background: none;
+  border: none;
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: var(--spacing-1);
+  border-radius: var(--border-radius-sm);
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+.btn-close:focus {
+  outline: 2px solid var(--color-interactive);
+  outline-offset: 2px;
+}
+
+/* Progress bar styles */
+.progress {
+  background-color: var(--color-background-muted);
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+  height: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
+
+.progress-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-1);
+}
+
+.progress-bar {
+  background-color: var(--color-interactive);
+  height: 100%;
+  transition: width var(--animation-duration-normal) var(--animation-easing-ease-out);
+  border-radius: inherit;
+}
+
+/* Loading spinner styles */
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-sm {
+  width: var(--spacing-4);
+  height: var(--spacing-4);
+}
+
+.spinner-md {
+  width: var(--spacing-6);
+  height: var(--spacing-6);
+}
+
+.spinner-lg {
+  width: var(--spacing-8);
+  height: var(--spacing-8);
+}
+
+.spinner-circle {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--color-border-muted);
+  border-top-color: var(--color-interactive);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tooltip styles */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-wrapper::before,
+.tooltip-wrapper::after {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--animation-duration-fast) var(--animation-easing-ease-out);
+  z-index: 1000;
+}
+
+.tooltip-wrapper::before {
+  content: attr(data-tooltip);
+  background: var(--color-background-inverse);
+  color: var(--color-text-inverse);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  max-width: 200px;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.tooltip-wrapper::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+}
+
+.tooltip-wrapper:hover::before,
+.tooltip-wrapper:hover::after,
+.tooltip-wrapper:focus::before,
+.tooltip-wrapper:focus::after {
+  opacity: 1;
+}
+
+/* Tooltip positions */
+.tooltip-wrapper[data-position="top"]::before {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: var(--spacing-1);
+}
+
+.tooltip-wrapper[data-position="top"]::after {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--color-background-inverse);
+}
+
+/* Breadcrumb styles */
+.breadcrumb {
+  margin-bottom: var(--spacing-4);
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+}
+
+.breadcrumb-item {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.breadcrumb-item a {
+  color: var(--color-interactive);
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-item.current {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.breadcrumb-separator {
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+/* Fieldset styles */
+.fieldset {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.fieldset-legend {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  padding: 0 var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
+
+/* Theme toggle styles */
+.theme-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-icon-light,
+.theme-icon-dark {
+  transition: opacity var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+[data-theme="light"] .theme-icon-dark {
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+[data-theme="dark"] .theme-icon-light {
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6 {
+    grid-template-columns: 1fr;
+  }
+  
+  .flex {
+    flex-direction: column;
+  }
+  
+  .flex-row {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb-list {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .breadcrumb-separator {
+    display: none;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .django-form .form-control,
+  .django-form input,
+  .django-form select,
+  .django-form textarea,
+  .django-btn,
+  .django-form button,
+  .progress-bar,
+  .tooltip-wrapper::before,
+  .tooltip-wrapper::after,
+  .theme-icon-light,
+  .theme-icon-dark {
+    transition: none;
+  }
+  
+  .spinner-circle {
+    animation: none;
+  }
+}

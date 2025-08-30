@@ -1,288 +1,380 @@
 """
-Feature Flag Service for OCR Migration
-Manages gradual rollout from Google Cloud to open-source OCR
+Feature Flag Service for Design System Integration
+Manages feature flags for gradual rollout and A/B testing
 """
 
-import os
 import json
 import logging
-from typing import Dict, Any, Optional
-from django.conf import settings
-from django.core.cache import cache
-from django.utils import timezone
+from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
+from django.core.cache import cache
+from django.conf import settings
+from django.contrib.auth.models import User
+import hashlib
 
 logger = logging.getLogger(__name__)
 
-
 class FeatureFlagService:
-    """Service for managing feature flags during OCR migration"""
+    """Service for managing feature flags during rollout"""
     
-    # Cache keys
-    CACHE_KEY_PREFIX = "ocr_feature_flags"
+    CACHE_PREFIX = "feature_flag"
     CACHE_TIMEOUT = 300  # 5 minutes
     
-    # Default feature flags
-    DEFAULT_FLAGS = {
-        'use_opensource_ocr': False,
-        'disable_google_cloud': False,
-        'enable_ocr_fallback': True,
-        'gradual_rollout_enabled': False,
-        'rollout_percentage': 0,
-        'rollout_user_groups': [],
-        'enable_performance_monitoring': True,
-        'enable_accuracy_comparison': False,
-        'force_opensource_for_testing': False,
-        'maintenance_mode': False,
+    # Design System Feature Flags
+    DESIGN_SYSTEM_FLAGS = {
+        "DESIGN_SYSTEM_BASIC_COMPONENTS": {
+            "name": "Basic Design System Components",
+            "description": "Enable basic components (Button, Input, etc.)",
+            "category": "design_system",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "DESIGN_SYSTEM_FORM_COMPONENTS": {
+            "name": "Form Components",
+            "description": "Enable form-related design system components",
+            "category": "design_system",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "DESIGN_SYSTEM_LAYOUT_COMPONENTS": {
+            "name": "Layout Components",
+            "description": "Enable layout components (Grid, Container, etc.)",
+            "category": "design_system",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "DESIGN_SYSTEM_ADVANCED_COMPONENTS": {
+            "name": "Advanced Components",
+            "description": "Enable advanced components (Charts, Tables, etc.)",
+            "category": "design_system",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "DESIGN_SYSTEM_THEMING": {
+            "name": "Design System Theming",
+            "description": "Enable theme switching and customization",
+            "category": "design_system",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "DESIGN_SYSTEM_ACCESSIBILITY": {
+            "name": "Accessibility Features",
+            "description": "Enable accessibility enhancements",
+            "category": "design_system",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "DESIGN_SYSTEM_PERFORMANCE_MONITORING": {
+            "name": "Performance Monitoring",
+            "description": "Enable performance monitoring for design system",
+            "category": "design_system",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        }
     }
     
-    # Rollout stages
-    ROLLOUT_STAGES = {
-        'stage_0': {'percentage': 0, 'description': 'No rollout - Google Cloud only'},
-        'stage_1': {'percentage': 5, 'description': 'Pilot - 5% of users'},
-        'stage_2': {'percentage': 15, 'description': 'Early adopters - 15% of users'},
-        'stage_3': {'percentage': 35, 'description': 'Gradual rollout - 35% of users'},
-        'stage_4': {'percentage': 60, 'description': 'Majority rollout - 60% of users'},
-        'stage_5': {'percentage': 85, 'description': 'Near complete - 85% of users'},
-        'stage_6': {'percentage': 100, 'description': 'Complete rollout - All users'},
+    # Polish Business Feature Flags
+    POLISH_BUSINESS_FLAGS = {
+        "POLISH_BUSINESS_NIP_VALIDATION": {
+            "name": "NIP Validation",
+            "description": "Enable Polish NIP validation component",
+            "category": "polish_business",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "POLISH_BUSINESS_VAT_CALCULATOR": {
+            "name": "VAT Calculator",
+            "description": "Enable Polish VAT calculation component",
+            "category": "polish_business",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "POLISH_BUSINESS_CURRENCY_FORMATTING": {
+            "name": "Currency Formatting",
+            "description": "Enable Polish currency formatting (PLN)",
+            "category": "polish_business",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "POLISH_BUSINESS_DATE_FORMATTING": {
+            "name": "Date Formatting",
+            "description": "Enable Polish date formatting (DD.MM.YYYY)",
+            "category": "polish_business",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        },
+        "POLISH_BUSINESS_INVOICE_COMPLIANCE": {
+            "name": "Invoice Compliance",
+            "description": "Enable Polish invoice compliance checking",
+            "category": "polish_business",
+            "default_enabled": False,
+            "rollout_percentage": 0
+        }
     }
     
     def __init__(self):
-        self.current_flags = self._load_flags()
+        self.all_flags = {**self.DESIGN_SYSTEM_FLAGS, **self.POLISH_BUSINESS_FLAGS}
     
-    def _load_flags(self) -> Dict[str, Any]:
-        """Load feature flags from cache, settings, or defaults"""
-        # Try cache first
-        cached_flags = cache.get(f"{self.CACHE_KEY_PREFIX}_current")
-        if cached_flags:
-            return cached_flags
-        
-        # Load from settings
-        flags = getattr(settings, 'OCR_FEATURE_FLAGS', {})
-        
-        # Merge with defaults
-        merged_flags = {**self.DEFAULT_FLAGS, **flags}
-        
-        # Cache the flags
-        cache.set(f"{self.CACHE_KEY_PREFIX}_current", merged_flags, self.CACHE_TIMEOUT)
-        
-        return merged_flags
+    def get_user_hash(self, user_id: int) -> str:
+        """Generate consistent hash for user-based rollout"""
+        user_string = f"{user_id}_{settings.SECRET_KEY}"
+        return hashlib.md5(user_string.encode()).hexdigest()
     
-    def _save_flags(self, flags: Dict[str, Any]) -> None:
-        """Save feature flags to cache"""
-        self.current_flags = flags
-        cache.set(f"{self.CACHE_KEY_PREFIX}_current", flags, self.CACHE_TIMEOUT)
-        
-        # Log flag changes
-        logger.info(f"Feature flags updated: {flags}")
-    
-    def get_flag(self, flag_name: str, default: Any = None) -> Any:
-        """Get a specific feature flag value"""
-        return self.current_flags.get(flag_name, default)
-    
-    def set_flag(self, flag_name: str, value: Any) -> None:
-        """Set a specific feature flag value"""
-        self.current_flags[flag_name] = value
-        self._save_flags(self.current_flags)
-    
-    def get_all_flags(self) -> Dict[str, Any]:
-        """Get all current feature flags"""
-        return self.current_flags.copy()
-    
-    def should_use_opensource_ocr(self, user_id: Optional[int] = None, 
-                                 company_id: Optional[int] = None) -> bool:
-        """
-        Determine if open-source OCR should be used for this request
-        
-        Args:
-            user_id: User ID for rollout calculation
-            company_id: Company ID for rollout calculation
+    def is_user_in_rollout(self, user_id: int, percentage: int) -> bool:
+        """Determine if user is included in rollout percentage"""
+        if percentage >= 100:
+            return True
+        if percentage <= 0:
+            return False
             
-        Returns:
-            bool: True if open-source OCR should be used
-        """
-        # Check maintenance mode
-        if self.get_flag('maintenance_mode', False):
-            logger.warning("OCR system in maintenance mode")
+        user_hash = self.get_user_hash(user_id)
+        # Use first 8 characters of hash to get a number 0-99
+        hash_number = int(user_hash[:8], 16) % 100
+        return hash_number < percentage
+    
+    def get_flag_config(self, flag_name: str) -> Optional[Dict[str, Any]]:
+        """Get configuration for a specific flag"""
+        cache_key = f"{self.CACHE_PREFIX}_config_{flag_name}"
+        config = cache.get(cache_key)
+        
+        if config is None:
+            # Get from database or use default
+            config = self.all_flags.get(flag_name, {})
+            
+            # Override with any database settings
+            try:
+                from faktury.models import FeatureFlag
+                db_flag = FeatureFlag.objects.filter(name=flag_name).first()
+                if db_flag:
+                    config.update({
+                        "enabled": db_flag.enabled,
+                        "rollout_percentage": db_flag.rollout_percentage,
+                        "start_date": db_flag.start_date,
+                        "end_date": db_flag.end_date
+                    })
+            except Exception as e:
+                logger.warning(f"Could not load flag from database: {e}")
+            
+            cache.set(cache_key, config, self.CACHE_TIMEOUT)
+        
+        return config
+    
+    def is_flag_enabled(self, flag_name: str, user: Optional[User] = None, user_id: Optional[int] = None) -> bool:
+        """Check if a feature flag is enabled for a user"""
+        config = self.get_flag_config(flag_name)
+        if not config:
             return False
         
-        # Check if forced for testing
-        if self.get_flag('force_opensource_for_testing', False):
-            return True
-        
-        # Check if completely disabled
-        if not self.get_flag('use_opensource_ocr', False):
+        # Check if flag is globally disabled
+        if not config.get("enabled", config.get("default_enabled", False)):
             return False
         
-        # Check if Google Cloud is completely disabled
-        if self.get_flag('disable_google_cloud', False):
-            return True
+        # Check date range if specified
+        now = datetime.now()
+        start_date = config.get("start_date")
+        end_date = config.get("end_date")
         
-        # Check gradual rollout
-        if not self.get_flag('gradual_rollout_enabled', False):
-            return self.get_flag('use_opensource_ocr', False)
-        
-        # Calculate rollout percentage
-        rollout_percentage = self.get_flag('rollout_percentage', 0)
-        
-        if rollout_percentage >= 100:
-            return True
-        elif rollout_percentage <= 0:
+        if start_date and now < start_date:
             return False
-        
-        # Use deterministic rollout based on user/company ID
-        rollout_id = user_id or company_id or 0
-        rollout_hash = hash(f"ocr_rollout_{rollout_id}") % 100
-        
-        should_rollout = rollout_hash < rollout_percentage
-        
-        if should_rollout:
-            logger.info(f"User/Company {rollout_id} selected for open-source OCR rollout")
-        
-        return should_rollout
-    
-    def should_enable_fallback(self) -> bool:
-        """Check if OCR fallback should be enabled"""
-        return self.get_flag('enable_ocr_fallback', True)
-    
-    def should_monitor_performance(self) -> bool:
-        """Check if performance monitoring should be enabled"""
-        return self.get_flag('enable_performance_monitoring', True)
-    
-    def should_compare_accuracy(self) -> bool:
-        """Check if accuracy comparison should be enabled"""
-        return self.get_flag('enable_accuracy_comparison', False)
-    
-    def get_current_rollout_stage(self) -> Dict[str, Any]:
-        """Get current rollout stage information"""
-        current_percentage = self.get_flag('rollout_percentage', 0)
-        
-        for stage_name, stage_info in self.ROLLOUT_STAGES.items():
-            if current_percentage <= stage_info['percentage']:
-                return {
-                    'stage': stage_name,
-                    'percentage': stage_info['percentage'],
-                    'description': stage_info['description'],
-                    'current_percentage': current_percentage
-                }
-        
-        return {
-            'stage': 'stage_6',
-            'percentage': 100,
-            'description': 'Complete rollout - All users',
-            'current_percentage': current_percentage
-        }
-    
-    def advance_rollout_stage(self) -> Dict[str, Any]:
-        """Advance to the next rollout stage"""
-        current_percentage = self.get_flag('rollout_percentage', 0)
-        
-        for stage_name, stage_info in self.ROLLOUT_STAGES.items():
-            if current_percentage < stage_info['percentage']:
-                self.set_flag('rollout_percentage', stage_info['percentage'])
-                self.set_flag('gradual_rollout_enabled', True)
-                
-                logger.info(f"Advanced to rollout {stage_name}: {stage_info['percentage']}%")
-                
-                return {
-                    'previous_percentage': current_percentage,
-                    'new_percentage': stage_info['percentage'],
-                    'stage': stage_name,
-                    'description': stage_info['description']
-                }
-        
-        # Already at maximum
-        return {
-            'previous_percentage': current_percentage,
-            'new_percentage': current_percentage,
-            'stage': 'stage_6',
-            'description': 'Already at maximum rollout'
-        }
-    
-    def rollback_rollout_stage(self) -> Dict[str, Any]:
-        """Rollback to the previous rollout stage"""
-        current_percentage = self.get_flag('rollout_percentage', 0)
-        
-        # Find previous stage
-        previous_stage = None
-        for stage_name, stage_info in self.ROLLOUT_STAGES.items():
-            if stage_info['percentage'] < current_percentage:
-                previous_stage = stage_info
-            else:
-                break
-        
-        if previous_stage:
-            self.set_flag('rollout_percentage', previous_stage['percentage'])
-            
-            logger.warning(f"Rolled back to {previous_stage['percentage']}% rollout")
-            
-            return {
-                'previous_percentage': current_percentage,
-                'new_percentage': previous_stage['percentage'],
-                'description': f"Rolled back to {previous_stage['percentage']}%"
-            }
-        else:
-            # Disable rollout completely
-            self.set_flag('rollout_percentage', 0)
-            self.set_flag('gradual_rollout_enabled', False)
-            
-            logger.warning("Rolled back to 0% rollout - disabled gradual rollout")
-            
-            return {
-                'previous_percentage': current_percentage,
-                'new_percentage': 0,
-                'description': "Rolled back to 0% - disabled gradual rollout"
-            }
-    
-    def enable_maintenance_mode(self, reason: str = "Maintenance") -> None:
-        """Enable maintenance mode"""
-        self.set_flag('maintenance_mode', True)
-        self.set_flag('maintenance_reason', reason)
-        self.set_flag('maintenance_started', timezone.now().isoformat())
-        
-        logger.warning(f"OCR maintenance mode enabled: {reason}")
-    
-    def disable_maintenance_mode(self) -> None:
-        """Disable maintenance mode"""
-        self.set_flag('maintenance_mode', False)
-        self.set_flag('maintenance_reason', None)
-        self.set_flag('maintenance_ended', timezone.now().isoformat())
-        
-        logger.info("OCR maintenance mode disabled")
-    
-    def get_rollout_statistics(self) -> Dict[str, Any]:
-        """Get rollout statistics"""
-        return {
-            'current_stage': self.get_current_rollout_stage(),
-            'flags': self.get_all_flags(),
-            'rollout_enabled': self.get_flag('gradual_rollout_enabled', False),
-            'opensource_enabled': self.get_flag('use_opensource_ocr', False),
-            'google_cloud_disabled': self.get_flag('disable_google_cloud', False),
-            'maintenance_mode': self.get_flag('maintenance_mode', False),
-            'last_updated': timezone.now().isoformat()
-        }
-    
-    def validate_configuration(self) -> tuple[bool, list[str]]:
-        """Validate feature flag configuration"""
-        errors = []
-        
-        # Check for conflicting flags
-        if (self.get_flag('disable_google_cloud', False) and 
-            not self.get_flag('use_opensource_ocr', False)):
-            errors.append("Google Cloud disabled but open-source OCR not enabled")
+        if end_date and now > end_date:
+            return False
         
         # Check rollout percentage
-        rollout_percentage = self.get_flag('rollout_percentage', 0)
-        if not (0 <= rollout_percentage <= 100):
-            errors.append(f"Invalid rollout percentage: {rollout_percentage}")
+        rollout_percentage = config.get("rollout_percentage", 0)
+        if rollout_percentage >= 100:
+            return True
+        if rollout_percentage <= 0:
+            return False
         
-        # Check if gradual rollout is enabled but percentage is 0
-        if (self.get_flag('gradual_rollout_enabled', False) and 
-            rollout_percentage == 0):
-            errors.append("Gradual rollout enabled but percentage is 0")
+        # Determine user ID
+        if user:
+            user_id = user.id
+        elif user_id is None:
+            # No user context, use global percentage
+            return rollout_percentage >= 100
         
-        return len(errors) == 0, errors
-
+        return self.is_user_in_rollout(user_id, rollout_percentage)
+    
+    def enable_flag(self, flag_name: str, percentage: int = 100, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> bool:
+        """Enable a feature flag"""
+        try:
+            from faktury.models import FeatureFlag
+            
+            flag, created = FeatureFlag.objects.get_or_create(
+                name=flag_name,
+                defaults={
+                    "enabled": True,
+                    "rollout_percentage": percentage,
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "description": self.all_flags.get(flag_name, {}).get("description", "")
+                }
+            )
+            
+            if not created:
+                flag.enabled = True
+                flag.rollout_percentage = percentage
+                if start_date:
+                    flag.start_date = start_date
+                if end_date:
+                    flag.end_date = end_date
+                flag.save()
+            
+            # Clear cache
+            cache_key = f"{self.CACHE_PREFIX}_config_{flag_name}"
+            cache.delete(cache_key)
+            
+            logger.info(f"Feature flag {flag_name} enabled for {percentage}% of users")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to enable feature flag {flag_name}: {e}")
+            return False
+    
+    def disable_flag(self, flag_name: str) -> bool:
+        """Disable a feature flag"""
+        try:
+            from faktury.models import FeatureFlag
+            
+            flag = FeatureFlag.objects.filter(name=flag_name).first()
+            if flag:
+                flag.enabled = False
+                flag.rollout_percentage = 0
+                flag.save()
+            
+            # Clear cache
+            cache_key = f"{self.CACHE_PREFIX}_config_{flag_name}"
+            cache.delete(cache_key)
+            
+            logger.info(f"Feature flag {flag_name} disabled")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to disable feature flag {flag_name}: {e}")
+            return False
+    
+    def disable_all_flags(self, category: Optional[str] = None) -> bool:
+        """Disable all feature flags, optionally filtered by category"""
+        try:
+            from faktury.models import FeatureFlag
+            
+            flags_to_disable = []
+            
+            if category:
+                # Filter by category
+                for flag_name, config in self.all_flags.items():
+                    if config.get("category") == category:
+                        flags_to_disable.append(flag_name)
+            else:
+                flags_to_disable = list(self.all_flags.keys())
+            
+            # Disable flags in database
+            FeatureFlag.objects.filter(name__in=flags_to_disable).update(
+                enabled=False,
+                rollout_percentage=0
+            )
+            
+            # Clear cache for all flags
+            for flag_name in flags_to_disable:
+                cache_key = f"{self.CACHE_PREFIX}_config_{flag_name}"
+                cache.delete(cache_key)
+            
+            logger.info(f"Disabled {len(flags_to_disable)} feature flags" + 
+                       (f" in category {category}" if category else ""))
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to disable feature flags: {e}")
+            return False
+    
+    def get_user_flags(self, user: Optional[User] = None, user_id: Optional[int] = None) -> Dict[str, bool]:
+        """Get all feature flags status for a user"""
+        flags_status = {}
+        
+        for flag_name in self.all_flags.keys():
+            flags_status[flag_name] = self.is_flag_enabled(flag_name, user, user_id)
+        
+        return flags_status
+    
+    def get_flag_statistics(self) -> Dict[str, Any]:
+        """Get statistics about feature flag usage"""
+        try:
+            from faktury.models import FeatureFlag
+            from django.contrib.auth.models import User
+            
+            total_users = User.objects.count()
+            enabled_flags = FeatureFlag.objects.filter(enabled=True)
+            
+            stats = {
+                "total_flags": len(self.all_flags),
+                "enabled_flags": enabled_flags.count(),
+                "total_users": total_users,
+                "flag_details": []
+            }
+            
+            for flag in enabled_flags:
+                estimated_users = int(total_users * flag.rollout_percentage / 100)
+                stats["flag_details"].append({
+                    "name": flag.name,
+                    "rollout_percentage": flag.rollout_percentage,
+                    "estimated_users": estimated_users,
+                    "start_date": flag.start_date.isoformat() if flag.start_date else None,
+                    "end_date": flag.end_date.isoformat() if flag.end_date else None
+                })
+            
+            return stats
+            
+        except Exception as e:
+            logger.error(f"Failed to get flag statistics: {e}")
+            return {"error": str(e)}
+    
+    def validate_rollout_readiness(self) -> Dict[str, Any]:
+        """Validate that the system is ready for rollout"""
+        validation_results = {
+            "ready": True,
+            "checks": [],
+            "warnings": [],
+            "errors": []
+        }
+        
+        # Check database connectivity
+        try:
+            from faktury.models import FeatureFlag
+            FeatureFlag.objects.count()
+            validation_results["checks"].append("✓ Database connectivity")
+        except Exception as e:
+            validation_results["errors"].append(f"✗ Database connectivity: {e}")
+            validation_results["ready"] = False
+        
+        # Check cache connectivity
+        try:
+            cache.set("test_key", "test_value", 10)
+            cache.get("test_key")
+            cache.delete("test_key")
+            validation_results["checks"].append("✓ Cache connectivity")
+        except Exception as e:
+            validation_results["errors"].append(f"✗ Cache connectivity: {e}")
+            validation_results["ready"] = False
+        
+        # Check flag definitions
+        if self.all_flags:
+            validation_results["checks"].append(f"✓ {len(self.all_flags)} feature flags defined")
+        else:
+            validation_results["errors"].append("✗ No feature flags defined")
+            validation_results["ready"] = False
+        
+        # Check for conflicting flags
+        enabled_count = 0
+        try:
+            from faktury.models import FeatureFlag
+            enabled_count = FeatureFlag.objects.filter(enabled=True).count()
+        except:
+            pass
+        
+        if enabled_count > 0:
+            validation_results["warnings"].append(f"⚠ {enabled_count} flags already enabled")
+        
+        return validation_results
 
 # Global instance
-feature_flags = FeatureFlagService()
+feature_flag_service = FeatureFlagService()

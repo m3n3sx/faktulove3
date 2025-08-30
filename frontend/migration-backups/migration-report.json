@@ -1,0 +1,713 @@
+{
+  "timestamp": "2025-08-28T20:46:45.393Z",
+  "config": {
+    "sourceDir": "src",
+    "excludeDirs": [
+      "node_modules",
+      ".git",
+      "build",
+      "dist"
+    ],
+    "fileExtensions": [
+      ".js",
+      ".jsx",
+      ".ts",
+      ".tsx"
+    ],
+    "backupDir": "migration-backups",
+    "dryRun": false,
+    "verbose": false
+  },
+  "stats": {
+    "filesProcessed": 133,
+    "componentsUpdated": 21,
+    "stylesUpdated": 86,
+    "importsAdded": 19
+  },
+  "migratedFiles": [
+    {
+      "path": "src/components/Layout.js",
+      "changes": {
+        "components": [
+          "Container"
+        ],
+        "styles": [
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": [
+          "Container"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/__tests__/tokens.test.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/business/ComplianceIndicator/ComplianceIndicator.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/business/DatePicker/DatePicker.tsx",
+      "changes": {
+        "components": [
+          "Grid"
+        ],
+        "styles": [
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": [
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/business/InvoiceStatusBadge/InvoiceStatusBadge.stories.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/business/InvoiceStatusBadge/InvoiceStatusBadge.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/business/__tests__/InvoiceStatusBadge.test.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/layouts/Breadcrumb/Breadcrumb.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/layouts/Grid/Grid.stories.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/layouts/Sidebar/Sidebar.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/Card/Card.stories.tsx",
+      "changes": {
+        "components": [
+          "Grid"
+        ],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": [
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/Card/Card.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/Card/__tests__/Card.test.tsx",
+      "changes": {
+        "components": [
+          "Grid"
+        ],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": [
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/Form/Form.stories.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/Table/Table.stories.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/Table/Table.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/Table/__tests__/Table.test.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/ThemeControls/ThemeControls.stories.tsx",
+      "changes": {
+        "components": [
+          "Grid"
+        ],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": [
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/ThemeDemo/ThemeDemo.stories.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/patterns/ThemeDemo/ThemeDemo.tsx",
+      "changes": {
+        "components": [
+          "Grid"
+        ],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": [
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Button/Button.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Button/__tests__/Button.test.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Checkbox/Checkbox.stories.tsx",
+      "changes": {
+        "components": [
+          "Button"
+        ],
+        "styles": [
+          "bg-green-600 → bg-success-600",
+          "bg-red-600 → bg-error-600",
+          "bg-yellow-600 → bg-warning-600",
+          "rounded → rounded-md"
+        ],
+        "imports": [
+          "Button"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Checkbox/Checkbox.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Input/Input.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Input/__tests__/Input.test.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Radio/Radio.stories.tsx",
+      "changes": {
+        "components": [
+          "Button"
+        ],
+        "styles": [
+          "bg-green-600 → bg-success-600",
+          "bg-red-600 → bg-error-600",
+          "rounded → rounded-md"
+        ],
+        "imports": [
+          "Button"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Radio/Radio.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Select/Select.stories.tsx",
+      "changes": {
+        "components": [
+          "Button"
+        ],
+        "styles": [],
+        "imports": [
+          "Button"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Select/Select.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Switch/Switch.stories.tsx",
+      "changes": {
+        "components": [
+          "Button"
+        ],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": [
+          "Button"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/components/primitives/Switch/Switch.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/config.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/migration/CompatibilityLayer.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "bg-red-600 → bg-error-600"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/migration/ComponentMigrator.ts",
+      "changes": {
+        "components": [
+          "Button"
+        ],
+        "styles": [],
+        "imports": [
+          "Button"
+        ]
+      }
+    },
+    {
+      "path": "src/design-system/migration/StyleMigrator.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/migration/ThemeMigrator.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/migration/config.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "text-green-600 → text-success-600",
+          "bg-green-600 → bg-success-600",
+          "text-red-600 → text-error-600",
+          "bg-red-600 → bg-error-600",
+          "text-yellow-600 → text-warning-600",
+          "bg-yellow-600 → bg-warning-600",
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/providers/ThemeProvider.tsx",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/tokens/borderRadius.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "rounded → rounded-md"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/tokens/colors.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/tokens/index.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/tokens/shadows.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/types/css.d.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/types/index.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/utils/accessibility.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/design-system/utils/theme.ts",
+      "changes": {
+        "components": [],
+        "styles": [
+          "shadow → shadow-sm"
+        ],
+        "imports": []
+      }
+    },
+    {
+      "path": "src/pages/Dashboard.js",
+      "changes": {
+        "components": [
+          "Button",
+          "Button",
+          "Grid"
+        ],
+        "styles": [
+          "text-green-600 → text-success-600",
+          "text-red-600 → text-error-600",
+          "text-yellow-600 → text-warning-600",
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": [
+          "Button",
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/pages/DocumentsPage.js",
+      "changes": {
+        "components": [
+          "Button",
+          "Grid"
+        ],
+        "styles": [
+          "text-green-600 → text-success-600",
+          "text-red-600 → text-error-600",
+          "text-yellow-600 → text-warning-600",
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": [
+          "Button",
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/pages/SettingsPage.js",
+      "changes": {
+        "components": [
+          "Button",
+          "Button",
+          "Grid"
+        ],
+        "styles": [
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": [
+          "Button",
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/pages/StatisticsPage.js",
+      "changes": {
+        "components": [
+          "Grid"
+        ],
+        "styles": [
+          "text-green-600 → text-success-600",
+          "text-red-600 → text-error-600",
+          "text-yellow-600 → text-warning-600",
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": [
+          "Grid"
+        ]
+      }
+    },
+    {
+      "path": "src/pages/UploadPage.js",
+      "changes": {
+        "components": [
+          "Grid"
+        ],
+        "styles": [
+          "text-green-600 → text-success-600",
+          "text-red-600 → text-error-600",
+          "text-yellow-600 → text-warning-600",
+          "rounded → rounded-md",
+          "shadow → shadow-sm"
+        ],
+        "imports": [
+          "Grid"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    "src/design-system/__tests__/colors.test.ts: Consider using Polish business components: CurrencyInput, VATRateSelector",
+    "src/design-system/__tests__/comprehensive.test.tsx: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector, DatePicker",
+    "src/design-system/__tests__/performance.test.tsx: Consider using Polish business components: CurrencyInput",
+    "src/design-system/__tests__/tokens.test.ts: Consider using Polish business components: CurrencyInput, VATRateSelector, DatePicker",
+    "src/design-system/__tests__/typography.test.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector, DatePicker",
+    "src/design-system/__tests__/visual-regression.test.tsx: Consider using Polish business components: CurrencyInput",
+    "src/design-system/components/business/CurrencyInput/CurrencyInput.stories.tsx: Consider using Polish business components: CurrencyInput, VATRateSelector",
+    "src/design-system/components/business/CurrencyInput/CurrencyInput.tsx: Consider using Polish business components: CurrencyInput",
+    "src/design-system/components/business/DatePicker/DatePicker.tsx: Consider using Polish business components: DatePicker",
+    "src/design-system/components/business/NIPValidator/NIPValidator.tsx: Consider using Polish business components: NIPValidator",
+    "src/design-system/components/business/VATRateSelector/VATRateSelector.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/business/__tests__/ComplianceIndicator.test.tsx: Consider using Polish business components: NIPValidator, VATRateSelector",
+    "src/design-system/components/business/__tests__/CurrencyInput.test.tsx: Consider using Polish business components: CurrencyInput",
+    "src/design-system/components/business/__tests__/DatePicker.test.tsx: Consider using Polish business components: DatePicker",
+    "src/design-system/components/business/__tests__/NIPValidator.test.tsx: Consider using Polish business components: NIPValidator",
+    "src/design-system/components/business/__tests__/VATRateSelector.test.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/business/index.ts: Consider using Polish business components: NIPValidator, VATRateSelector",
+    "src/design-system/components/patterns/Card/Card.stories.tsx: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector",
+    "src/design-system/components/patterns/Card/__tests__/Card.test.tsx: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector",
+    "src/design-system/components/patterns/Form/Form.stories.tsx: Consider using Polish business components: NIPValidator, VATRateSelector",
+    "src/design-system/components/patterns/Form/Form.tsx: Consider using Polish business components: NIPValidator",
+    "src/design-system/components/patterns/Form/__tests__/Form.test.tsx: Consider using Polish business components: NIPValidator",
+    "src/design-system/components/patterns/Table/Table.stories.tsx: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector, DatePicker",
+    "src/design-system/components/patterns/Table/Table.tsx: Consider using Polish business components: CurrencyInput",
+    "src/design-system/components/patterns/Table/__tests__/Table.test.tsx: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector",
+    "src/design-system/components/patterns/ThemeControls/ThemeControls.stories.tsx: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector",
+    "src/design-system/components/patterns/ThemeDemo/ThemeDemo.tsx: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector",
+    "src/design-system/components/patterns/index.ts: Consider using Polish business components: NIPValidator",
+    "src/design-system/components/primitives/Button/Button.stories.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/primitives/Button/PolishBusinessButton.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/primitives/Button/__tests__/PolishBusinessButton.test.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/primitives/Button/index.ts: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/primitives/Checkbox/Checkbox.stories.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/primitives/Input/Input.stories.tsx: Consider using Polish business components: CurrencyInput, NIPValidator",
+    "src/design-system/components/primitives/Input/PolishBusinessInput.tsx: Consider using Polish business components: CurrencyInput, NIPValidator",
+    "src/design-system/components/primitives/Input/__tests__/PolishBusinessInput.test.tsx: Consider using Polish business components: CurrencyInput, NIPValidator",
+    "src/design-system/components/primitives/Input/index.ts: Consider using Polish business components: NIPValidator",
+    "src/design-system/components/primitives/Radio/Radio.stories.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/primitives/Select/Select.stories.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/components/primitives/Switch/Switch.stories.tsx: Consider using Polish business components: VATRateSelector",
+    "src/design-system/config.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector, DatePicker",
+    "src/design-system/migration/CompatibilityLayer.tsx: Consider using Polish business components: NIPValidator, VATRateSelector",
+    "src/design-system/migration/ComponentMigrator.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector",
+    "src/design-system/migration/config.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector",
+    "src/design-system/tokens/colors.ts: Consider using Polish business components: CurrencyInput, VATRateSelector",
+    "src/design-system/tokens/typography.ts: Consider using Polish business components: CurrencyInput, DatePicker",
+    "src/design-system/types/css.d.ts: Consider using Polish business components: CurrencyInput",
+    "src/design-system/types/index.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector",
+    "src/design-system/utils/__tests__/accessibility.test.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector, DatePicker",
+    "src/design-system/utils/__tests__/ariaUtils.test.ts: Consider using Polish business components: NIPValidator, VATRateSelector",
+    "src/design-system/utils/accessibility.ts: Consider using Polish business components: CurrencyInput, DatePicker",
+    "src/design-system/utils/ariaUtils.ts: Consider using Polish business components: NIPValidator, VATRateSelector, DatePicker",
+    "src/design-system/utils/colorUtils.ts: Consider using Polish business components: CurrencyInput, VATRateSelector",
+    "src/design-system/utils/keyboardTestPatterns.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector, DatePicker",
+    "src/design-system/utils/testUtils.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector, DatePicker",
+    "src/design-system/utils/typographyUtils.ts: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector, DatePicker",
+    "src/pages/DocumentsPage.js: Consider using Polish business components: CurrencyInput, NIPValidator, VATRateSelector"
+  ],
+  "errors": []
+}

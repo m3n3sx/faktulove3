@@ -1,0 +1,114 @@
+{
+  "static_files": {
+    "existing_files": [
+      "static/assets/css/remixicon.css",
+      "static/assets/js/safe-error-handler.js",
+      "static/assets/js/safe-dependency-manager.js",
+      "static/js/react.production.min.js",
+      "static/js/react-dom.production.min.js",
+      "static/js/upload-app.bundle.js",
+      "static/assets/css/style.css",
+      "static/css/design-system.css"
+    ],
+    "missing_files": [],
+    "font_files_available": 3,
+    "status": "ok"
+  },
+  "react_components": {
+    "files": {
+      "static/js/react.production.min.js": {
+        "exists": true,
+        "size_kb": 10.4990234375
+      },
+      "static/js/react-dom.production.min.js": {
+        "exists": true,
+        "size_kb": 128.7451171875
+      },
+      "static/js/upload-app.bundle.js": {
+        "exists": true,
+        "size_kb": 3.8603515625
+      }
+    },
+    "all_files_exist": true,
+    "build_scripts_available": 2,
+    "status": "ok"
+  },
+  "javascript_systems": {
+    "files": {
+      "static/assets/js/safe-error-handler.js": {
+        "exists": true,
+        "size": 4831
+      },
+      "static/assets/js/safe-dependency-manager.js": {
+        "exists": true,
+        "size": 6115
+      },
+      "static/assets/js/static-file-monitor.js": {
+        "exists": true,
+        "size": 7195
+      },
+      "static/assets/js/error-tracking.js": {
+        "exists": true,
+        "size": 10793
+      },
+      "static/assets/js/performance-optimizer.js": {
+        "exists": true,
+        "size": 14114
+      }
+    },
+    "critical_missing": 0,
+    "status": "ok"
+  },
+  "django_configuration": {
+    "checks": {
+      "manage_py": true,
+      "settings": true,
+      "migrations": true,
+      "requirements": true
+    },
+    "status": "ok"
+  },
+  "monitoring_systems": {
+    "systems": {
+      "SafeErrorHandler": true,
+      "SafeDependencyManager": true,
+      "StaticFileMonitor": true,
+      "ErrorTracker": true,
+      "PerformanceOptimizer": true,
+      "SecurityMiddleware": true
+    },
+    "active_count": 5,
+    "total_count": 5,
+    "score": 100.0,
+    "status": "ok"
+  },
+  "performance_optimization": {
+    "optimizations": {
+      "minified_css": true,
+      "minified_js": true,
+      "gzip_files": true,
+      "performance_monitoring": true
+    },
+    "score": 100.0,
+    "status": "ok"
+  },
+  "security_checks": {
+    "checks": {
+      "ocr_middleware": true,
+      "csrf_protection": true,
+      "secure_upload": false
+    },
+    "score": 66.66666666666666,
+    "status": "warning"
+  },
+  "database_status": {},
+  "overall_status": "good",
+  "critical_issues": [],
+  "warnings": [
+    "JavaScript: upload-app.bundle.js not loaded in base template",
+    "Security: File upload security may need review"
+  ],
+  "recommendations": [
+    "Address all critical issues before deployment"
+  ]
+}

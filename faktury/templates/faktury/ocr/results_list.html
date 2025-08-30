@@ -1,72 +1,59 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load design_system_tags %}
 
 {% block title %}Wyniki OCR{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <h2><i class="fas fa-list-ul text-primary me-2"></i>Wyniki OCR</h2>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'ocr_upload' %}">OCR Upload</a></li>
-                    <li class="breadcrumb-item active">Wyniki</li>
-                </ol>
-            </nav>
-        </div>
+<div class="ds-container">
+    <div class="ds-page-header">
+        <h1 class="ds-heading-xl">Wyniki OCR</h1>
+        <p class="ds-text-lg ds-text-muted">Przegląd i zarządzanie wynikami przetwarzania dokumentów</p>
+        <nav aria-label="breadcrumb" class="ds-breadcrumb">
+            <ol class="ds-breadcrumb-list">
+                <li class="ds-breadcrumb-item"><a href="{% url 'ocr_upload' %}">OCR Upload</a></li>
+                <li class="ds-breadcrumb-item ds-breadcrumb-active">Wyniki</li>
+            </ol>
+        </nav>
     </div>
     
     <!-- Summary Statistics -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title text-primary">{{ ocr_results.count }}</h5>
-                    <p class="card-text">Łącznie wyników</p>
+    <div class="ds-grid ds-grid-cols-1 ds-grid-cols-md-2 ds-grid-cols-lg-4 ds-gap-lg ds-mb-lg">
+        <div class="ds-card">
+            <div class="ds-card-content ds-text-center">
+                <div class="ds-stat">
+                    <div class="ds-stat-value ds-text-primary-600">{{ ocr_results.count }}</div>
+                    <div class="ds-stat-label">Łącznie wyników</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title text-success">
-                        {{ ocr_results|length|add:"-1"|floatformat:0 }}
-                        {% for result in ocr_results %}
-                            {% if result.confidence_score >= confidence_thresholds.auto_approve %}
-                                {% if forloop.first %}1{% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    </h5>
-                    <p class="card-text">Wysoka pewność</p>
+        <div class="ds-card">
+            <div class="ds-card-content ds-text-center">
+                <div class="ds-stat">
+                    <div class="ds-stat-value ds-text-success-600">
+                        {% ocr_stats_high_confidence ocr_results confidence_thresholds.auto_approve %}
+                    </div>
+                    <div class="ds-stat-label">Wysoka pewność</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title text-warning">
-                        {% for result in ocr_results %}
-                            {% if result.confidence_score >= confidence_thresholds.review_required and result.confidence_score < confidence_thresholds.auto_approve %}
-                                {% if forloop.first %}1{% else %}+1{% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    </h5>
-                    <p class="card-text">Wymaga przeglądu</p>
+        <div class="ds-card">
+            <div class="ds-card-content ds-text-center">
+                <div class="ds-stat">
+                    <div class="ds-stat-value ds-text-warning-600">
+                        {% ocr_stats_needs_review ocr_results confidence_thresholds %}
+                    </div>
+                    <div class="ds-stat-label">Wymaga przeglądu</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title text-success">
-                        {% for result in ocr_results %}
-                            {% if result.faktura %}
-                                {% if forloop.first %}1{% else %}+1{% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    </h5>
-                    <p class="card-text">Faktury utworzone</p>
+        <div class="ds-card">
+            <div class="ds-card-content ds-text-center">
+                <div class="ds-stat">
+                    <div class="ds-stat-value ds-text-success-600">
+                        {% ocr_stats_with_invoice ocr_results %}
+                    </div>
+                    <div class="ds-stat-label">Faktury utworzone</div>
                 </div>
             </div>
         </div>
@@ -109,119 +96,119 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover" id="ocr-results-table">
-                            <thead>
-                                <tr>
-                                    <th>Plik</th>
-                                    <th>Data</th>
-                                    <th>Pewność</th>
-                                    <th>Numer faktury</th>
-                                    <th>Kwota</th>
-                                    <th>Status</th>
-                                    <th>Akcje</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for result in ocr_results %}
-                                <tr class="ocr-result-row" 
-                                    data-confidence="{{ result.confidence_score }}"
-                                    data-has-invoice="{% if result.faktura %}true{% else %}false{% endif %}">
-                                    <td>
-                                        <i class="fas fa-file-alt me-2 text-muted"></i>
-                                        {{ result.document.original_filename|truncatechars:30 }}
-                                        <br>
-                                        <small class="text-muted">{{ result.document.file_size|filesizeformat }}</small>
-                                    </td>
-                                    <td>
-                                        {{ result.created_at|date:"d.m.Y" }}
-                                        <br>
-                                        <small class="text-muted">{{ result.created_at|time:"H:i" }}</small>
-                                    </td>
-                                    <td>
-                                        {% if result.confidence_score >= confidence_thresholds.auto_approve %}
-                                            <span class="badge bg-success">{{ result.confidence_score|floatformat:1 }}%</span>
-                                        {% elif result.confidence_score >= confidence_thresholds.review_required %}
-                                            <span class="badge bg-warning">{{ result.confidence_score|floatformat:1 }}%</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">{{ result.confidence_score|floatformat:1 }}%</span>
-                                        {% endif %}
-                                        <br>
-                                        <small class="text-muted">{{ result.processing_time|floatformat:1 }}s</small>
-                                    </td>
-                                    <td>
-                                        {% if result.extracted_data.invoice_number %}
-                                            {{ result.extracted_data.invoice_number }}
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                        <br>
-                                        {% if result.extracted_data.invoice_date %}
-                                            <small class="text-muted">{{ result.extracted_data.invoice_date }}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if result.extracted_data.total_amount %}
-                                            <strong>{{ result.extracted_data.total_amount }} {{ result.extracted_data.currency|default:"PLN" }}</strong>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                        <br>
-                                        {% if result.extracted_data.net_amount %}
-                                            <small class="text-muted">netto: {{ result.extracted_data.net_amount }}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if result.faktura %}
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-check me-1"></i>Faktura utworzona
-                                            </span>
-                                            <br>
-                                            <small class="text-success">{{ result.faktura.numer }}</small>
-                                        {% elif result.confidence_score >= confidence_thresholds.review_required %}
-                                            <span class="badge bg-warning">
-                                                <i class="fas fa-clock me-1"></i>Wymaga przeglądu
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">
-                                                <i class="fas fa-exclamation-triangle me-1"></i>Niska pewność
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{% url 'ocr_result_detail' result.id %}" 
-                                               class="btn btn-outline-primary" title="Zobacz szczegóły">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            
+                        <div class="ds-table-container">
+                            <table class="ds-table ds-table-hover" id="ocr-results-table">
+                                <thead class="ds-table-header">
+                                    <tr>
+                                        <th class="ds-table-th">Plik</th>
+                                        <th class="ds-table-th">Data</th>
+                                        <th class="ds-table-th ds-text-center">Pewność</th>
+                                        <th class="ds-table-th">Numer faktury</th>
+                                        <th class="ds-table-th ds-text-right">Kwota</th>
+                                        <th class="ds-table-th ds-text-center">Status</th>
+                                        <th class="ds-table-th ds-text-center">Akcje</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="ds-table-body">
+                                    {% for result in ocr_results %}
+                                    <tr class="ds-table-row ocr-result-row" 
+                                        data-confidence="{{ result.confidence_score }}"
+                                        data-has-invoice="{% if result.faktura %}true{% else %}false{% endif %}">
+                                        <td class="ds-table-td">
+                                            <div class="ds-flex ds-flex-col">
+                                                <span class="ds-font-medium ds-text-sm ds-truncate" style="max-width: 200px;" title="{{ result.document.original_filename }}">
+                                                    {{ result.document.original_filename }}
+                                                </span>
+                                                <span class="ds-text-xs ds-text-neutral-500">
+                                                    {{ result.document.file_size|file_size_format }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="ds-table-td">
+                                            <div class="ds-flex ds-flex-col">
+                                                <span class="ds-font-medium">{{ result.created_at|format_polish_date }}</span>
+                                                <span class="ds-text-xs ds-text-neutral-500">{{ result.created_at|time:"H:i" }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="ds-table-td ds-text-center">
+                                            <div class="ds-flex ds-flex-col ds-items-center ds-gap-1">
+                                                {% ds_confidence_indicator result.confidence_score size="sm" %}
+                                                <span class="ds-text-xs ds-text-neutral-500">{{ result.processing_time|floatformat:1 }}s</span>
+                                            </div>
+                                        </td>
+                                        <td class="ds-table-td">
+                                            <div class="ds-flex ds-flex-col">
+                                                <span class="ds-font-medium">
+                                                    {% if result.extracted_data.invoice_number %}
+                                                        {{ result.extracted_data.invoice_number }}
+                                                    {% else %}
+                                                        <span class="ds-text-neutral-400">-</span>
+                                                    {% endif %}
+                                                </span>
+                                                {% if result.extracted_data.invoice_date %}
+                                                    <span class="ds-text-xs ds-text-neutral-500">
+                                                        {{ result.extracted_data.invoice_date|format_polish_date }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="ds-table-td ds-text-right">
+                                            <div class="ds-flex ds-flex-col ds-items-end">
+                                                <span class="ds-font-semibold">
+                                                    {% if result.extracted_data.total_amount %}
+                                                        {{ result.extracted_data.total_amount|format_polish_currency:result.extracted_data.currency }}
+                                                    {% else %}
+                                                        <span class="ds-text-neutral-400">-</span>
+                                                    {% endif %}
+                                                </span>
+                                                {% if result.extracted_data.net_amount %}
+                                                    <span class="ds-text-xs ds-text-neutral-500">
+                                                        netto: {{ result.extracted_data.net_amount|format_polish_currency:result.extracted_data.currency }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="ds-table-td ds-text-center">
                                             {% if result.faktura %}
-                                                <a href="{% url 'szczegoly_faktury' result.faktura.id %}" 
-                                                   class="btn btn-outline-success" title="Zobacz fakturę">
-                                                    <i class="fas fa-file-invoice"></i>
-                                                </a>
+                                                <div class="ds-flex ds-flex-col ds-items-center ds-gap-1">
+                                                    {% ds_badge "Faktura utworzona" variant="success" size="sm" %}
+                                                    <span class="ds-text-xs ds-text-success-600">{{ result.faktura.numer }}</span>
+                                                </div>
                                             {% elif result.confidence_score >= confidence_thresholds.review_required %}
-                                                <a href="{% url 'ocr_result_detail' result.id %}" 
-                                                   class="btn btn-outline-warning" title="Utwórz fakturę">
-                                                    <i class="fas fa-plus"></i>
-                                                </a>
+                                                {% ds_badge "Wymaga przeglądu" variant="warning" size="sm" %}
+                                            {% else %}
+                                                {% ds_badge "Niska pewność" variant="error" size="sm" %}
                                             {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-4">
-                                        <i class="fas fa-robot fa-3x text-muted mb-3"></i>
-                                        <h5 class="text-muted">Brak wyników OCR</h5>
-                                        <p class="text-muted">Prześlij pierwszy dokument, aby rozpocząć przetwarzanie z AI</p>
-                                        <a href="{% url 'ocr_upload' %}" class="btn btn-primary">
-                                            <i class="fas fa-upload me-2"></i>Prześlij dokument
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        </td>
+                                        <td class="ds-table-td ds-text-center">
+                                            <div class="ds-flex ds-gap-1 ds-justify-center">
+                                                {% ds_button "Szczegóły" variant="secondary" size="xs" href="/ocr/result/"|add:result.id|add:"/" %}
+                                                
+                                                {% if result.faktura %}
+                                                    {% ds_button "Faktura" variant="success" size="xs" href="/faktury/"|add:result.faktura.id|add:"/" %}
+                                                {% elif result.confidence_score >= confidence_thresholds.review_required %}
+                                                    {% ds_button "Utwórz" variant="primary" size="xs" href="/ocr/result/"|add:result.id|add:"/" %}
+                                                {% else %}
+                                                    {% ds_button "Ręcznie" variant="outline" size="xs" href="/faktury/dodaj/" %}
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="ds-table-td ds-text-center ds-py-8">
+                                            <div class="ds-empty-state">
+                                                <div class="ds-empty-state-icon ds-text-4xl ds-mb-4">🤖</div>
+                                                <h5 class="ds-heading-md ds-text-neutral-600 ds-mb-2">Brak wyników OCR</h5>
+                                                <p class="ds-text-neutral-500 ds-mb-4">Prześlij pierwszy dokument, aby rozpocząć przetwarzanie z AI</p>
+                                                {% ds_button "Prześlij dokument" variant="primary" href="/upload/" %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

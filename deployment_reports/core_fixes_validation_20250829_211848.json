@@ -1,0 +1,78 @@
+{
+  "validation_timestamp": "2025-08-29T21:18:48.916735",
+  "validation_duration": "0:00:02.242340",
+  "overall_status": "FAILED",
+  "results": {
+    "navigation_fixes": {
+      "accessible_routes": [
+        "/",
+        "/kontrahenci/",
+        "/company/",
+        "/email/",
+        "/notifications/"
+      ],
+      "broken_routes": [
+        [
+          "/faktury/",
+          404
+        ],
+        [
+          "/firmy/",
+          404
+        ],
+        [
+          "/view-profile/",
+          404
+        ]
+      ],
+      "total_routes_tested": 8,
+      "success_rate": 62.5
+    },
+    "admin_panel_fixes": {
+      "missing_assets": [],
+      "accessible_urls": [
+        "/admin/",
+        "/admin/faktury/",
+        "/admin/faktury/faktura/",
+        "/admin/faktury/kontrahent/"
+      ],
+      "broken_urls": []
+    },
+    "ocr_improvements": {
+      "upload_interface_working": false,
+      "loading_issue_fixed": true,
+      "accessible_endpoints": [],
+      "broken_endpoints": []
+    },
+    "ui_ux_enhancements": {
+      "ui_issues_found": 6,
+      "mobile_responsive_urls": [
+        "/",
+        "/kontrahenci/"
+      ],
+      "mobile_issues": [
+        [
+          "/faktury/",
+          404
+        ],
+        [
+          "/ocr/upload/",
+          "Reverse for 'dashboard' not found. 'dashboard' is not a valid view function or pattern name."
+        ]
+      ],
+      "loading_states_implemented": false
+    },
+    "performance_metrics": {},
+    "errors": [
+      "OCR improvements: Reverse for 'dashboard' not found. 'dashboard' is not a valid view function or pattern name.",
+      "Performance monitoring: 'PerformanceMonitor' object has no attribute 'measure_page_load_times'"
+    ]
+  },
+  "summary": {
+    "navigation_success_rate": 62.5,
+    "admin_panel_working": true,
+    "ocr_improvements_working": false,
+    "ui_ux_responsive": false,
+    "total_errors": 2
+  }
+}

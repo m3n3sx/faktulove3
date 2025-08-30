@@ -13,6 +13,15 @@ import {
   Zap
 } from 'lucide-react';
 import axios from 'axios';
+import { 
+  Grid, 
+  Card, 
+  Typography, 
+  Container, 
+  Stack, 
+  Flex,
+  ChartCard
+} from '../design-system';
 
 const StatisticsPage = () => {
   // Fetch detailed statistics
@@ -99,215 +108,214 @@ const StatisticsPage = () => {
   };
 
   const getConfidenceColor = (confidence) => {
-    if (confidence >= 95) return 'text-green-600';
-    if (confidence >= 90) return 'text-yellow-600';
+    if (confidence >= 95) return 'text-success-600';
+    if (confidence >= 90) return 'text-warning-600';
     if (confidence >= 80) return 'text-orange-600';
-    return 'text-red-600';
+    return 'text-error-600';
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Statistics & Analytics</h1>
-        <p className="mt-2 text-gray-600">
-          Detailed insights into OCR processing performance and system usage.
-        </p>
-      </div>
+    <Container size="xl" className="py-6">
+      <Stack gap="lg">
+        {/* Header */}
+        <Stack gap="sm">
+          <Typography variant="h1">Statistics & Analytics</Typography>
+          <Typography variant="body" color="secondary">
+            Detailed insights into OCR processing performance and system usage.
+          </Typography>
+        </Stack>
 
-      {/* Key Metrics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-primary-100 rounded-lg">
-              <FileText className="h-6 w-6 text-primary-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Documents</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(data.overview.total_documents)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Success Rate</p>
-              <p className="text-2xl font-bold text-gray-900">{formatPercentage(data.overview.success_rate)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <BarChart3 className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Avg Confidence</p>
-              <p className="text-2xl font-bold text-gray-900">{formatPercentage(data.overview.average_confidence)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Clock className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Avg Processing Time</p>
-              <p className="text-2xl font-bold text-gray-900">{data.overview.average_processing_time}s</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* File Type Distribution */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">File Type Distribution</h3>
-          <div className="space-y-3">
-            {data.file_type_distribution.map((item) => (
-              <div key={item.type} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-primary-500 rounded-full mr-3"></div>
-                  <span className="text-sm font-medium text-gray-900">{item.type}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">{formatNumber(item.count)}</span>
-                  <span className="text-sm font-medium text-gray-900">{formatPercentage(item.percentage)}</span>
-                </div>
+        {/* Key Metrics Overview */}
+        <Grid cols={4} gap="lg">
+          <Card variant="elevated" padding="md">
+            <Flex align="center" gap="md">
+              <div className="p-2 bg-primary-100 rounded-lg">
+                <FileText className="h-6 w-6 text-primary-600" />
               </div>
-            ))}
-          </div>
-        </div>
+              <Stack gap="xs">
+                <Typography variant="label" color="muted">Total Documents</Typography>
+                <Typography variant="h3">{formatNumber(data.overview.total_documents)}</Typography>
+              </Stack>
+            </Flex>
+          </Card>
 
-        {/* Confidence Distribution */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Confidence Distribution</h3>
-          <div className="space-y-3">
-            {data.confidence_distribution.map((item) => (
-              <div key={item.range} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-sm font-medium text-gray-900">{item.range}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">{formatNumber(item.count)}</span>
-                  <span className="text-sm font-medium text-gray-900">{formatPercentage(item.percentage)}</span>
-                </div>
+          <Card variant="elevated" padding="md">
+            <Flex align="center" gap="md">
+              <div className="p-2 bg-success-100 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-success-600" />
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
+              <Stack gap="xs">
+                <Typography variant="label" color="muted">Success Rate</Typography>
+                <Typography variant="h3">{formatPercentage(data.overview.success_rate)}</Typography>
+              </Stack>
+            </Flex>
+          </Card>
 
-      {/* Processing Time Analysis */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Processing Time Distribution</h3>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {data.processing_time_distribution.map((item) => (
-            <div key={item.range} className="text-center">
-              <div className="text-2xl font-bold text-primary-600">{formatNumber(item.count)}</div>
-              <div className="text-sm text-gray-500">{item.range}</div>
-              <div className="text-xs text-gray-400">{formatPercentage(item.percentage)}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Top Suppliers */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Top Suppliers by Volume</h3>
-        <div className="space-y-3">
-          {data.top_suppliers.map((supplier, index) => (
-            <div key={supplier.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-sm font-medium text-primary-600">{index + 1}</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{supplier.name}</p>
-                  <p className="text-xs text-gray-500">{formatNumber(supplier.count)} documents</p>
-                </div>
+          <Card variant="elevated" padding="md">
+            <Flex align="center" gap="md">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <BarChart3 className="h-6 w-6 text-blue-600" />
               </div>
-              <div className="text-right">
-                <p className={`text-sm font-medium ${getConfidenceColor(supplier.avg_confidence)}`}>
-                  {formatPercentage(supplier.avg_confidence)} avg confidence
-                </p>
+              <Stack gap="xs">
+                <Typography variant="label" color="muted">Avg Confidence</Typography>
+                <Typography variant="h3">{formatPercentage(data.overview.average_confidence)}</Typography>
+              </Stack>
+            </Flex>
+          </Card>
+
+          <Card variant="elevated" padding="md">
+            <Flex align="center" gap="md">
+              <div className="p-2 bg-warning-100 rounded-lg">
+                <Clock className="h-6 w-6 text-warning-600" />
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
+              <Stack gap="xs">
+                <Typography variant="label" color="muted">Avg Processing Time</Typography>
+                <Typography variant="h3">{data.overview.average_processing_time}s</Typography>
+              </Stack>
+            </Flex>
+          </Card>
+        </Grid>
 
-      {/* Monthly Trends */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Monthly Trends</h3>
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-          {data.monthly_trends.map((month) => (
-            <div key={month.month} className="text-center">
-              <div className="text-lg font-bold text-primary-600">{formatNumber(month.documents)}</div>
-              <div className="text-sm text-gray-500">{month.month}</div>
-              <div className="text-xs text-gray-400">{formatPercentage(month.success_rate)} success</div>
-            </div>
-          ))}
-        </div>
-      </div>
+        {/* Detailed Analytics */}
+        <Grid cols={2} gap="lg">
+          {/* File Type Distribution */}
+          <ChartCard
+            data={data.file_type_distribution.map(item => ({
+              label: item.type,
+              value: item.count,
+              percentage: item.percentage
+            }))}
+            type="pie"
+            title="File Type Distribution"
+            showPercentages={true}
+            polishFormatting={true}
+            accessibilityLabel="Pie chart showing file type distribution across PDF, JPEG, PNG, and TIFF formats"
+          />
 
-      {/* Business Impact */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <DollarSign className="h-8 w-8 text-green-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Invoices Created</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(data.overview.total_invoices_created)}</p>
-            </div>
-          </div>
-        </div>
+          {/* Confidence Distribution */}
+          <ChartCard
+            data={data.confidence_distribution.map(item => ({
+              label: item.range,
+              value: item.count,
+              percentage: item.percentage
+            }))}
+            type="bar"
+            title="Confidence Distribution"
+            showValues={true}
+            polishFormatting={true}
+            accessibilityLabel="Bar chart showing OCR confidence score distribution across different confidence ranges"
+          />
+        </Grid>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <Users className="h-8 w-8 text-blue-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Manual Review Required</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(data.overview.manual_review_required)}</p>
-            </div>
-          </div>
-        </div>
+        {/* Processing Time Analysis */}
+        <ChartCard
+          data={data.processing_time_distribution.map(item => ({
+            label: item.range,
+            value: item.count,
+            percentage: item.percentage
+          }))}
+          type="distribution"
+          title="Processing Time Distribution"
+          showValues={true}
+          polishFormatting={true}
+          accessibilityLabel="Distribution chart showing processing time ranges and document counts for each range"
+        />
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <Zap className="h-8 w-8 text-yellow-600" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Time Saved</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(data.overview.time_saved_hours)}h</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* Top Suppliers */}
+        <Card variant="elevated" padding="md">
+          <Stack gap="md">
+            <Typography variant="h4">Top Suppliers by Volume</Typography>
+            <Stack gap="sm">
+              {data.top_suppliers.map((supplier, index) => (
+                <Card key={supplier.name} variant="flat" padding="sm">
+                  <Flex justify="between" align="center">
+                    <Flex align="center" gap="sm">
+                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                        <Typography variant="bodySmall" color="primary">{index + 1}</Typography>
+                      </div>
+                      <Stack gap="xs">
+                        <Typography variant="bodySmall">{supplier.name}</Typography>
+                        <Typography variant="caption" color="muted">
+                          {formatNumber(supplier.count)} documents
+                        </Typography>
+                      </Stack>
+                    </Flex>
+                    <Typography 
+                      variant="bodySmall" 
+                      color={supplier.avg_confidence >= 95 ? 'success' : supplier.avg_confidence >= 90 ? 'warning' : 'error'}
+                    >
+                      {formatPercentage(supplier.avg_confidence)} avg confidence
+                    </Typography>
+                  </Flex>
+                </Card>
+              ))}
+            </Stack>
+          </Stack>
+        </Card>
 
-      {/* Daily Performance Chart */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Daily Performance (Last 7 Days)</h3>
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-          {data.daily_stats.map((day) => (
-            <div key={day.date} className="text-center">
-              <div className="text-lg font-bold text-primary-600">{formatNumber(day.documents)}</div>
-              <div className="text-sm text-gray-500">{new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
-              <div className="text-xs text-green-600">{formatPercentage(day.success_rate)} success</div>
-              <div className="text-xs text-blue-600">{formatPercentage(day.avg_confidence)} confidence</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+        {/* Monthly Trends */}
+        <ChartCard
+          data={data.monthly_trends.map(month => ({
+            label: month.month,
+            value: month.documents,
+            metadata: { successRate: month.success_rate }
+          }))}
+          type="trend"
+          title="Monthly Trends"
+          polishFormatting={true}
+          accessibilityLabel="Trend chart showing monthly document processing volumes and success rates over time"
+        />
+
+        {/* Business Impact */}
+        <Grid cols={3} gap="lg">
+          <Card variant="elevated" padding="md">
+            <Flex align="center" gap="sm">
+              <DollarSign className="h-8 w-8 text-success-600" />
+              <Stack gap="xs">
+                <Typography variant="label" color="muted">Invoices Created</Typography>
+                <Typography variant="h3">{formatNumber(data.overview.total_invoices_created)}</Typography>
+              </Stack>
+            </Flex>
+          </Card>
+
+          <Card variant="elevated" padding="md">
+            <Flex align="center" gap="sm">
+              <Users className="h-8 w-8 text-blue-600" />
+              <Stack gap="xs">
+                <Typography variant="label" color="muted">Manual Review Required</Typography>
+                <Typography variant="h3">{formatNumber(data.overview.manual_review_required)}</Typography>
+              </Stack>
+            </Flex>
+          </Card>
+
+          <Card variant="elevated" padding="md">
+            <Flex align="center" gap="sm">
+              <Zap className="h-8 w-8 text-warning-600" />
+              <Stack gap="xs">
+                <Typography variant="label" color="muted">Time Saved</Typography>
+                <Typography variant="h3">{formatNumber(data.overview.time_saved_hours)}h</Typography>
+              </Stack>
+            </Flex>
+          </Card>
+        </Grid>
+
+        {/* Daily Performance Chart */}
+        <ChartCard
+          data={data.daily_stats.map(day => ({
+            label: new Date(day.date).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric' }),
+            value: day.documents,
+            metadata: { 
+              successRate: day.success_rate,
+              avgConfidence: day.avg_confidence 
+            }
+          }))}
+          type="trend"
+          title="Daily Performance (Last 7 Days)"
+          polishFormatting={true}
+          accessibilityLabel="Daily performance chart showing document processing volumes, success rates, and confidence scores for the last 7 days"
+        />
+      </Stack>
+    </Container>
   );
 };
 

@@ -1,0 +1,52 @@
+
+        /* Auto-save indicator styles */
+        .auto-save-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        
+        .auto-save-indicator.saving {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+        
+        .auto-save-indicator.saved {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        
+        .auto-save-indicator.unsaved {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+        
+        .auto-save-indicator.error {
+            background: #fecaca;
+            border-color: #dc2626;
+            color: #7f1d1d;
+        }
+        
+        .auto-save-indicator iconify-icon {
+            font-size: 16px;
+        }
+        
+        .auto-save-indicator.saving iconify-icon {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        

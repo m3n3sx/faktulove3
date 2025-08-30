@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+{% load design_system_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+<style>
+.invoice-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.form-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #1f2937;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.invoice-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.invoice-items-table th,
+.invoice-items-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.invoice-items-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.totals-section {
+  background-color: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.recurring-options {
+  display: none;
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f0f9ff;
+  border-radius: 8px;
+  border: 1px solid #0ea5e9;
+}
+
+.recurring-options.active {
+  display: block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invoice-form-container">
+  {% ds_breadcrumb items="Faktury,Lista faktur,enhanced_invoice_list;Nowa faktura,#" %}
+  
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+    <p class="text-gray-600 mt-1">Wypełnij formularz aby utworzyć nową fakturę</p>
+  </div>
+
+  <form method="post" id="invoice-form" class="space-y-6">
+    {% csrf_token %}
+    
+    <!-- Basic Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Podstawowe informacje</h2>
+      
+      <div class="form-grid">
+        <div>
+          {% ds_form_field form.typ_dokumentu %}
+        </div>
+        
+        <div>
+          {% ds_form_field form.auto_numer %}
+          <div id="custom-number-field" style="display: none; margin-top: 12px;">
+            {% ds_form_field form.wlasny_numer %}
+          </div>
+        </div>
+        
+        <div>
+          {% ds_form_field form.miejsce_wystawienia %}
+        </div>
+      </div>
+      
+      <div class="form-grid-3 mt-4">
+        <div>
+          {% ds_form_field form.data_wystawienia %}
+        </div>
+        <div>
+          {% ds_form_field form.data_sprzedazy %}
+        </div>
+        <div>
+          {% ds_form_field form.termin_platnosci %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Contractor Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Informacje o kontrahentach</h2>
+      
+      <div class="form-grid">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Sprzedawca
+          </label>
+          {% ds_card variant="outlined" %}
+            <div class="p-4">
+              <h3 class="font-medium">{{ firma.nazwa }}</h3>
+              <p class="text-sm text-gray-600">NIP: {{ firma.nip }}</p>
+              <p class="text-sm text-gray-600">
+                {{ firma.ulica }} {{ firma.numer_domu }}
+                {% if firma.numer_mieszkania %}/{{ firma.numer_mieszkania }}{% endif %}
+              </p>
+              <p class="text-sm text-gray-600">
+                {{ firma.kod_pocztowy }} {{ firma.miejscowosc }}
+              </p>
+            </div>
+          {% end_ds_card %}
+        </div>
+        
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700">
+              Nabywca
+            </label>
+            {% ds_button variant="secondary" size="sm" type="button" onclick="openContractorModal()" %}
+              Dodaj nowego
+            {% end_ds_button %}
+          </div>
+          {% ds_form_field form.nabywca %}
+          
+          <div class="mt-3">
+            {% ds_form_field form.nabywca_nip %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Informacje o płatności</h2>
+      
+      <div class="form-grid">
+        <div>
+          {% ds_form_field form.sposob_platnosci %}
+        </div>
+        <div>
+          {% ds_form_field form.waluta %}
+        </div>
+        <div>
+          {% ds_form_field form.status %}
+        </div>
+      </div>
+    </div>
+
+    <!-- VAT Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Informacje VAT</h2>
+      
+      <div class="space-y-4">
+        <div>
+          {% ds_form_field form.zwolnienie_z_vat %}
+        </div>
+        
+        <div id="vat-exemption-reason" style="display: none;">
+          {% ds_form_field form.powod_zwolnienia %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice Items Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Pozycje faktury</h2>
+      
+      <div id="invoice-items-container">
+        {{ formset.management_form }}
+        
+        <table class="invoice-items-table">
+          <thead>
+            <tr>
+              <th>Nazwa</th>
+              <th>Ilość</th>
+              <th>Jednostka</th>
+              <th>Cena netto</th>
+              <th>VAT</th>
+              <th>Wartość netto</th>
+              <th>Akcje</th>
+            </tr>
+          </thead>
+          <tbody id="invoice-items-tbody">
+            {% for form in formset %}
+              <tr class="invoice-item-row">
+                <td>
+                  {{ form.id }}
+                  {% ds_form_field form.nazwa %}
+                </td>
+                <td>
+                  {% ds_form_field form.ilosc %}
+                </td>
+                <td>
+                  {% ds_form_field form.jednostka %}
+                </td>
+                <td>
+                  {% ds_form_field form.cena_netto %}
+                </td>
+                <td>
+                  {% ds_form_field form.vat %}
+                </td>
+                <td class="net-value">
+                  0,00 zł
+                </td>
+                <td>
+                  {% if not forloop.first %}
+                    {% ds_button variant="danger" size="sm" type="button" onclick="removeInvoiceItem(this)" %}
+                      Usuń
+                    {% end_ds_button %}
+                  {% endif %}
+                  {{ form.DELETE }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+        <div class="mt-4">
+          {% ds_button variant="secondary" type="button" onclick="addInvoiceItem()" %}
+            Dodaj pozycję
+          {% end_ds_button %}
+        </div>
+        
+        <div class="totals-section">
+          <div class="grid grid-cols-3 gap-4 text-right">
+            <div>
+              <span class="font-medium">Suma netto:</span>
+              <span id="total-net" class="ml-2">0,00 zł</span>
+            </div>
+            <div>
+              <span class="font-medium">Suma VAT:</span>
+              <span id="total-vat" class="ml-2">0,00 zł</span>
+            </div>
+            <div>
+              <span class="font-medium text-lg">Suma brutto:</span>
+              <span id="total-gross" class="ml-2 text-lg font-bold">0,00 zł</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recurring Invoice Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Faktura cykliczna</h2>
+      
+      <div>
+        {% ds_form_field form.cykliczna %}
+      </div>
+      
+      <div id="recurring-options" class="recurring-options">
+        <div class="form-grid-3">
+          <div>
+            {% ds_form_field form.cykl %}
+          </div>
+          <div>
+            {% ds_form_field form.data_poczatkowa %}
+          </div>
+          <div>
+            {% ds_form_field form.data_koncowa %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Dodatkowe informacje</h2>
+      
+      <div class="space-y-4">
+        <div>
+          {% ds_form_field form.uwagi %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-section">
+      <div class="flex justify-end space-x-4">
+        {% ds_button variant="secondary" type="button" onclick="window.history.back()" %}
+          Anuluj
+        {% end_ds_button %}
+        
+        {% ds_button variant="primary" type="submit" %}
+          {% if faktura %}Zaktualizuj fakturę{% else %}Utwórz fakturę{% endif %}
+        {% end_ds_button %}
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Contractor Modal -->
+<div id="contractor-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg max-w-md w-full p-6">
+      <h3 class="text-lg font-medium mb-4">Dodaj nowego kontrahenta</h3>
+      <div id="contractor-form-container">
+        <!-- Contractor form will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto numbering toggle
+document.getElementById('id_auto_numer').addEventListener('change', function() {
+  const customField = document.getElementById('custom-number-field');
+  if (this.checked) {
+    customField.style.display = 'none';
+  } else {
+    customField.style.display = 'block';
+  }
+});
+
+// VAT exemption toggle
+document.getElementById('id_zwolnienie_z_vat').addEventListener('change', function() {
+  const reasonField = document.getElementById('vat-exemption-reason');
+  if (this.checked) {
+    reasonField.style.display = 'block';
+  } else {
+    reasonField.style.display = 'none';
+  }
+});
+
+// Recurring invoice toggle
+document.getElementById('id_cykliczna').addEventListener('change', function() {
+  const recurringOptions = document.getElementById('recurring-options');
+  if (this.checked) {
+    recurringOptions.classList.add('active');
+  } else {
+    recurringOptions.classList.remove('active');
+  }
+});
+
+// Invoice items management
+let itemIndex = {{ formset.total_form_count }};
+
+function addInvoiceItem() {
+  const tbody = document.getElementById('invoice-items-tbody');
+  const newRow = tbody.rows[0].cloneNode(true);
+  
+  // Update form indices
+  const inputs = newRow.querySelectorAll('input, select');
+  inputs.forEach(input => {
+    const name = input.name.replace(/\d+/, itemIndex);
+    const id = input.id.replace(/\d+/, itemIndex);
+    input.name = name;
+    input.id = id;
+    input.value = '';
+  });
+  
+  // Add remove button
+  const actionCell = newRow.cells[newRow.cells.length - 1];
+  actionCell.innerHTML = `
+    <button type="button" class="ds-button ds-button--danger ds-button--sm" onclick="removeInvoiceItem(this)">
+      Usuń
+    </button>
+  `;
+  
+  tbody.appendChild(newRow);
+  itemIndex++;
+  
+  // Update management form
+  const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+  totalForms.value = parseInt(totalForms.value) + 1;
+  
+  calculateTotals();
+}
+
+function removeInvoiceItem(button) {
+  const row = button.closest('tr');
+  const deleteInput = row.querySelector('input[name$="-DELETE"]');
+  if (deleteInput) {
+    deleteInput.checked = true;
+    row.style.display = 'none';
+  } else {
+    row.remove();
+  }
+  calculateTotals();
+}
+
+// Calculate totals
+function calculateTotals() {
+  let totalNet = 0;
+  let totalVat = 0;
+  
+  const rows = document.querySelectorAll('.invoice-item-row:not([style*="display: none"])');
+  
+  rows.forEach(row => {
+    const quantity = parseFloat(row.querySelector('input[name$="-ilosc"]').value) || 0;
+    const price = parseFloat(row.querySelector('input[name$="-cena_netto"]').value) || 0;
+    const vatRate = row.querySelector('select[name$="-vat"]').value;
+    
+    const netValue = quantity * price;
+    const vatValue = vatRate === 'zw' ? 0 : netValue * (parseFloat(vatRate) / 100);
+    
+    totalNet += netValue;
+    totalVat += vatValue;
+    
+    // Update row net value
+    const netValueCell = row.querySelector('.net-value');
+    if (netValueCell) {
+      netValueCell.textContent = netValue.toFixed(2).replace('.', ',') + ' zł';
+    }
+  });
+  
+  const totalGross = totalNet + totalVat;
+  
+  document.getElementById('total-net').textContent = totalNet.toFixed(2).replace('.', ',') + ' zł';
+  document.getElementById('total-vat').textContent = totalVat.toFixed(2).replace('.', ',') + ' zł';
+  document.getElementById('total-gross').textContent = totalGross.toFixed(2).replace('.', ',') + ' zł';
+}
+
+// Add event listeners for calculation
+document.addEventListener('input', function(e) {
+  if (e.target.matches('input[name$="-ilosc"], input[name$="-cena_netto"]') ||
+      e.target.matches('select[name$="-vat"]')) {
+    calculateTotals();
+  }
+});
+
+// Contractor modal functions
+function openContractorModal() {
+  document.getElementById('contractor-modal').classList.remove('hidden');
+  // Load contractor form via AJAX
+  fetch('{% url "enhanced_contractor_create" %}')
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('contractor-form-container').innerHTML = html;
+    });
+}
+
+function closeContractorModal() {
+  document.getElementById('contractor-modal').classList.add('hidden');
+}
+
+// Close modal on outside click
+document.getElementById('contractor-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeContractorModal();
+  }
+});
+
+// Initialize calculations
+document.addEventListener('DOMContentLoaded', function() {
+  calculateTotals();
+});
+</script>
+{% endblock %}

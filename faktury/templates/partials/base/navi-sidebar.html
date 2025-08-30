@@ -6,218 +6,132 @@
   </button>
   <div>
     <a href="/" class="sidebar-logo">
-      <img
-        src="{% static 'assets/images/logo.png' %}"
-        alt="site logo"
-        class="light-logo"
-      />
-      <img
-        src="{% static 'assets/images/logo-light.png' %}"
-        alt="site logo"
-        class="dark-logo"
-      />
-      <img
-        src="{% static 'assets/images/logo-icon.png' %}"
-        alt="site logo"
-        class="logo-icon"
-      />
+      <img src="{% static 'assets/images/logo.png' %}" alt="site logo" class="light-logo" />
+      <img src="{% static 'assets/images/logo-light.png' %}" alt="site logo" class="dark-logo" />
+      <img src="{% static 'assets/images/logo-icon.png' %}" alt="site logo" class="logo-icon" />
     </a>
   </div>
   <div class="sidebar-menu-area">
     <ul class="sidebar-menu" id="sidebar-menu">
       <li class="sidebar-menu-group-title">Witaj {{ user.username }}</li>
+      
       <li>
         <a href="{% url 'panel_uzytkownika' %}">
-          <iconify-icon
-            icon="solar:home-smile-angle-outline"
-            class="menu-icon"
-          ></iconify-icon>
-          <span>{% trans "Faktury" %}</span>
+          <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
+          <span>{% trans "Dashboard" %}</span>
         </a>
       </li>
+      
       <li>
         <a href="{% url 'kontrahenci' %}">
-          <iconify-icon
-            icon="hugeicons:permanent-job"
-            class="menu-icon"
-          ></iconify-icon>
+          <iconify-icon icon="hugeicons:permanent-job" class="menu-icon"></iconify-icon>
           <span>{% trans "Kontrahenci" %}</span>
         </a>
       </li>
-      <li>
-        <a href="{% url 'twoje_sprawy' %}">
-          <iconify-icon
-            icon="hugeicons:calendar-03"
-            class="menu-icon"
-          ></iconify-icon>
-          <span>{% trans "Twoje sprawy" %}</span>
-        </a>
-      </li>
+      
       <li>
         <a href="{% url 'produkty' %}">
-          <iconify-icon
-            icon="hugeicons:delivery-box-01"
-            class="menu-icon"
-          ></iconify-icon>
+          <iconify-icon icon="hugeicons:delivery-box-01" class="menu-icon"></iconify-icon>
           <span>{% trans "Produkty" %}</span>
         </a>
       </li>
+      
       <li>
-        <a href="{% url 'ocr_upload' %}">
-          <iconify-icon
-            icon="hugeicons:ai-brain-04"
-            class="menu-icon"
-          ></iconify-icon>
+        <a href="{% url 'ocr_upload' %}" onclick="console.log('OCR clicked')">
+          <iconify-icon icon="hugeicons:ai-brain-04" class="menu-icon"></iconify-icon>
           <span>{% trans "OCR Faktury" %}</span>
           <span class="badge bg-primary ms-2">AI</span>
         </a>
       </li>
+      
+      <li>
+        <a href="{% url 'twoje_sprawy' %}">
+          <iconify-icon icon="hugeicons:calendar-03" class="menu-icon"></iconify-icon>
+          <span>{% trans "Twoje sprawy" %}</span>
+        </a>
+      </li>
+
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <iconify-icon icon="hugeicons:invoice-03" class="menu-icon"></iconify-icon>
+          <span>Faktury</span>
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="{% url 'dodaj_fakture' %}">
+              <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>
+              Dodaj fakturę sprzedaży
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'dodaj_fakture_koszt' %}">
+              <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i>
+              Dodaj fakturę kosztów
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'faktury_sprzedaz' %}">
+              <i class="ri-circle-fill circle-icon text-success-main w-auto"></i>
+              Faktury sprzedaży
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'faktury_koszt' %}">
+              <i class="ri-circle-fill circle-icon text-danger-main w-auto"></i>
+              Faktury kosztów
+            </a>
+          </li>
+        </ul>
+      </li>
+
       {% if firma %}
       <li>
         <a href="{% url 'edytuj_firme' %}">
-          <iconify-icon
-            icon="hugeicons:pencil-edit-02"
-            class="menu-icon"
-          ></iconify-icon>
+          <iconify-icon icon="hugeicons:pencil-edit-02" class="menu-icon"></iconify-icon>
           <span>{% trans "Edytuj dane firmy" %}</span>
         </a>
       </li>
       {% else %}
       <li>
         <a href="{% url 'dodaj_firme' %}">
-          <iconify-icon
-            icon="hugeicons:add-02"
-            class="menu-icon"
-          ></iconify-icon>
+          <iconify-icon icon="hugeicons:add-02" class="menu-icon"></iconify-icon>
           <span>{% trans "Dodaj dane firmy" %}</span>
         </a>
       </li>
       {% endif %}
-      <li>
-        <a href="{% url 'lista_zespolow' %}">
-          <iconify-icon
-            icon="hugeicons:clapping-01"
-            class="menu-icon"
-          ></iconify-icon>
-          <span>Zespoły</span>
+
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+          <iconify-icon icon="icon-park-outline:setting-two" class="menu-icon"></iconify-icon>
+          <span>Ustawienia</span>
         </a>
-      </li>
-      <li>
-        <a href="{% url 'lista_partnerstw' %}">
-          <iconify-icon
-            icon="hugeicons:clapping-01"
-            class="menu-icon"
-          ></iconify-icon>
-          <span>Partnerzy</span>
-        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="{% url 'view_profile' %}">
+              <i class="ri-circle-fill circle-icon text-info-main w-auto"></i>
+              Profil użytkownika
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'company_settings' %}">
+              <i class="ri-circle-fill circle-icon text-success-main w-auto"></i>
+              Ustawienia firmy
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'notifications_list' %}">
+              <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i>
+              Powiadomienia
+            </a>
+          </li>
+        </ul>
       </li>
 
       <li>
         <a href="{% url 'account_logout' %}">
-          <iconify-icon
-            icon="hugeicons:workout-run"
-            class="menu-icon"
-          ></iconify-icon>
-          <span>Zamknij sesję</span>
+          <iconify-icon icon="hugeicons:workout-run" class="menu-icon"></iconify-icon>
+          <span>Wyloguj</span>
         </a>
-      </li>
-      <li class="dropdown">
-        <a href="javascript:void(0)">
-          <iconify-icon
-            icon="hugeicons:invoice-03"
-            class="menu-icon"
-          ></iconify-icon>
-          <span>Faktury</span>
-        </a>
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="{% url 'faktury_sprzedaz' %}"
-              ><i
-                class="ri-circle-fill circle-icon text-primary-600 w-auto"
-              ></i>
-              Faktury sprzedaży</a
-            >
-          </li>
-          <li>
-            <a href="{% url 'faktury_koszt' %}"
-              ><i
-                class="ri-circle-fill circle-icon text-warning-main w-auto"
-              ></i>
-              Faktury kosztów</a
-            >
-          </li>
-        </ul>
-      </li>
-      <li class="dropdown">
-        <a href="javascript:void(0)">
-          <iconify-icon
-            icon="icon-park-outline:setting-two"
-            class="menu-icon"
-          ></iconify-icon>
-          <span>Twoje konto</span>
-        </a>
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="{% url 'company' %}"
-              ><i
-                class="ri-circle-fill circle-icon text-primary-600 w-auto"
-              ></i>
-              Company</a
-            >
-          </li>
-          <ul class="sidebar-submenu">
-            <li>
-              <a href="{% url 'import_kontrahenci' %}" class="btn btn-info">
-                Importuj z pliku
-            </a>
-            </li>
-          <li>
-            <a href="notification.html"
-              ><i
-                class="ri-circle-fill circle-icon text-warning-main w-auto"
-              ></i>
-              Notification</a
-            >
-          </li>
-          <li>
-            <a href="notification-alert.html"
-              ><i class="ri-circle-fill circle-icon text-info-main w-auto"></i>
-              Notification Alert</a
-            >
-          </li>
-          <li>
-            <a href="theme.html"
-              ><i
-                class="ri-circle-fill circle-icon text-danger-main w-auto"
-              ></i>
-              Theme</a
-            >
-          </li>
-          <li>
-            <a href="currencies.html"
-              ><i
-                class="ri-circle-fill circle-icon text-danger-main w-auto"
-              ></i>
-              Currencies</a
-            >
-          </li>
-          <li>
-            <a href="language.html"
-              ><i
-                class="ri-circle-fill circle-icon text-danger-main w-auto"
-              ></i>
-              Languages</a
-            >
-          </li>
-          <li>
-            <a href="payment-gateway.html"
-              ><i
-                class="ri-circle-fill circle-icon text-danger-main w-auto"
-              ></i>
-              Payment Gateway</a
-            >
-          </li>
-        </ul>
       </li>
     </ul>
   </div>

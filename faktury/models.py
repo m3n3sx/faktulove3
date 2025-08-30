@@ -12,6 +12,7 @@ import logging
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
 from django.utils import timezone
+from typing import Dict
 logger = logging.getLogger(__name__)
 
 class UserProfile(models.Model):
@@ -2295,3 +2296,822 @@ class OCRProcessingLog(models.Model):
     
     def __str__(self):
         return f"{self.level}: {self.document.original_filename} - {self.message[:50]}"
+
+
+# ============================================================================
+# PERFORMANCE MONITORING MODELS
+# ============================================================================
+
+class PerformanceMetric(models.Model):
+    """Track performance metrics for pages and user interactions"""
+    
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        verbose_name="Użytkownik"
+    )
+    session_id = models.CharField(
+        max_length=100, 
+        null=True, 
+        blank=True,
+        verbose_name="ID sesji"
+    )
+    timestamp = models.DateTimeField(
+        default=timezone.now,
+        verbose_name="Znacznik czasu"
+    )
+    url = models.URLField(
+        max_length=500,
+        verbose_name="URL"
+    )
+    user_agent = models.TextField(verbose_name="User Agent")
+    
+    # Core Web Vitals
+    lcp = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Largest Contentful Paint (ms)",
+        verbose_name="LCP"
+    )
+    fid = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="First Input Delay (ms)",
+        verbose_name="FID"
+    )
+    cls = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Cumulative Layout Shift",
+        verbose_name="CLS"
+    )
+    fcp = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="First Contentful Paint (ms)",
+        verbose_name="FCP"
+    )
+    ttfb = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Time to First Byte (ms)",
+        verbose_name="TTFB"
+    )
+    
+    # Additional performance metrics
+    page_load_time = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Total page load time (seconds)",
+        verbose_name="Czas ładowania strony"
+    )
+    database_query_time = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Database query time (seconds)",
+        verbose_name="Czas zapytań do bazy"
+    )
+    cache_hit_ratio = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Cache hit ratio (%)",
+        verbose_name="Współczynnik trafień cache"
+    )
+    memory_usage = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Memory usage (%)",
+        verbose_name="Użycie pamięci"
+    )
+    cpu_usage = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="CPU usage (%)",
+        verbose_name="Użycie CPU"
+    )
+    response_time = models.FloatField(
+        null=True, 
+        blank=True,
+        help_text="Response time (seconds)",
+        verbose_name="Czas odpowiedzi"
+    )
+    
+    # Component-specific metrics
+    component_render_time = models.FloatField(
+        null=True, 
+        blank=True,
+        verbose_name="Czas renderowania komponentów"
+    )
+    bundle_size = models.IntegerField(
+        null=True, 
+        blank=True,
+        verbose_name="Rozmiar bundle"
+    )
+    css_load_time = models.FloatField(
+        null=True, 
+        blank=True,
+        verbose_name="Czas ładowania CSS"
+    )
+    theme_load_time = models.FloatField(
+        null=True, 
+        blank=True,
+        verbose_name="Czas ładowania motywu"
+    )
+    
+    # Raw performance data
+    raw_data = models.JSONField(
+        default=dict, 
+        blank=True,
+        verbose_name="Surowe dane"
+    )
+    
+    class Meta:
+        db_table = 'performance_metrics'
+        verbose_name = "Metryka wydajności"
+        verbose_name_plural = "Metryki wydajności"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp'], name='performance_timesta_79a065_idx'),
+            models.Index(fields=['user', 'timestamp'], name='performance_user_id_1e63aa_idx'),
+            models.Index(fields=['url'], name='performance_url_6b75f1_idx'),
+        ]
+    
+    def __str__(self):
+        return f"Performance: {self.url} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+    
+    def get_core_web_vitals_score(self) -> Dict[str, str]:
+        """Calculate Core Web Vitals score"""
+        scores = {}
+        
+        # LCP thresholds: Good (≤2.5s), Needs Improvement (≤4s), Poor (>4s)
+        if self.lcp is not None:
+            if self.lcp <= 2500:
+                scores['lcp'] = 'good'
+            elif self.lcp <= 4000:
+                scores['lcp'] = 'needs_improvement'
+            else:
+                scores['lcp'] = 'poor'
+        
+        # FID thresholds: Good (≤100ms), Needs Improvement (≤300ms), Poor (>300ms)
+        if self.fid is not None:
+            if self.fid <= 100:
+                scores['fid'] = 'good'
+            elif self.fid <= 300:
+                scores['fid'] = 'needs_improvement'
+            else:
+                scores['fid'] = 'poor'
+        
+        # CLS thresholds: Good (≤0.1), Needs Improvement (≤0.25), Poor (>0.25)
+        if self.cls is not None:
+            if self.cls <= 0.1:
+                scores['cls'] = 'good'
+            elif self.cls <= 0.25:
+                scores['cls'] = 'needs_improvement'
+            else:
+                scores['cls'] = 'poor'
+        
+        return scores
+    
+    def is_performance_good(self) -> bool:
+        """Check if overall performance is good"""
+        scores = self.get_core_web_vitals_score()
+        good_scores = sum(1 for score in scores.values() if score == 'good')
+        return good_scores >= len(scores) * 0.75  # 75% of metrics should be good
+
+
+class ComponentPerformanceMetric(models.Model):
+    """Track performance metrics for individual React components"""
+    
+    performance_metric = models.ForeignKey(
+        PerformanceMetric,
+        on_delete=models.CASCADE,
+        related_name='components',
+        verbose_name="Metryka wydajności"
+    )
+    component_name = models.CharField(
+        max_length=100,
+        verbose_name="Nazwa komponentu"
+    )
+    render_count = models.IntegerField(
+        default=0,
+        verbose_name="Liczba renderowań"
+    )
+    total_render_time = models.FloatField(
+        default=0,
+        verbose_name="Całkowity czas renderowania"
+    )
+    average_render_time = models.FloatField(
+        default=0,
+        verbose_name="Średni czas renderowania"
+    )
+    max_render_time = models.FloatField(
+        default=0,
+        verbose_name="Maksymalny czas renderowania"
+    )
+    min_render_time = models.FloatField(
+        default=0,
+        verbose_name="Minimalny czas renderowania"
+    )
+    props_changes = models.IntegerField(
+        default=0,
+        verbose_name="Zmiany właściwości"
+    )
+    memory_usage = models.IntegerField(
+        default=0,
+        verbose_name="Użycie pamięci"
+    )
+    
+    class Meta:
+        db_table = 'component_performance_metrics'
+        verbose_name = "Metryka wydajności komponentu"
+        verbose_name_plural = "Metryki wydajności komponentów"
+        ordering = ['-average_render_time']
+    
+    def __str__(self):
+        return f"{self.component_name}: {self.average_render_time:.2f}ms avg"
+    
+    def update_averages(self):
+        """Update average calculations"""
+        if self.render_count > 0:
+            self.average_render_time = self.total_render_time / self.render_count
+        else:
+            self.average_render_time = 0
+
+
+class AccessibilityMetric(models.Model):
+    """Track accessibility metrics and compliance"""
+    
+    performance_metric = models.ForeignKey(
+        PerformanceMetric,
+        on_delete=models.CASCADE,
+        related_name='accessibility',
+        verbose_name="Metryka wydajności"
+    )
+    keyboard_navigation_usage = models.IntegerField(
+        default=0,
+        verbose_name="Użycie nawigacji klawiaturą"
+    )
+    keyboard_navigation_errors = models.IntegerField(
+        default=0,
+        verbose_name="Błędy nawigacji klawiaturą"
+    )
+    screen_reader_detected = models.BooleanField(
+        default=False,
+        verbose_name="Wykryto czytnik ekranu"
+    )
+    aria_errors = models.IntegerField(
+        default=0,
+        verbose_name="Błędy ARIA"
+    )
+    missing_labels = models.IntegerField(
+        default=0,
+        verbose_name="Brakujące etykiety"
+    )
+    color_contrast_violations = models.IntegerField(
+        default=0,
+        verbose_name="Naruszenia kontrastu kolorów"
+    )
+    focus_trap_errors = models.IntegerField(
+        default=0,
+        verbose_name="Błędy pułapki fokusu"
+    )
+    lost_focus_count = models.IntegerField(
+        default=0,
+        verbose_name="Liczba utraconych fokusów"
+    )
+    
+    class Meta:
+        db_table = 'accessibility_metrics'
+        verbose_name = "Metryka dostępności"
+        verbose_name_plural = "Metryki dostępności"
+    
+    def __str__(self):
+        return f"Accessibility: {self.performance_metric.url}"
+    
+    def get_accessibility_score(self) -> float:
+        """Calculate accessibility score (0-100)"""
+        total_issues = (
+            self.keyboard_navigation_errors +
+            self.aria_errors +
+            self.missing_labels +
+            self.color_contrast_violations +
+            self.focus_trap_errors +
+            self.lost_focus_count
+        )
+        
+        # Base score of 100, subtract points for issues
+        score = 100 - min(total_issues * 5, 100)  # Max 5 points per issue
+        return max(score, 0)
+    
+    def is_accessible(self) -> bool:
+        """Check if accessibility score meets minimum standards"""
+        return self.get_accessibility_score() >= 80  # 80% threshold
+
+
+class SystemHealthMetric(models.Model):
+    """Track overall system health metrics"""
+    
+    timestamp = models.DateTimeField(
+        default=timezone.now,
+        verbose_name="Znacznik czasu"
+    )
+    component = models.CharField(
+        max_length=50,
+        verbose_name="Komponent"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('healthy', 'Zdrowy'),
+            ('warning', 'Ostrzeżenie'),
+            ('critical', 'Krytyczny'),
+            ('down', 'Niedostępny'),
+        ],
+        verbose_name="Status"
+    )
+    response_time = models.FloatField(
+        verbose_name="Czas odpowiedzi"
+    )
+    error_count = models.IntegerField(
+        default=0,
+        verbose_name="Liczba błędów"
+    )
+    cpu_usage = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Użycie CPU"
+    )
+    memory_usage = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Użycie pamięci"
+    )
+    disk_usage = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Użycie dysku"
+    )
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Metadane"
+    )
+    
+    class Meta:
+        verbose_name = "Metryka zdrowia systemu"
+        verbose_name_plural = "Metryki zdrowia systemu"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['component', '-timestamp']),
+            models.Index(fields=['status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.component}: {self.get_status_display()} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+    
+    def is_healthy(self) -> bool:
+        """Check if component is healthy"""
+        return self.status == 'healthy'
+
+
+# ============================================================================
+# SECURITY AND AUDIT MODELS
+# ============================================================================
+
+class SecurityAuditLog(models.Model):
+    """
+    Comprehensive security audit log for compliance and monitoring
+    """
+    
+    ACTION_CHOICES = [
+        ('login', 'Logowanie'),
+        ('logout', 'Wylogowanie'),
+        ('login_failed', 'Nieudane logowanie'),
+        ('password_change', 'Zmiana hasła'),
+        ('password_reset', 'Reset hasła'),
+        ('profile_update', 'Aktualizacja profilu'),
+        ('company_create', 'Utworzenie firmy'),
+        ('company_update', 'Aktualizacja firmy'),
+        ('company_delete', 'Usunięcie firmy'),
+        ('invoice_create', 'Utworzenie faktury'),
+        ('invoice_update', 'Aktualizacja faktury'),
+        ('invoice_delete', 'Usunięcie faktury'),
+        ('invoice_view', 'Wyświetlenie faktury'),
+        ('invoice_export', 'Eksport faktury'),
+        ('ocr_upload', 'Przesłanie dokumentu OCR'),
+        ('ocr_process', 'Przetwarzanie OCR'),
+        ('ocr_validate', 'Walidacja OCR'),
+        ('data_export', 'Eksport danych'),
+        ('data_import', 'Import danych'),
+        ('admin_access', 'Dostęp do panelu admin'),
+        ('api_access', 'Dostęp do API'),
+        ('file_upload', 'Przesłanie pliku'),
+        ('file_download', 'Pobranie pliku'),
+        ('file_delete', 'Usunięcie pliku'),
+        ('permission_change', 'Zmiana uprawnień'),
+        ('security_violation', 'Naruszenie bezpieczeństwa'),
+        ('suspicious_activity', 'Podejrzana aktywność'),
+        ('rate_limit_exceeded', 'Przekroczenie limitu żądań'),
+        ('unauthorized_access', 'Nieautoryzowany dostęp'),
+        ('data_breach_attempt', 'Próba naruszenia danych'),
+        ('system_maintenance', 'Konserwacja systemu'),
+        ('backup_create', 'Utworzenie kopii zapasowej'),
+        ('backup_restore', 'Przywrócenie kopii zapasowej'),
+    ]
+    
+    RESOURCE_TYPE_CHOICES = [
+        ('user', 'Użytkownik'),
+        ('company', 'Firma'),
+        ('invoice', 'Faktura'),
+        ('contractor', 'Kontrahent'),
+        ('product', 'Produkt'),
+        ('document', 'Dokument'),
+        ('ocr_result', 'Wynik OCR'),
+        ('partnership', 'Partnerstwo'),
+        ('team', 'Zespół'),
+        ('message', 'Wiadomość'),
+        ('task', 'Zadanie'),
+        ('system', 'System'),
+        ('api', 'API'),
+        ('file', 'Plik'),
+        ('session', 'Sesja'),
+        ('permission', 'Uprawnienie'),
+        ('audit_log', 'Log audytu'),
+        ('backup', 'Kopia zapasowa'),
+    ]
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Użytkownik",
+        help_text="Użytkownik wykonujący akcję (null dla akcji anonimowych)"
+    )
+    action = models.CharField(
+        max_length=50,
+        choices=ACTION_CHOICES,
+        verbose_name="Akcja",
+        help_text="Typ wykonywanej akcji"
+    )
+    resource_type = models.CharField(
+        max_length=50,
+        choices=RESOURCE_TYPE_CHOICES,
+        verbose_name="Typ zasobu",
+        help_text="Typ zasobu, na którym wykonywana jest akcja"
+    )
+    resource_id = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name="ID zasobu",
+        help_text="Identyfikator konkretnego zasobu"
+    )
+    encrypted_details = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Zaszyfrowane szczegóły",
+        help_text="Dodatkowe szczegóły akcji (zaszyfrowane)"
+    )
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        verbose_name="Adres IP",
+        help_text="Adres IP użytkownika"
+    )
+    user_agent = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="User Agent",
+        help_text="Informacje o przeglądarce użytkownika"
+    )
+    success = models.BooleanField(
+        default=True,
+        verbose_name="Sukces",
+        help_text="Czy akcja zakończyła się sukcesem"
+    )
+    error_message = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Komunikat błędu",
+        help_text="Komunikat błędu w przypadku niepowodzenia"
+    )
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Znacznik czasu",
+        help_text="Czas wykonania akcji"
+    )
+    session_key = models.CharField(
+        max_length=40,
+        null=True,
+        blank=True,
+        verbose_name="Klucz sesji",
+        help_text="Klucz sesji użytkownika"
+    )
+    company = models.ForeignKey(
+        'Firma',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Firma",
+        help_text="Firma w kontekście której wykonywana jest akcja"
+    )
+    risk_level = models.CharField(
+        max_length=20,
+        choices=[
+            ('low', 'Niskie'),
+            ('medium', 'Średnie'),
+            ('high', 'Wysokie'),
+            ('critical', 'Krytyczne'),
+        ],
+        default='low',
+        verbose_name="Poziom ryzyka",
+        help_text="Poziom ryzyka bezpieczeństwa dla tej akcji"
+    )
+    
+    class Meta:
+        verbose_name = "Log audytu bezpieczeństwa"
+        verbose_name_plural = "Logi audytu bezpieczeństwa"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['user', '-timestamp']),
+            models.Index(fields=['action', '-timestamp']),
+            models.Index(fields=['resource_type', 'resource_id']),
+            models.Index(fields=['ip_address', '-timestamp']),
+            models.Index(fields=['success', '-timestamp']),
+            models.Index(fields=['risk_level', '-timestamp']),
+            models.Index(fields=['company', '-timestamp']),
+        ]
+    
+    def __str__(self):
+        user_str = self.user.username if self.user else 'Anonymous'
+        return f"{user_str}: {self.get_action_display()} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    def get_details(self):
+        """Decrypt and return details if available"""
+        if self.encrypted_details:
+            try:
+                from faktury.services.security_service import SecurityService
+                security_service = SecurityService()
+                return security_service.decrypt_sensitive_data(self.encrypted_details)
+            except Exception:
+                return "Nie można odszyfrować szczegółów"
+        return None
+    
+    def is_suspicious(self) -> bool:
+        """Check if this log entry indicates suspicious activity"""
+        suspicious_actions = [
+            'login_failed',
+            'security_violation',
+            'suspicious_activity',
+            'rate_limit_exceeded',
+            'unauthorized_access',
+            'data_breach_attempt'
+        ]
+        return self.action in suspicious_actions or self.risk_level in ['high', 'critical']
+
+
+class SecurityConfiguration(models.Model):
+    """
+    Store security configuration settings
+    """
+    
+    CONFIG_TYPE_CHOICES = [
+        ('password_policy', 'Polityka haseł'),
+        ('session_timeout', 'Timeout sesji'),
+        ('rate_limiting', 'Ograniczenia żądań'),
+        ('ip_whitelist', 'Biała lista IP'),
+        ('ip_blacklist', 'Czarna lista IP'),
+        ('encryption_settings', 'Ustawienia szyfrowania'),
+        ('audit_settings', 'Ustawienia audytu'),
+        ('compliance_settings', 'Ustawienia zgodności'),
+        ('notification_settings', 'Ustawienia powiadomień'),
+        ('backup_settings', 'Ustawienia kopii zapasowych'),
+    ]
+    
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Nazwa",
+        help_text="Nazwa ustawienia bezpieczeństwa"
+    )
+    config_type = models.CharField(
+        max_length=50,
+        choices=CONFIG_TYPE_CHOICES,
+        verbose_name="Typ konfiguracji",
+        help_text="Typ konfiguracji bezpieczeństwa"
+    )
+    value = models.JSONField(
+        verbose_name="Wartość",
+        help_text="Wartość konfiguracji (JSON)"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Aktywne",
+        help_text="Czy ustawienie jest aktywne"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Data utworzenia"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Data aktualizacji"
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Utworzone przez",
+        help_text="Użytkownik, który utworzył konfigurację"
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name="Opis",
+        help_text="Opis konfiguracji bezpieczeństwa"
+    )
+    
+    class Meta:
+        verbose_name = "Konfiguracja bezpieczeństwa"
+        verbose_name_plural = "Konfiguracje bezpieczeństwa"
+        ordering = ['config_type', 'name']
+        indexes = [
+            models.Index(fields=['config_type', 'is_active']),
+            models.Index(fields=['name']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_config_type_display()}: {self.name}"
+
+
+class DataRetentionPolicy(models.Model):
+    """
+    Define data retention policies for GDPR compliance
+    """
+    
+    DATA_TYPE_CHOICES = [
+        ('audit_logs', 'Logi audytu'),
+        ('user_data', 'Dane użytkowników'),
+        ('invoice_data', 'Dane faktur'),
+        ('ocr_data', 'Dane OCR'),
+        ('session_data', 'Dane sesji'),
+        ('performance_data', 'Dane wydajności'),
+        ('error_logs', 'Logi błędów'),
+        ('backup_data', 'Dane kopii zapasowych'),
+        ('temporary_files', 'Pliki tymczasowe'),
+        ('uploaded_documents', 'Przesłane dokumenty'),
+    ]
+    
+    data_type = models.CharField(
+        max_length=50,
+        choices=DATA_TYPE_CHOICES,
+        unique=True,
+        verbose_name="Typ danych",
+        help_text="Typ danych objętych polityką"
+    )
+    retention_days = models.PositiveIntegerField(
+        verbose_name="Dni przechowywania",
+        help_text="Liczba dni przechowywania danych"
+    )
+    auto_cleanup = models.BooleanField(
+        default=True,
+        verbose_name="Automatyczne czyszczenie",
+        help_text="Czy dane mają być automatycznie usuwane"
+    )
+    archive_before_delete = models.BooleanField(
+        default=False,
+        verbose_name="Archiwizuj przed usunięciem",
+        help_text="Czy dane mają być archiwizowane przed usunięciem"
+    )
+    legal_hold = models.BooleanField(
+        default=False,
+        verbose_name="Blokada prawna",
+        help_text="Czy dane są objęte blokadą prawną"
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name="Opis",
+        help_text="Opis polityki przechowywania"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Data utworzenia"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Data aktualizacji"
+    )
+    
+    class Meta:
+        verbose_name = "Polityka przechowywania danych"
+        verbose_name_plural = "Polityki przechowywania danych"
+        ordering = ['data_type']
+    
+    def __str__(self):
+        return f"{self.get_data_type_display()}: {self.retention_days} dni"
+    
+    def is_expired(self, created_date) -> bool:
+        """Check if data created on given date should be deleted"""
+        if self.legal_hold:
+            return False
+        
+        expiry_date = created_date + timezone.timedelta(days=self.retention_days)
+        return timezone.now() > expiry_date
+
+
+class ComplianceReport(models.Model):
+    """
+    Store compliance reports for auditing purposes
+    """
+    
+    REPORT_TYPE_CHOICES = [
+        ('gdpr_audit', 'Audyt GDPR'),
+        ('security_audit', 'Audyt bezpieczeństwa'),
+        ('data_retention', 'Przechowywanie danych'),
+        ('access_control', 'Kontrola dostępu'),
+        ('encryption_status', 'Status szyfrowania'),
+        ('backup_verification', 'Weryfikacja kopii zapasowych'),
+        ('incident_report', 'Raport incydentu'),
+        ('vulnerability_assessment', 'Ocena podatności'),
+        ('penetration_test', 'Test penetracyjny'),
+        ('compliance_check', 'Sprawdzenie zgodności'),
+    ]
+    
+    report_type = models.CharField(
+        max_length=50,
+        choices=REPORT_TYPE_CHOICES,
+        verbose_name="Typ raportu",
+        help_text="Typ raportu zgodności"
+    )
+    title = models.CharField(
+        max_length=200,
+        verbose_name="Tytuł",
+        help_text="Tytuł raportu"
+    )
+    description = models.TextField(
+        verbose_name="Opis",
+        help_text="Opis raportu zgodności"
+    )
+    findings = models.JSONField(
+        verbose_name="Ustalenia",
+        help_text="Szczegółowe ustalenia raportu (JSON)"
+    )
+    recommendations = models.TextField(
+        blank=True,
+        verbose_name="Rekomendacje",
+        help_text="Rekomendacje wynikające z raportu"
+    )
+    compliance_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('compliant', 'Zgodny'),
+            ('non_compliant', 'Niezgodny'),
+            ('partial', 'Częściowo zgodny'),
+            ('under_review', 'W trakcie przeglądu'),
+        ],
+        default='under_review',
+        verbose_name="Status zgodności",
+        help_text="Status zgodności na podstawie raportu"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Data utworzenia"
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Utworzony przez",
+        help_text="Użytkownik, który utworzył raport"
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Data przeglądu",
+        help_text="Data przeglądu raportu"
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_compliance_reports',
+        verbose_name="Przejrzane przez",
+        help_text="Użytkownik, który przejrzał raport"
+    )
+    
+    class Meta:
+        verbose_name = "Raport zgodności"
+        verbose_name_plural = "Raporty zgodności"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['report_type', '-created_at']),
+            models.Index(fields=['compliance_status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_report_type_display()}: {self.title} ({self.created_at.strftime('%Y-%m-%d')})"

@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Playwright FaktuLove Test Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; margin-bottom: 20px; }
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
+        .metric { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #007bff; }
+        .metric h3 { margin: 0; font-size: 2em; color: #333; }
+        .metric p { margin: 5px 0 0 0; color: #666; }
+        .test-result { margin: 15px 0; padding: 15px; border-radius: 8px; border-left: 4px solid; }
+        .success { background: #d4edda; border-left-color: #28a745; }
+        .failure { background: #f8d7da; border-left-color: #dc3545; }
+        .test-name { font-weight: bold; margin-bottom: 5px; }
+        .test-message { color: #666; }
+        .timestamp { color: #999; font-size: 0.9em; }
+        .section { margin: 30px 0; }
+        .section h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .performance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .performance-card { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Playwright FaktuLove Test Report</h1>
+            <p><strong>Base URL:</strong> http://localhost:8000</p>
+            <p><strong>Generated:</strong> 2025-08-30T00:24:38.421223</p>
+        </div>
+        
+        <div class="summary">
+            <div class="metric">
+                <h3>3</h3>
+                <p>Total Tests</p>
+            </div>
+            <div class="metric">
+                <h3 style="color: #28a745">0</h3>
+                <p>Passed</p>
+            </div>
+            <div class="metric">
+                <h3 style="color: #dc3545">3</h3>
+                <p>Failed</p>
+            </div>
+            <div class="metric">
+                <h3>0.0%</h3>
+                <p>Success Rate</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Test Results</h2>
+
+            <div class="test-result failure">
+                <div class="test-name">❌ chromium - Browser Launch</div>
+                <div class="test-message">BrowserType.launch: Target page, context or browser has been closed
+Browser logs:
+
+<launching> /home/ooxo/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-RtKhFJ --remote-debugging-pipe --no-startup-window
+<launched> pid=3125390
+Call log:
+  - <launching> /home/ooxo/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-RtKhFJ --remote-debugging-pipe --no-startup-window
+  - <launched> pid=3125390
+  - [pid=3125390] <gracefully close start>
+  - [pid=3125390] <kill>
+  - [pid=3125390] <will force kill>
+  - [pid=3125390] exception while trying to kill process: Error: kill ESRCH
+  - [pid=3125390] <process did exit: exitCode=null, signal=SIGSEGV>
+  - [pid=3125390] starting temporary directories cleanup
+  - [pid=3125390] finished temporary directories cleanup
+  - [pid=3125390] <gracefully close end>
+</div>
+                <div class="timestamp">2025-08-30T00:24:39.082204</div>
+            </div>
+
+            <div class="test-result failure">
+                <div class="test-name">❌ firefox - Browser Launch</div>
+                <div class="test-message">BrowserType.launch: Executable doesn't exist at /home/ooxo/.cache/ms-playwright/firefox-1490/firefox/firefox
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝</div>
+                <div class="timestamp">2025-08-30T00:24:39.085047</div>
+            </div>
+
+            <div class="test-result failure">
+                <div class="test-name">❌ webkit - Browser Launch</div>
+                <div class="test-message">BrowserType.launch: Executable doesn't exist at /home/ooxo/.cache/ms-playwright/webkit_ubuntu20.04_x64_special-2092/pw_run.sh
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝</div>
+                <div class="timestamp">2025-08-30T00:24:39.087493</div>
+            </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+{% load design_system_tags %}
+
+{% block title %}Faktura {{ faktura.numer }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+<style>
+.invoice-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.invoice-header {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.party-info {
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.invoice-items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoice-items-table th,
+.invoice-items-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.invoice-items-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.invoice-totals {
+  background-color: #f0f9ff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.status-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.compliance-section {
+  margin-top: 24px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invoice-detail-container">
+  {% ds_breadcrumb items="Faktury,Lista faktur,enhanced_invoice_list;Faktura {{ faktura.numer }},#" %}
+  
+  <!-- Invoice Header -->
+  <div class="invoice-header">
+    <div class="flex justify-between items-start">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">{{ faktura.numer }}</h1>
+        <p class="text-gray-600 mt-1">{{ faktura.get_typ_dokumentu_display }}</p>
+      </div>
+      
+      <div class="status-actions">
+        {% ds_invoice_status_badge status=faktura.status %}
+        
+        {% if can_edit %}
+          {% ds_button variant="secondary" size="sm" href="{% url 'enhanced_invoice_edit' faktura.pk %}" %}
+            Edytuj
+          {% end_ds_button %}
+        {% endif %}
+        
+        {% if can_send %}
+          {% ds_button variant="primary" size="sm" onclick="sendInvoice()" %}
+            Wyślij
+          {% end_ds_button %}
+        {% endif %}
+        
+        {% ds_button variant="secondary" size="sm" onclick="downloadPDF()" %}
+          Pobierz PDF
+        {% end_ds_button %}
+      </div>
+    </div>
+    
+    <!-- Quick Status Update -->
+    {% if can_mark_paid %}
+      <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <h3 class="font-medium text-yellow-800 mb-2">Oznacz jako opłaconą</h3>
+        <div class="flex items-center space-x-4">
+          {% ds_currency_input id="payment-amount" placeholder="Kwota płatności" currency="PLN" %}
+          {% ds_button variant="success" size="sm" onclick="markAsPaid()" %}
+            Oznacz jako opłaconą
+          {% end_ds_button %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Invoice Information -->
+  <div class="invoice-section">
+    <h2 class="text-xl font-semibold mb-4">Informacje o fakturze</h2>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Data wystawienia</label>
+        <p class="mt-1 text-sm text-gray-900">
+          {% ds_date_format faktura.data_wystawienia locale="pl-PL" %}
+        </p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Data sprzedaży</label>
+        <p class="mt-1 text-sm text-gray-900">
+          {% ds_date_format faktura.data_sprzedazy locale="pl-PL" %}
+        </p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Termin płatności</label>
+        <p class="mt-1 text-sm text-gray-900">
+          {% ds_date_format faktura.termin_platnosci locale="pl-PL" %}
+        </p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Sposób płatności</label>
+        <p class="mt-1 text-sm text-gray-900">{{ faktura.get_sposob_platnosci_display }}</p>
+      </div>
+    </div>
+    
+    <!-- Parties Information -->
+    <div class="invoice-parties">
+      <div class="party-info">
+        <h3 class="font-medium text-gray-900 mb-3">Sprzedawca</h3>
+        <div class="text-sm text-gray-700">
+          <p class="font-medium">{{ faktura.sprzedawca.nazwa }}</p>
+          {% if faktura.sprzedawca.nip %}
+            <p>NIP: {{ faktura.sprzedawca.nip }}</p>
+          {% endif %}
+          <p>{{ faktura.sprzedawca.ulica }} {{ faktura.sprzedawca.numer_domu }}
+             {% if faktura.sprzedawca.numer_mieszkania %}/{{ faktura.sprzedawca.numer_mieszkania }}{% endif %}</p>
+          <p>{{ faktura.sprzedawca.kod_pocztowy }} {{ faktura.sprzedawca.miejscowosc }}</p>
+        </div>
+      </div>
+      
+      <div class="party-info">
+        <h3 class="font-medium text-gray-900 mb-3">Nabywca</h3>
+        <div class="text-sm text-gray-700">
+          <p class="font-medium">{{ faktura.nabywca.nazwa }}</p>
+          {% if faktura.nabywca.nip %}
+            <p>NIP: 
+              {% ds_nip_format faktura.nabywca.nip %}
+            </p>
+          {% endif %}
+          <p>{{ faktura.nabywca.ulica }} {{ faktura.nabywca.numer_domu }}
+             {% if faktura.nabywca.numer_mieszkania %}/{{ faktura.nabywca.numer_mieszkania }}{% endif %}</p>
+          <p>{{ faktura.nabywca.kod_pocztowy }} {{ faktura.nabywca.miejscowosc }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Items -->
+  <div class="invoice-section">
+    <h2 class="text-xl font-semibold mb-4">Pozycje faktury</h2>
+    
+    {% ds_table %}
+      <thead>
+        <tr>
+          <th>Lp.</th>
+          <th>Nazwa towaru/usługi</th>
+          <th>Ilość</th>
+          <th>Jednostka</th>
+          <th>Cena netto</th>
+          <th>VAT</th>
+          <th>Wartość netto</th>
+          <th>Kwota VAT</th>
+          <th>Wartość brutto</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pozycja in pozycje %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ pozycja.nazwa }}</td>
+            <td>{{ pozycja.ilosc }}</td>
+            <td>{{ pozycja.jednostka }}</td>
+            <td>{% ds_currency_format pozycja.cena_netto currency="PLN" %}</td>
+            <td>
+              {% if pozycja.vat == 'zw' %}
+                zw.
+              {% else %}
+                {{ pozycja.vat }}%
+              {% endif %}
+            </td>
+            <td>{% ds_currency_format pozycja.wartosc_netto currency="PLN" %}</td>
+            <td>{% ds_currency_format pozycja.kwota_vat currency="PLN" %}</td>
+            <td>{% ds_currency_format pozycja.wartosc_brutto currency="PLN" %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    {% end_ds_table %}
+    
+    <!-- Totals -->
+    <div class="invoice-totals">
+      <div class="grid grid-cols-3 gap-4 text-right">
+        <div>
+          <span class="font-medium">Suma netto:</span>
+          <span class="ml-2">{% ds_currency_format totals.netto currency="PLN" %}</span>
+        </div>
+        <div>
+          <span class="font-medium">Suma VAT:</span>
+          <span class="ml-2">{% ds_currency_format totals.vat currency="PLN" %}</span>
+        </div>
+        <div>
+          <span class="font-medium text-lg">Suma brutto:</span>
+          <span class="ml-2 text-lg font-bold">{% ds_currency_format totals.brutto currency="PLN" %}</span>
+        </div>
+      </div>
+      
+      {% if faktura.kwota_oplacona > 0 %}
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <div class="text-right">
+            <span class="font-medium">Kwota opłacona:</span>
+            <span class="ml-2 text-green-600 font-medium">
+              {% ds_currency_format faktura.kwota_oplacona currency="PLN" %}
+            </span>
+          </div>
+          {% if faktura.status != 'oplacona' %}
+            <div class="text-right mt-1">
+              <span class="font-medium">Do zapłaty:</span>
+              <span class="ml-2 text-red-600 font-medium">
+                {% ds_currency_format totals.brutto|sub:faktura.kwota_oplacona currency="PLN" %}
+              </span>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Compliance Section -->
+  <div class="invoice-section compliance-section">
+    <h2 class="text-xl font-semibold mb-4">Zgodność z przepisami</h2>
+    
+    {% ds_compliance_indicator rules=compliance_rules show_details=True %}
+  </div>
+
+  <!-- Additional Information -->
+  {% if faktura.uwagi %}
+    <div class="invoice-section">
+      <h2 class="text-xl font-semibold mb-4">Uwagi</h2>
+      <p class="text-gray-700">{{ faktura.uwagi }}</p>
+    </div>
+  {% endif %}
+
+  <!-- OCR Information -->
+  {% if faktura.source_document %}
+    <div class="invoice-section">
+      <h2 class="text-xl font-semibold mb-4">Informacje OCR</h2>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-500">Dokument źródłowy</label>
+          <p class="mt-1 text-sm text-gray-900">{{ faktura.source_document.original_filename }}</p>
+        </div>
+        
+        {% if faktura.ocr_confidence %}
+          <div>
+            <label class="block text-sm font-medium text-gray-500">Pewność OCR</label>
+            <p class="mt-1 text-sm text-gray-900">
+              {% ds_confidence_indicator confidence=faktura.ocr_confidence %}
+            </p>
+          </div>
+        {% endif %}
+        
+        {% if faktura.ocr_processing_time %}
+          <div>
+            <label class="block text-sm font-medium text-gray-500">Czas przetwarzania</label>
+            <p class="mt-1 text-sm text-gray-900">{{ faktura.ocr_processing_time|floatformat:2 }}s</p>
+          </div>
+        {% endif %}
+        
+        {% if faktura.ocr_extracted_at %}
+          <div>
+            <label class="block text-sm font-medium text-gray-500">Data ekstrakcji</label>
+            <p class="mt-1 text-sm text-gray-900">
+              {% ds_date_format faktura.ocr_extracted_at locale="pl-PL" %}
+            </p>
+          </div>
+        {% endif %}
+      </div>
+      
+      {% if faktura.manual_verification_required %}
+        {% ds_alert variant="warning" %}
+          Ta faktura wymaga weryfikacji manualnej ze względu na niską pewność OCR.
+        {% end_ds_alert %}
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- Actions -->
+  <div class="invoice-section">
+    <div class="flex justify-between items-center">
+      <div class="space-x-4">
+        {% ds_button variant="secondary" href="{% url 'enhanced_invoice_list' %}" %}
+          Powrót do listy
+        {% end_ds_button %}
+        
+        {% if can_edit %}
+          {% ds_button variant="primary" href="{% url 'enhanced_invoice_edit' faktura.pk %}" %}
+            Edytuj fakturę
+          {% end_ds_button %}
+        {% endif %}
+      </div>
+      
+      <div class="space-x-4">
+        {% ds_button variant="secondary" onclick="printInvoice()" %}
+          Drukuj
+        {% end_ds_button %}
+        
+        {% ds_button variant="secondary" onclick="downloadPDF()" %}
+          Pobierz PDF
+        {% end_ds_button %}
+        
+        {% if can_send %}
+          {% ds_button variant="primary" onclick="sendInvoice()" %}
+            Wyślij e-mail
+          {% end_ds_button %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Update Modal -->
+<div id="status-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg max-w-md w-full p-6">
+      <h3 class="text-lg font-medium mb-4">Zmień status faktury</h3>
+      
+      <form id="status-form">
+        {% csrf_token %}
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nowy status</label>
+            {% ds_select id="new-status" options=status_choices %}
+          </div>
+          
+          <div id="payment-amount-field" style="display: none;">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kwota płatności</label>
+            {% ds_currency_input id="payment-amount-modal" currency="PLN" %}
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-4 mt-6">
+          {% ds_button variant="secondary" type="button" onclick="closeStatusModal()" %}
+            Anuluj
+          {% end_ds_button %}
+          
+          {% ds_button variant="primary" type="submit" %}
+            Zapisz
+          {% end_ds_button %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Status update functions
+function markAsPaid() {
+  const amount = document.getElementById('payment-amount').value;
+  updateInvoiceStatus('oplacona', amount);
+}
+
+function updateInvoiceStatus(status, amount = null) {
+  const formData = new FormData();
+  formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+  formData.append('status', status);
+  
+  if (amount) {
+    formData.append('kwota_oplacona', amount);
+  }
+  
+  fetch('{% url "enhanced_invoice_status_update" faktura.pk %}', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Błąd: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Wystąpił błąd podczas aktualizacji statusu');
+  });
+}
+
+// PDF and print functions
+function downloadPDF() {
+  window.open('{% url "invoice_pdf" faktura.pk %}', '_blank');
+}
+
+function printInvoice() {
+  window.print();
+}
+
+function sendInvoice() {
+  // Implementation for sending invoice via email
+  alert('Funkcja wysyłania e-mail będzie wkrótce dostępna');
+}
+
+// Status modal functions
+function openStatusModal() {
+  document.getElementById('status-modal').classList.remove('hidden');
+}
+
+function closeStatusModal() {
+  document.getElementById('status-modal').classList.add('hidden');
+}
+
+// Show payment amount field when status is set to paid
+document.getElementById('new-status').addEventListener('change', function() {
+  const paymentField = document.getElementById('payment-amount-field');
+  if (this.value === 'oplacona' || this.value === 'cz_oplacona') {
+    paymentField.style.display = 'block';
+  } else {
+    paymentField.style.display = 'none';
+  }
+});
+
+// Handle status form submission
+document.getElementById('status-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const status = document.getElementById('new-status').value;
+  const amount = document.getElementById('payment-amount-modal').value;
+  
+  updateInvoiceStatus(status, amount);
+  closeStatusModal();
+});
+
+// Close modal on outside click
+document.getElementById('status-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeStatusModal();
+  }
+});
+</script>
+{% endblock %}

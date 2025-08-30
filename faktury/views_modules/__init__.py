@@ -20,6 +20,8 @@ from .company_views import *
 from .api_views import *
 from .dashboard_views import *
 from .ocr_views import *
+from .error_api_views import *
+from .validation_api_views import *
 # from .import_export_views import *  # Will be created later
 
 # TODO: Import remaining modules as they are created

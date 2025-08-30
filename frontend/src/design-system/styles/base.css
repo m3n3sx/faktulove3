@@ -1,0 +1,262 @@
+/* Base Styles for FaktuLove Design System */
+
+/* Reset and normalize */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-family-sans);
+  line-height: var(--line-height-normal);
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+}
+
+body {
+  margin: 0;
+  font-family: inherit;
+  line-height: inherit;
+  color: var(--color-text-primary);
+  background-color: var(--color-background-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography base styles */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+}
+
+h1 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+}
+
+h2 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+}
+
+h3 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+h4 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+h5 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+h6 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+}
+
+p {
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+/* Link styles */
+a {
+  color: var(--color-interactive);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+a:hover {
+  color: var(--color-interactive-hover);
+  text-decoration-color: currentColor;
+}
+
+a:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring-default);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Form element base styles */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  margin: 0;
+}
+
+button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring-default);
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2) var(--spacing-3);
+  background-color: var(--color-background-primary);
+  color: var(--color-text-primary);
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--color-border-strong);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-interactive);
+  box-shadow: var(--focus-ring-default);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-background-muted);
+}
+
+/* List styles */
+ul, ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Table styles */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  text-align: left;
+  padding: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background-color: var(--color-background-secondary);
+}
+
+/* Image styles */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Code styles */
+code,
+pre {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
+code {
+  background-color: var(--color-background-secondary);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+}
+
+pre {
+  background-color: var(--color-background-secondary);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  overflow-x: auto;
+  color: var(--color-text-primary);
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Selection styles */
+::selection {
+  background-color: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-400);
+  border-radius: var(--border-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-500);
+}
+
+/* Polish business specific base styles */
+.polish-business-app {
+  /* Ensure proper font rendering for Polish characters */
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  input,
+  select,
+  textarea {
+    border-width: 2px;
+  }
+  
+  button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

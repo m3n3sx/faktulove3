@@ -1,39 +1,65 @@
 {
-  "name": "faktulove-ocr-frontend",
+  "name": "faktulove-frontend",
   "version": "1.0.0",
-  "description": "React frontend for FaktuLove OCR system",
-  "private": true,
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "axios": "^1.4.0",
-    "react-dropzone": "^14.2.3",
-    "react-router-dom": "^6.11.2",
-    "react-query": "^3.39.3",
-    "react-hot-toast": "^2.4.1",
-    "lucide-react": "^0.263.1",
-    "clsx": "^1.2.1",
-    "tailwindcss": "^3.3.2",
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.24"
-  },
+  "description": "FaktuLove Frontend with Design System Integration",
+  "main": "src/index.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:staging": "REACT_APP_ENV=staging npm run build",
+    "build:production": "REACT_APP_ENV=production npm run build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "dev": "react-scripts start",
-    "build:prod": "GENERATE_SOURCEMAP=false react-scripts build"
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
+    "test:integration": "jest --config=jest.integration.config.js",
+    "test:migration": "jest --testPathPattern=migration",
+    "test:theme": "jest --testPathPattern=theme",
+    "test:accessibility": "jest --testPathPattern=accessibility",
+    "test:performance": "jest --testPathPattern=performance",
+    "test:visual": "playwright test --config=playwright.config.ts",
+    "test:visual:themes": "playwright test --config=playwright.config.ts --grep=theme",
+    "test:visual:responsive": "playwright test --config=playwright.config.ts --grep=responsive",
+    "test:visual:polish-business": "playwright test --config=playwright.config.ts --grep=polish-business",
+    "test:wcag": "axe-playwright",
+    "test:keyboard": "jest --testPathPattern=keyboard",
+    "test:screen-reader": "jest --testPathPattern=screen-reader",
+    "test:contrast": "jest --testPathPattern=contrast",
+    "test:core-web-vitals": "lighthouse-ci",
+    "test:component-performance": "jest --testPathPattern=component-performance",
+    "test:memory": "jest --testPathPattern=memory",
+    "optimize:assets": "node scripts/asset-optimizer.js",
+    "analyze:bundle": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js",
+    "analyze:bundle:size": "bundlesize",
+    "coverage:report": "nyc report --reporter=text-summary",
+    "accessibility:score": "lighthouse --only-categories=accessibility --output=json",
+    "eject": "react-scripts eject"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "dependencies": {
+    "@design-system/core": "file:src/design-system",
+    "axios": "^1.6.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^10.0.0",
+    "lucide-react": "^0.542.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-query": "^3.39.0",
+    "react-router-dom": "^6.8.0",
+    "react-scripts": "5.0.1",
+    "styled-components": "^5.3.0",
+    "tailwind": "^4.0.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.8.0",
+    "@playwright/test": "^1.40.0",
+    "@testing-library/jest-dom": "^5.16.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.0",
+    "bundlesize": "^0.18.0",
+    "jest": "^27.5.0",
+    "lighthouse-ci": "^1.13.1",
+    "nyc": "^15.1.0",
+    "webpack-bundle-analyzer": "^4.9.0",
+    "webpack-cli": "^6.0.1"
   },
   "browserslist": {
     "production": [
@@ -47,5 +73,29 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8000"
+  "bundlesize": [
+    {
+      "path": "build/static/js/*.js",
+      "maxSize": "500 kB"
+    },
+    {
+      "path": "build/static/css/*.css",
+      "maxSize": "100 kB"
+    }
+  ],
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/index.js",
+      "!src/reportWebVitals.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
+  }
 }

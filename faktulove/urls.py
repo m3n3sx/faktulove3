@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from faktury.views import pobierz_dane_z_gus
+from faktury.services.navigation_manager import MissingPageHandler
 
 
 urlpatterns = [
@@ -17,3 +18,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Custom error handlers
+handler404 = MissingPageHandler.create_404_fallback

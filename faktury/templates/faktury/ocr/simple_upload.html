@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}OCR Upload{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-3">
+                <iconify-icon icon="solar:camera-linear" class="text-primary me-2"></iconify-icon>
+                OCR - Przetwarzanie dokumentów
+            </h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'panel_uzytkownika' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">OCR Upload</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Prześlij dokument</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="document" class="form-label">Wybierz plik</label>
+                            <input type="file" class="form-control" id="document" name="document" 
+                                   accept=".pdf,.jpg,.jpeg,.png,.tiff" required>
+                            <div class="form-text">
+                                Obsługiwane formaty: PDF, JPG, PNG, TIFF. Maksymalny rozmiar: 10MB
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <iconify-icon icon="solar:upload-linear" class="me-2"></iconify-icon>
+                            Prześlij i przetwórz
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Informacje</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        System OCR automatycznie rozpozna tekst z przesłanego dokumentu 
+                        i utworzy fakturę na podstawie wyodrębnionych danych.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

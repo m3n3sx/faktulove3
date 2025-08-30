@@ -1,0 +1,15 @@
+[Unit]
+Description=FaktuLove Production OCR Service
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/home/admin/faktulove
+ExecStart=/usr/bin/python3 /home/admin/faktulove/production_ocr_service.py
+Restart=always
+RestartSec=10
+Environment=PYTHONPATH=/home/admin/faktulove
+
+[Install]
+WantedBy=multi-user.target

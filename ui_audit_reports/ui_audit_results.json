@@ -1,0 +1,1898 @@
+{
+  "templates_analyzed": 318,
+  "inconsistencies": [
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/notifications.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display:inline;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/base_with_fallback.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "position: fixed; bottom: 20px; right: 20px;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/base.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "position: fixed; bottom: 20px; right: 20px;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Found 18 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;",
+        "display: none;",
+        "width: 100%; height: 200px; margin-top: 10px;",
+        "display: none;",
+        "color: red;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/notifications.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display:inline;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/edytuj_kontrahenta.html",
+      "issue": "Found 6 inline styles",
+      "severity": "low",
+      "details": [
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;",
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;",
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;",
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;",
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/szczegoly_zadania_uzytkownika.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: inline;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture_koszt.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture_koszt.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture_koszt.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/twoje_sprawy.html",
+      "issue": "Button without standard classes: dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-success-200 text-hover-success-900 d-flex align-items-center gap-10",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/twoje_sprawy.html",
+      "issue": "Button without standard classes: dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/twoje_sprawy.html",
+      "issue": "Button without standard classes: delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10",
+      "severity": "medium"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/twoje_sprawy.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: inline;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/szczegoly_czlonka_zespolu.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/email_przypomnienie.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "color: red;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;",
+        "display: none;",
+        "display: none;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/edytuj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/edytuj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/edytuj_fakture.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/company_dashboard.html",
+      "issue": "Found 9 inline styles",
+      "severity": "low",
+      "details": [
+        "min-height: 300px;",
+        "height: 300px;",
+        "min-height: 250px;",
+        "height: 250px;",
+        "min-height: 250px;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/szczegoly_zespolu.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/trudne-sprawy-backup-code.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "color: green;",
+        "display: inline;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_form.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none; margin-top: 12px;",
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_detail.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_list.html",
+      "issue": "Button without standard classes: block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_list.html",
+      "issue": "Button without standard classes: block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_list.html",
+      "issue": "Button without standard classes: block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100",
+      "severity": "medium"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced/dodaj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced/dodaj_fakture.html",
+      "issue": "Found 11 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;",
+        "display: none;",
+        "display: none;",
+        "width: 5%;",
+        "width: 35%;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced/base_enhanced.html",
+      "issue": "Button without standard classes: navbar-toggler",
+      "severity": "medium"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced/base_enhanced.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "z-index: 1050;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/results_list.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "max-width: 200px;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/upload.html",
+      "issue": "Input without form classes: block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/upload.html",
+      "issue": "Input without form classes: hidden",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/upload.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/result_detail.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ ocr_result.confidence_score }}%",
+        "width: {{ confidence|mul:100 }}%",
+        "max-height: 300px; overflow-y: auto; font-size: 0.9em;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/status.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "height: 8px;",
+        "width: 10%",
+        "display: none;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/enhanced_upload.html",
+      "issue": "Input without form classes: hidden",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/upload_progress.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ progress.progress_percent|default:0 }}%"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/enhanced_result_detail.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: ${field.confidence}%; background-color: ${confidenceColor};"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/widgets/ocr_widget.html",
+      "issue": "Found 6 inline styles",
+      "severity": "low",
+      "details": [
+        "height: 6px;",
+        "width: {{ ocr_stats.success_rate }}%",
+        "height: 4px; width: {{ ocr_stats.high_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;",
+        "height: 4px; width: {{ ocr_stats.medium_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;",
+        "height: 4px; width: {{ ocr_stats.low_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: sidebar-toggle",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: sidebar-mobile-toggle",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: d-flex justify-content-center align-items-center rounded-circle",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: hover-text-danger",
+      "severity": "medium"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/sections/analityka_panel.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "font-size: 12px;",
+        "font-size: 12px;",
+        "font-size: 12px;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/tables/tabela_faktur.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "",
+        "width: 200px;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/account/enhanced_signup.html",
+      "issue": "Input without form classes: form-check-input border border-neutral-300 mt-4",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/ocr/test_csrf.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "height: 300px; overflow-y: auto; background-color: #f8f9fa;",
+        "margin: 0; white-space: pre-wrap;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/user_detail.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "width: 80px; height: 80px; font-size: 2rem;",
+        "width: 16px; height: 16px;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/user_management.html",
+      "issue": "Input without form classes: user-checkbox",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/design_system/table.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ column.width }}"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/design_system/confidence_indicator.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ confidence }}%"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/design_system/compliance_indicator.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ progress_percent }}%"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/design_system/theme_controls.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Button without standard classes: default",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Button without standard classes: default",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Button without standard classes: default",
+      "severity": "medium"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Input without form classes: default",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Input without form classes: default",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Input without form classes: default",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/enhanced_dashboard.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "margin-top: 0.5rem; font-size: 0.85rem; color: #666;",
+        "color: #666; font-size: 0.85rem;",
+        "text-align: center; color: #666; padding: 2rem;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/notifications.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display:inline;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/base_with_fallback.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "position: fixed; bottom: 20px; right: 20px;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/base.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "position: fixed; bottom: 20px; right: 20px;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without standard classes: test-button",
+      "severity": "medium"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Found 18 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;",
+        "display: none;",
+        "width: 100%; height: 200px; margin-top: 10px;",
+        "display: none;",
+        "color: red;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/notifications.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display:inline;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/edytuj_kontrahenta.html",
+      "issue": "Found 6 inline styles",
+      "severity": "low",
+      "details": [
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;",
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;",
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;",
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;",
+        "background-image: url(&quot;chrome-extension://afgonpikmmcbldeeiihpbfmbdfajoahj/images/web_access/vault-input-disabled.svg&quot;) !important; background-repeat: no-repeat !important; background-position: 99% center !important; background-size: 14px !important; cursor: text;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/szczegoly_zadania_uzytkownika.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: inline;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture_koszt.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture_koszt.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture_koszt.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/twoje_sprawy.html",
+      "issue": "Button without standard classes: dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-success-200 text-hover-success-900 d-flex align-items-center gap-10",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/twoje_sprawy.html",
+      "issue": "Button without standard classes: dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/twoje_sprawy.html",
+      "issue": "Button without standard classes: delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10",
+      "severity": "medium"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/twoje_sprawy.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: inline;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/szczegoly_czlonka_zespolu.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/email_przypomnienie.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "color: red;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_koszt.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/dodaj_fakture.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;",
+        "display: none;",
+        "display: none;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/faktury_sprzedaz.html",
+      "issue": "Input without form classes: form-check-input column-toggle",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/edytuj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/edytuj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/edytuj_fakture.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/company_dashboard.html",
+      "issue": "Found 9 inline styles",
+      "severity": "low",
+      "details": [
+        "min-height: 300px;",
+        "height: 300px;",
+        "min-height: 250px;",
+        "height: 250px;",
+        "min-height: 250px;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/szczegoly_zespolu.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/trudne-sprawy-backup-code.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "color: green;",
+        "display: inline;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_form.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none; margin-top: 12px;",
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_detail.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_list.html",
+      "issue": "Button without standard classes: block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_list.html",
+      "issue": "Button without standard classes: block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced_invoice_list.html",
+      "issue": "Button without standard classes: block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100",
+      "severity": "medium"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced/dodaj_fakture.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced/dodaj_fakture.html",
+      "issue": "Found 11 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;",
+        "display: none;",
+        "display: none;",
+        "width: 5%;",
+        "width: 35%;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced/base_enhanced.html",
+      "issue": "Button without standard classes: navbar-toggler",
+      "severity": "medium"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/enhanced/base_enhanced.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "z-index: 1050;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/results_list.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "max-width: 200px;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/upload.html",
+      "issue": "Input without form classes: block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/upload.html",
+      "issue": "Input without form classes: hidden",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/upload.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "display: none;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/result_detail.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ ocr_result.confidence_score }}%",
+        "width: {{ confidence|mul:100 }}%",
+        "max-height: 300px; overflow-y: auto; font-size: 0.9em;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/status.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "height: 8px;",
+        "width: 10%",
+        "display: none;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/enhanced_upload.html",
+      "issue": "Input without form classes: hidden",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/upload_progress.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ progress.progress_percent|default:0 }}%"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/ocr/enhanced_result_detail.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: ${field.confidence}%; background-color: ${confidenceColor};"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/widgets/ocr_widget.html",
+      "issue": "Found 6 inline styles",
+      "severity": "low",
+      "details": [
+        "height: 6px;",
+        "width: {{ ocr_stats.success_rate }}%",
+        "height: 4px; width: {{ ocr_stats.high_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;",
+        "height: 4px; width: {{ ocr_stats.medium_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;",
+        "height: 4px; width: {{ ocr_stats.low_confidence_count|div:ocr_stats.total_ocr_results|mul:100 }}%;"
+      ]
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: sidebar-toggle",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: sidebar-mobile-toggle",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: d-flex justify-content-center align-items-center rounded-circle",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Button without standard classes: hover-text-danger",
+      "severity": "medium"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/base/navi-header.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/sections/analityka_panel.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "font-size: 12px;",
+        "font-size: 12px;",
+        "font-size: 12px;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/tables/tabela_faktur.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "",
+        "width: 200px;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/account/enhanced_signup.html",
+      "issue": "Input without form classes: form-check-input border border-neutral-300 mt-4",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/ocr/test_csrf.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "height: 300px; overflow-y: auto; background-color: #f8f9fa;",
+        "margin: 0; white-space: pre-wrap;"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/user_detail.html",
+      "issue": "Found 2 inline styles",
+      "severity": "low",
+      "details": [
+        "width: 80px; height: 80px; font-size: 2rem;",
+        "width: 16px; height: 16px;"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/user_management.html",
+      "issue": "Input without form classes: user-checkbox",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/design_system/table.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ column.width }}"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/design_system/confidence_indicator.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ confidence }}%"
+      ]
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/design_system/compliance_indicator.html",
+      "issue": "Found 1 inline styles",
+      "severity": "low",
+      "details": [
+        "width: {{ progress_percent }}%"
+      ]
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/design_system/theme_controls.html",
+      "issue": "Input without form classes: form-check-input",
+      "severity": "low"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Button without standard classes: default",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Button without standard classes: default",
+      "severity": "medium"
+    },
+    {
+      "type": "button_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Button without standard classes: default",
+      "severity": "medium"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Input without form classes: default",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Input without form classes: default",
+      "severity": "low"
+    },
+    {
+      "type": "form_styling",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/change_form.html",
+      "issue": "Input without form classes: default",
+      "severity": "low"
+    },
+    {
+      "type": "inline_styles",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/admin/enhanced_dashboard.html",
+      "issue": "Found 3 inline styles",
+      "severity": "low",
+      "details": [
+        "margin-top: 0.5rem; font-size: 0.85rem; color: #666;",
+        "color: #666; font-size: 0.85rem;",
+        "text-align: center; color: #666; padding: 2rem;"
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Button Consistency",
+      "priority": "high",
+      "description": "Standardize button styling across all templates",
+      "action": "Create button component templates and update existing buttons",
+      "affected_files": 6
+    },
+    {
+      "category": "Form Consistency",
+      "priority": "medium",
+      "description": "Standardize form input styling",
+      "action": "Apply consistent form classes and create form component templates",
+      "affected_files": 13
+    },
+    {
+      "category": "Accessibility",
+      "priority": "high",
+      "description": "Fix accessibility issues to improve user experience",
+      "action": "Add missing alt texts, aria-labels, and semantic markup",
+      "affected_files": 7
+    },
+    {
+      "category": "CSS Optimization",
+      "priority": "medium",
+      "description": "Optimize CSS for better maintainability",
+      "action": "Remove duplicate rules, standardize colors, and organize CSS",
+      "affected_files": 4
+    }
+  ],
+  "component_usage": {},
+  "css_issues": [
+    {
+      "type": "duplicate_selectors",
+      "file": "/home/ooxo/faktulove_now/static/css/design-system-integration.css",
+      "issue": "Found duplicate selectors: [':root', '.django-design-system *']",
+      "severity": "medium"
+    },
+    {
+      "type": "non_standard_colors",
+      "file": "/home/ooxo/faktulove_now/static/css/design-system-integration.css",
+      "issue": "Found 112 non-standard colors",
+      "severity": "low",
+      "details": [
+        "#eff6ff",
+        "#dbeafe",
+        "#bfdbfe",
+        "#93c5fd",
+        "#60a5fa"
+      ]
+    },
+    {
+      "type": "duplicate_selectors",
+      "file": "/home/ooxo/faktulove_now/static/css/design-system.css",
+      "issue": "Found duplicate selectors: ['.polish-business-card', '.invoice-status-badge', '.polish-business-table th,\\n  .polish-business-table td']",
+      "severity": "medium"
+    },
+    {
+      "type": "non_standard_colors",
+      "file": "/home/ooxo/faktulove_now/static/css/design-system.css",
+      "issue": "Found 211 non-standard colors",
+      "severity": "low",
+      "details": [
+        "#e5e7eb",
+        "#d1d5db",
+        "#f9fafb",
+        "#2563eb",
+        "#2563eb"
+      ]
+    },
+    {
+      "type": "duplicate_selectors",
+      "file": "/home/ooxo/faktulove_now/static/css/app.css",
+      "issue": "Found duplicate selectors: ['.upload-area', '.file-item', '.file-name']",
+      "severity": "medium"
+    },
+    {
+      "type": "non_standard_colors",
+      "file": "/home/ooxo/faktulove_now/static/css/app.css",
+      "issue": "Found 92 non-standard colors",
+      "severity": "low",
+      "details": [
+        "#ffffff",
+        "#ffffff",
+        "#dee2e6",
+        "#f8f9fa",
+        "#0d6efd"
+      ]
+    },
+    {
+      "type": "non_standard_colors",
+      "file": "/home/ooxo/faktulove_now/faktury/static/css/style.css",
+      "issue": "Found 22 non-standard colors",
+      "severity": "low",
+      "details": [
+        "#f0f0f0",
+        "#e0f7fa",
+        "#f9f9f9",
+        "#e6f7ff",
+        "#4CAF50"
+      ]
+    },
+    {
+      "type": "non_standard_colors",
+      "file": "/home/ooxo/faktulove_now/faktury/static/css/style.css",
+      "issue": "Found 22 non-standard colors",
+      "severity": "low",
+      "details": [
+        "#f0f0f0",
+        "#e0f7fa",
+        "#f9f9f9",
+        "#e6f7ff",
+        "#4CAF50"
+      ]
+    },
+    {
+      "type": "duplicate_selectors",
+      "file": "/home/ooxo/faktulove_now/static/css/design-system-integration.css",
+      "issue": "Found duplicate selectors: [':root', '.django-design-system *']",
+      "severity": "medium"
+    },
+    {
+      "type": "non_standard_colors",
+      "file": "/home/ooxo/faktulove_now/static/css/design-system-integration.css",
+      "issue": "Found 112 non-standard colors",
+      "severity": "low",
+      "details": [
+        "#eff6ff",
+        "#dbeafe",
+        "#bfdbfe",
+        "#93c5fd",
+        "#60a5fa"
+      ]
+    },
+    {
+      "type": "duplicate_selectors",
+      "file": "/home/ooxo/faktulove_now/static/css/design-system.css",
+      "issue": "Found duplicate selectors: ['.polish-business-card', '.invoice-status-badge', '.polish-business-table th,\\n  .polish-business-table td']",
+      "severity": "medium"
+    },
+    {
+      "type": "non_standard_colors",
+      "file": "/home/ooxo/faktulove_now/static/css/design-system.css",
+      "issue": "Found 211 non-standard colors",
+      "severity": "low",
+      "details": [
+        "#e5e7eb",
+        "#d1d5db",
+        "#f9fafb",
+        "#2563eb",
+        "#2563eb"
+      ]
+    },
+    {
+      "type": "duplicate_selectors",
+      "file": "/home/ooxo/faktulove_now/static/css/app.css",
+      "issue": "Found duplicate selectors: ['.upload-area', '.file-item', '.file-name']",
+      "severity": "medium"
+    },
+    {
+      "type": "non_standard_colors",
+      "file": "/home/ooxo/faktulove_now/static/css/app.css",
+      "issue": "Found 92 non-standard colors",
+      "severity": "low",
+      "details": [
+        "#ffffff",
+        "#ffffff",
+        "#dee2e6",
+        "#f8f9fa",
+        "#0d6efd"
+      ]
+    }
+  ],
+  "accessibility_issues": [
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "missing_alt_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/user_profile.html",
+      "issue": "Image without alt text: <img src=\"{{profile_user.userprofile.avatar.url}}\" alt = \"avatar\">",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/company_dashboard.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/widgets/ocr_widget.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/account/base.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/base.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/base.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/ds_user_management.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/ds_user_management.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/test_fallback.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "missing_alt_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/user_profile.html",
+      "issue": "Image without alt text: <img src=\"{{profile_user.userprofile.avatar.url}}\" alt = \"avatar\">",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/faktury/company_dashboard.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/partials/widgets/ocr_widget.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/account/base.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/base.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/base.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/ds_user_management.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    },
+    {
+      "type": "button_no_text",
+      "file": "/home/ooxo/faktulove_now/faktury/templates/superadmin/ds_user_management.html",
+      "issue": "Button without text or aria-label",
+      "severity": "high"
+    }
+  ]
+}

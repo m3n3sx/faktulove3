@@ -1,0 +1,53 @@
+{% load design_system %}
+
+<div class="form-group django-form django-polish-business{% if errors %} has-error{% endif %}">
+    {% if label %}
+        <label for="{{ field.id_for_label }}" class="form-label{% if required %} required{% endif %}">
+            {{ label }}
+            {% if required %}<span class="text-error" aria-label="wymagane">*</span>{% endif %}
+        </label>
+    {% endif %}
+    
+    <div class="form-input-wrapper currency-input-wrapper">
+        <div class="input-group">
+            {{ field|add_class:"form-control currency-input" }}
+            <span class="input-group-text">{{ currency }}</span>
+        </div>
+        
+        {% if errors %}
+            <ul class="errorlist" role="alert" aria-live="polite">
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.currency-input-wrapper .input-group {
+    display: flex;
+    align-items: stretch;
+}
+
+.currency-input-wrapper .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+}
+
+.currency-input-wrapper .input-group-text {
+    background-color: var(--color-background-secondary);
+    border: 1px solid var(--color-border-default);
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding: var(--spacing-2) var(--spacing-3);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+}
+
+.currency-input-wrapper .form-control:focus + .input-group-text {
+    border-color: var(--color-interactive);
+}
+</style>

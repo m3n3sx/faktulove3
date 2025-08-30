@@ -1,0 +1,20 @@
+[Unit]
+Description=FaktuLove OCR Django Application
+After=network.target
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/faktulove
+Environment=DJANGO_SETTINGS_MODULE=production_settings
+ExecStart=/path/to/faktulove/venv/bin/gunicorn --config gunicorn.conf.py faktulove.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

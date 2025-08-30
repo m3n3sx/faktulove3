@@ -1,0 +1,122 @@
+
+        <!-- Invoice Creation Wizard -->
+        <div class="modal fade" id="invoiceWizardModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Kreator faktury</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Wizard Steps -->
+                        <div class="wizard-steps mb-4">
+                            <div class="step active" data-step="1">
+                                <div class="step-number">1</div>
+                                <div class="step-title">Podstawowe dane</div>
+                            </div>
+                            <div class="step" data-step="2">
+                                <div class="step-number">2</div>
+                                <div class="step-title">Kontrahent</div>
+                            </div>
+                            <div class="step" data-step="3">
+                                <div class="step-number">3</div>
+                                <div class="step-title">Pozycje</div>
+                            </div>
+                            <div class="step" data-step="4">
+                                <div class="step-number">4</div>
+                                <div class="step-title">Podsumowanie</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step Content -->
+                        <div class="wizard-content">
+                            <div class="step-content active" data-step="1">
+                                <h6>Podstawowe informacje o fakturze</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Typ faktury</label>
+                                        <select class="form-select" name="wizard_typ_faktury">
+                                            <option value="sprzedaz">Faktura sprzedaży</option>
+                                            <option value="korekta">Faktura korygująca</option>
+                                            <option value="proforma">Faktura proforma</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Data wystawienia</label>
+                                        <input type="date" class="form-control" name="wizard_data_wystawienia">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="step-content" data-step="2">
+                                <h6>Wybór kontrahenta</h6>
+                                <div class="contractor-selection">
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control" placeholder="Szukaj kontrahenta lub wpisz NIP" 
+                                               id="contractorSearch" onkeyup="searchContractors(this.value)">
+                                    </div>
+                                    <div id="contractorResults" class="contractor-results"></div>
+                                    <button type="button" class="btn btn-outline-primary" onclick="showNewContractorForm()">
+                                        Dodaj nowego kontrahenta
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="step-content" data-step="3">
+                                <h6>Pozycje faktury</h6>
+                                <div class="invoice-items">
+                                    <div class="item-row mb-3">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <input type="text" class="form-control" placeholder="Nazwa produktu/usługi">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="number" class="form-control" placeholder="Ilość" value="1">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <input type="number" class="form-control" placeholder="Cena netto" step="0.01">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select class="form-select">
+                                                    <option value="23">23%</option>
+                                                    <option value="8">8%</option>
+                                                    <option value="5">5%</option>
+                                                    <option value="0">0%</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">
+                                                    Usuń
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary" onclick="addInvoiceItemWizard()">
+                                    Dodaj pozycję
+                                </button>
+                            </div>
+                            
+                            <div class="step-content" data-step="4">
+                                <h6>Podsumowanie faktury</h6>
+                                <div id="invoiceSummary" class="invoice-summary">
+                                    <!-- Summary will be generated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="previousWizardStep()" id="prevBtn" style="display: none;">
+                            Poprzedni
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="nextWizardStep()" id="nextBtn">
+                            Następny
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="finishWizard()" id="finishBtn" style="display: none;">
+                            Utwórz fakturę
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        

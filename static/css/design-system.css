@@ -1,0 +1,694 @@
+/* Design System CSS for Django Templates */
+
+/* Base styles */
+.card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.card-outlined {
+  border: 2px solid #d1d5db;
+  box-shadow: none;
+}
+
+.card-elevated {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.card-flat {
+  background: #f9fafb;
+  border: none;
+  box-shadow: none;
+}
+
+/* Padding utilities */
+.padding-xs { padding: 0.5rem; }
+.padding-sm { padding: 1rem; }
+.padding-md { padding: 1.5rem; }
+.padding-lg { padding: 2rem; }
+.padding-xl { padding: 2.5rem; }
+
+/* Stack layout */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.stack.gap-xs > * + * { margin-top: 0.25rem; }
+.stack.gap-sm > * + * { margin-top: 0.5rem; }
+.stack.gap-md > * + * { margin-top: 1rem; }
+.stack.gap-lg > * + * { margin-top: 1.5rem; }
+.stack.gap-xl > * + * { margin-top: 2rem; }
+
+/* Button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Button variants */
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  border-color: #6b7280;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+  border-color: #4b5563;
+}
+
+.btn-outline-primary {
+  background-color: transparent;
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* Button sizes */
+.btn-xs {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.btn-md {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* Form controls */
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #374151;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+}
+
+.badge-default {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.badge-success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badge-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-info {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+/* Alert styles */
+.alert {
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+}
+
+.alert-info {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+.alert-success {
+  background-color: #d1fae5;
+  border-color: #86efac;
+  color: #065f46;
+}
+
+.alert-warning {
+  background-color: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+/* Progress bar */
+.progress {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+/* Loading spinner */
+.spinner {
+  display: inline-block;
+}
+
+.spinner-circle {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-md .spinner-circle {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.spinner-lg .spinner-circle {
+  width: 2rem;
+  height: 2rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Utility classes */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+.text-gray-500 { color: #6b7280; }
+.text-gray-600 { color: #4b5563; }
+.text-gray-700 { color: #374151; }
+.text-gray-900 { color: #111827; }
+
+.text-primary-600 { color: #2563eb; }
+.text-success-600 { color: #059669; }
+.text-warning-600 { color: #d97706; }
+.text-error-600 { color: #dc2626; }
+
+.bg-white { background-color: #ffffff; }
+.bg-gray-50 { background-color: #f9fafb; }
+.bg-blue-50 { background-color: #eff6ff; }
+
+.border { border: 1px solid #e5e7eb; }
+.border-blue-200 { border-color: #bfdbfe; }
+
+.rounded-md { border-radius: 0.375rem; }
+
+.p-4 { padding: 1rem; }
+.py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+
+.flex { display: flex; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+
+.gap-2 > * + * { margin-left: 0.5rem; }
+.gap-3 > * + * { margin-left: 0.75rem; }
+
+.space-y-1 > * + * { margin-top: 0.25rem; }
+.space-y-4 > * + * { margin-top: 1rem; }
+
+.w-full { width: 100%; }
+.h-5 { height: 1.25rem; }
+.w-5 { width: 1.25rem; }
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip links for accessibility */
+.skip-links {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  z-index: 1000;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: white;
+  color: #374151;
+  padding: 0.5rem 0.75rem;
+  text-decoration: none;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  z-index: 1000;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Responsive utilities */
+@media (min-width: 640px) {
+  .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+  .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  [data-theme="dark"] .card {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+  
+  [data-theme="dark"] .form-control {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+  
+  [data-theme="dark"] .text-gray-900 {
+    color: #f9fafb;
+  }
+  
+  [data-theme="dark"] .text-gray-600 {
+    color: #d1d5db;
+  }
+}
+/* P
+olish Business Theme Integration */
+
+/* Polish business color variables */
+:root {
+  /* Invoice status colors */
+  --color-invoice-draft: #6b7280;
+  --color-invoice-sent: #3b82f6;
+  --color-invoice-paid: #10b981;
+  --color-invoice-overdue: #ef4444;
+  --color-invoice-cancelled: #9ca3af;
+  
+  /* VAT rate colors */
+  --color-vat-standard: #1f2937;
+  --color-vat-reduced: #f59e0b;
+  --color-vat-zero: #6b7280;
+  --color-vat-exempt: #8b5cf6;
+  
+  /* Compliance colors */
+  --color-compliance-compliant: #059669;
+  --color-compliance-warning: #d97706;
+  --color-compliance-error: #dc2626;
+  --color-compliance-pending: #6366f1;
+  
+  /* Polish business typography */
+  --font-family-business: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-numbers: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Dark mode Polish business colors */
+[data-theme="dark"] {
+  --color-invoice-draft: #9ca3af;
+  --color-invoice-sent: #60a5fa;
+  --color-invoice-paid: #34d399;
+  --color-invoice-overdue: #f87171;
+  --color-invoice-cancelled: #6b7280;
+  
+  --color-vat-standard: #f3f4f6;
+  --color-vat-reduced: #fbbf24;
+  --color-vat-zero: #9ca3af;
+  --color-vat-exempt: #a78bfa;
+  
+  --color-compliance-compliant: #34d399;
+  --color-compliance-warning: #fbbf24;
+  --color-compliance-error: #f87171;
+  --color-compliance-pending: #818cf8;
+}
+
+/* Polish business component styles */
+.polish-business-card {
+  background: var(--color-background-primary, white);
+  border: 1px solid var(--color-border-default, #e5e7eb);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.polish-business-card:hover {
+  border-color: var(--color-primary-300, #93c5fd);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Currency formatting */
+.currency-pln {
+  font-family: var(--font-family-numbers);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.025em;
+}
+
+/* Business number formatting */
+.business-number {
+  font-family: var(--font-family-numbers);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+/* Invoice number formatting */
+.invoice-number {
+  font-family: var(--font-family-numbers);
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: 0.025em;
+}
+
+/* Invoice status badges */
+.invoice-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid;
+  transition: all 0.2s ease;
+}
+
+.invoice-status-badge--draft {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: var(--color-invoice-draft);
+  border-color: var(--color-invoice-draft);
+}
+
+.invoice-status-badge--sent {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-invoice-sent);
+  border-color: var(--color-invoice-sent);
+}
+
+.invoice-status-badge--paid {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--color-invoice-paid);
+  border-color: var(--color-invoice-paid);
+}
+
+.invoice-status-badge--overdue {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-invoice-overdue);
+  border-color: var(--color-invoice-overdue);
+}
+
+.invoice-status-badge--cancelled {
+  background-color: rgba(156, 163, 175, 0.1);
+  color: var(--color-invoice-cancelled);
+  border-color: var(--color-invoice-cancelled);
+}
+
+/* VAT rate indicators */
+.vat-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-family: var(--font-family-numbers);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.vat-indicator--standard {
+  background-color: rgba(31, 41, 55, 0.1);
+  color: var(--color-vat-standard);
+  border-color: var(--color-vat-standard);
+}
+
+.vat-indicator--reduced {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-vat-reduced);
+  border-color: var(--color-vat-reduced);
+}
+
+.vat-indicator--zero {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: var(--color-vat-zero);
+  border-color: var(--color-vat-zero);
+}
+
+.vat-indicator--exempt {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--color-vat-exempt);
+  border-color: var(--color-vat-exempt);
+}
+
+/* Compliance indicators */
+.compliance-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 2px solid;
+  transition: all 0.2s ease;
+}
+
+.compliance-indicator--compliant {
+  background-color: rgba(5, 150, 105, 0.05);
+  border-color: var(--color-compliance-compliant);
+  color: var(--color-compliance-compliant);
+}
+
+.compliance-indicator--warning {
+  background-color: rgba(217, 119, 6, 0.05);
+  border-color: var(--color-compliance-warning);
+  color: var(--color-compliance-warning);
+}
+
+.compliance-indicator--error {
+  background-color: rgba(220, 38, 38, 0.05);
+  border-color: var(--color-compliance-error);
+  color: var(--color-compliance-error);
+}
+
+.compliance-indicator--pending {
+  background-color: rgba(99, 102, 241, 0.05);
+  border-color: var(--color-compliance-pending);
+  color: var(--color-compliance-pending);
+}
+
+/* Polish business table styling */
+.polish-business-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.polish-business-table th {
+  background-color: var(--color-background-secondary, #f9fafb);
+  border-bottom: 2px solid var(--color-border-strong, #d1d5db);
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #111827);
+}
+
+.polish-business-table td {
+  border-bottom: 1px solid var(--color-border-default, #e5e7eb);
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #111827);
+}
+
+.polish-business-table .currency {
+  font-family: var(--font-family-numbers);
+  font-weight: 600;
+  text-align: right;
+}
+
+.polish-business-table .business-number {
+  font-family: var(--font-family-numbers);
+  font-weight: 500;
+}
+
+/* Theme-aware utilities */
+.theme-aware-text {
+  color: var(--color-text-primary, #111827);
+}
+
+.theme-aware-bg {
+  background-color: var(--color-background-primary, #ffffff);
+}
+
+.theme-aware-border {
+  border-color: var(--color-border-default, #e5e7eb);
+}
+
+/* Polish business form enhancements */
+.polish-business-form .form-control {
+  font-variant-numeric: tabular-nums;
+}
+
+.polish-business-form .form-control.currency-input {
+  font-family: var(--font-family-numbers);
+  font-weight: 600;
+  text-align: right;
+}
+
+.polish-business-form .form-control.business-number-input {
+  font-family: var(--font-family-numbers);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .polish-business-card {
+    padding: 1rem;
+  }
+  
+  .invoice-status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .polish-business-table th,
+  .polish-business-table td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Print styles for Polish business documents */
+@media print {
+  .polish-business-card {
+    border: 1px solid #000;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  
+  .invoice-status-badge {
+    border: 1px solid #000;
+    background: transparent !important;
+  }
+  
+  .polish-business-table {
+    border: 1px solid #000;
+  }
+  
+  .polish-business-table th,
+  .polish-business-table td {
+    border: 1px solid #000;
+  }
+}

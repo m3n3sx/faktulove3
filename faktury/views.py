@@ -61,9 +61,10 @@ def test_cdn_fallback(request):
 @login_required
 def company_dashboard(request):
     """
-    Company dashboard view - alias for main dashboard
+    Company dashboard view - enhanced with proper context
     """
-    return redirect('panel_uzytkownika')
+    from .services.navigation_manager import MissingPageHandler
+    return MissingPageHandler.create_company_page(request)
 
 
 @login_required
@@ -76,7 +77,15 @@ def company_info(request):
     except Firma.DoesNotExist:
         return redirect('dodaj_firme')
     
-    return render(request, 'faktury/company_info.html', {'firma': firma})
+    from .services.navigation_manager import NavigationManager
+    nav_manager = NavigationManager()
+    
+    context = {
+        'firma': firma,
+        'page_title': 'Informacje o firmie',
+        'breadcrumbs': nav_manager.create_breadcrumbs(request.path)
+    }
+    return render(request, 'faktury/company_info.html', context)
 
 
 @login_required
@@ -89,7 +98,15 @@ def company_settings(request):
     except Firma.DoesNotExist:
         return redirect('dodaj_firme')
     
-    return render(request, 'faktury/company_settings.html', {'firma': firma})
+    from .services.navigation_manager import NavigationManager
+    nav_manager = NavigationManager()
+    
+    context = {
+        'firma': firma,
+        'page_title': 'Ustawienia firmy',
+        'breadcrumbs': nav_manager.create_breadcrumbs(request.path)
+    }
+    return render(request, 'faktury/company_settings.html', context)
 
 
 @login_required
@@ -97,36 +114,53 @@ def company_api_status(request):
     """
     Company API status view
     """
+    from .services.navigation_manager import NavigationManager
+    nav_manager = NavigationManager()
+    nav_status = nav_manager.get_navigation_status()
+    
     return JsonResponse({
         'status': 'active',
         'user': request.user.username,
-        'timestamp': timezone.now().isoformat()
+        'timestamp': timezone.now().isoformat(),
+        'navigation_health': nav_status
     })
 
 
+@login_required
 @login_required
 def view_profile(request):
     """
     User profile view
     """
-    return render(request, 'faktury/view_profile.html', {'user': request.user})
+    try:
+        firma = Firma.objects.get(user=request.user)
+    except Firma.DoesNotExist:
+        firma = None
+    
+    context = {
+        'user': request.user,
+        'firma': firma,
+        'page_title': 'Mój profil'
+    }
+    return render(request, 'faktury/simple_profile.html', context)
 
 
 @login_required
 def email_inbox(request):
     """
-    Email inbox view
+    Email inbox view - enhanced with proper template
     """
-    # For now, redirect to notifications
-    return redirect('notifications:list')
+    from .services.navigation_manager import MissingPageHandler
+    return MissingPageHandler.create_email_page(request)
 
 
 @login_required
 def notifications_list(request):
     """
-    Notifications list view
+    Notifications list view - enhanced with proper context
     """
-    return render(request, 'faktury/notifications_list.html')
+    from .services.navigation_manager import MissingPageHandler
+    return MissingPageHandler.create_notifications_page(request)
 import zipfile
 import requests
 from weasyprint import HTML
@@ -398,7 +432,7 @@ def wyslij_wiadomosc(request, zespol_id):
             wiadomosc.zespol = zespol
             # Ustaw nadawcę na podstawie zalogowanego użytkownika i zespołu
             try:
-                wiadomosc.nadawca = CzlonekZespolu.objects.get(user=request.user, zespol=zespol)
+                wiadomosc.nadawca_czlonek = CzlonekZespolu.objects.get(user=request.user, zespol=zespol)
             except CzlonekZespolu.DoesNotExist:
                 messages.error(request, 'Nie jesteś członkiem tego zespołu.') # Zmieniony komunikat
                 return redirect('szczegoly_zespolu', zespol_id=zespol.pk)
@@ -1807,7 +1841,7 @@ def wyslij_wiadomosc(request, zespol_id):
             # --- Get the CzlonekZespolu for the current user *in this team* ---
             try:
                 czlonek = CzlonekZespolu.objects.get(zespol=zespol, email=request.user.email)  # Fetch CzlonekZespolu
-                wiadomosc.nadawca = czlonek # Assign the CzlonekZespolu object
+                wiadomosc.nadawca_czlonek = czlonek # Assign the CzlonekZespolu object
             except CzlonekZespolu.DoesNotExist:
                 messages.error(request, "Nie jesteś członkiem tego zespołu.")
                 return redirect('szczegoly_zespolu', zespol_id=zespol_id)
@@ -2086,7 +2120,7 @@ def odp_wiadomosc(request, pk):
         if form.is_valid():
             reply = form.save(commit=False)
             # Set the sender and the message we're replying to
-            reply.nadawca = CzlonekZespolu.objects.get(user=request.user, zespol=parent_msg.zespol)
+            reply.nadawca_czlonek = CzlonekZespolu.objects.get(user=request.user, zespol=parent_msg.zespol)
             reply.zespol = parent_msg.zespol
             reply.parent = parent_msg
             # Add "Re:" prefix to the subject if it doesn't already have it
@@ -2496,7 +2530,7 @@ def wyslij_wiadomosc(request):
         form = WiadomoscForm(request.POST, user=request.user)
         if form.is_valid():
             wiadomosc = form.save(commit=False)
-            wiadomosc.nadawca = request.user
+            wiadomosc.nadawca_user = request.user
             wiadomosc.typ_wiadomosci = 'partner'
             
             # Ustaw odbiorcę na podstawie partnerstwa
@@ -2854,13 +2888,13 @@ def lista_wiadomosci(request):
     Display list of messages
     """
     wiadomosci = Wiadomosc.objects.filter(
-        Q(nadawca=request.user) | Q(odbiorca=request.user)
+        Q(nadawca_user=request.user) | Q(odbiorca_user=request.user)
     ).order_by('-data_wyslania')
     
     context = {
         'wiadomosci': wiadomosci,
     }
-    return render(request, 'faktury/lista_wiadomosci.html', context)
+    return render(request, 'wiadomosci/lista.html', context)
 
 @login_required
 def szczegoly_wiadomosci(request, pk):
@@ -2870,13 +2904,87 @@ def szczegoly_wiadomosci(request, pk):
     wiadomosc = get_object_or_404(Wiadomosc, pk=pk)
     
     # Check if user has access to this message
-    if wiadomosc.nadawca != request.user and wiadomosc.odbiorca != request.user:
+    if wiadomosc.nadawca_user != request.user and wiadomosc.odbiorca_user != request.user:
         messages.error(request, 'Nie masz dostępu do tej wiadomości.')
         return redirect('lista_wiadomosci')
     
     # Mark the message as read if it wasn't already
-    if not wiadomosc.przeczytana and wiadomosc.odbiorca == request.user:
+    if not wiadomosc.przeczytana and wiadomosc.odbiorca_user == request.user:
         wiadomosc.przeczytana = True
         wiadomosc.save()
 
     return render(request, 'faktury/szczegoly_wiadomosci.html', {'wiadomosc': wiadomosc})
+
+@login_required
+def advanced_search_view(request):
+    """
+    Advanced search view with comprehensive filtering options.
+    Provides interface for searching invoices and companies with Polish business criteria.
+    """
+    context = {
+        'title': 'Zaawansowane wyszukiwanie',
+        'page_title': 'Zaawansowane wyszukiwanie - FaktuLove',
+        'search_types': [
+            {'value': 'invoices', 'label': 'Faktury'},
+            {'value': 'companies', 'label': 'Kontrahenci'}
+        ],
+        'invoice_statuses': [
+            {'value': 'wystawiona', 'label': 'Wystawiona'},
+            {'value': 'oplacona', 'label': 'Opłacona'},
+            {'value': 'cz_oplacona', 'label': 'Częściowo opłacona'},
+            {'value': 'anulowana', 'label': 'Anulowana'},
+        ],
+        'document_types': [
+            {'value': 'FV', 'label': 'Faktura VAT'},
+            {'value': 'FP', 'label': 'Faktura Proforma'},
+            {'value': 'KOR', 'label': 'Korekta Faktury'},
+            {'value': 'RC', 'label': 'Rachunek'},
+            {'value': 'PAR', 'label': 'Paragon'},
+            {'value': 'KP', 'label': 'KP - Dowód Wpłaty'},
+            {'value': 'RB', 'label': 'Rachunek Bankowy'},
+        ],
+        'invoice_types': [
+            {'value': 'sprzedaz', 'label': 'Sprzedaż'},
+            {'value': 'koszt', 'label': 'Koszt'},
+        ],
+        'payment_methods': [
+            {'value': 'przelew', 'label': 'Przelew'},
+            {'value': 'gotowka', 'label': 'Gotówka'},
+        ],
+        'currencies': [
+            {'value': 'PLN', 'label': 'PLN'},
+            {'value': 'EUR', 'label': 'EUR'},
+            {'value': 'USD', 'label': 'USD'},
+        ]
+    }
+    
+    return render(request, 'faktury/search/advanced_search.html', context)
+
+@login_required
+def data_management_view(request):
+    """
+    Data management view for export and import functionality.
+    Provides interface for managing data export, import, and backup operations.
+    """
+    context = {
+        'title': 'Zarządzanie Danymi',
+        'page_title': 'Eksport i Import Danych - FaktuLove',
+        'export_formats': [
+            {'value': 'excel', 'label': 'Excel (.xlsx)', 'icon': 'fas fa-file-excel'},
+            {'value': 'csv', 'label': 'CSV (.csv)', 'icon': 'fas fa-file-csv'},
+            {'value': 'pdf', 'label': 'PDF (.pdf)', 'icon': 'fas fa-file-pdf'},
+            {'value': 'json', 'label': 'JSON (.json)', 'icon': 'fas fa-file-code'}
+        ],
+        'import_formats': [
+            {'value': 'csv', 'label': 'CSV (.csv)', 'icon': 'fas fa-file-csv'},
+            {'value': 'excel', 'label': 'Excel (.xlsx)', 'icon': 'fas fa-file-excel'},
+            {'value': 'json', 'label': 'JSON (.json)', 'icon': 'fas fa-file-code'}
+        ],
+        'data_types': [
+            {'value': 'invoices', 'label': 'Faktury', 'icon': 'fas fa-file-invoice'},
+            {'value': 'companies', 'label': 'Kontrahenci', 'icon': 'fas fa-building'},
+            {'value': 'products', 'label': 'Produkty', 'icon': 'fas fa-box'}
+        ]
+    }
+    
+    return render(request, 'faktury/data_management/export_import.html', context)

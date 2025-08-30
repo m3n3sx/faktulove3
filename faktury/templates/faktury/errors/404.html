@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Strona nie znaleziona - FaktuLove{% endblock %}
+
+{% block extra_css %}
+<style>
+.error-container {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.error-content {
+    max-width: 600px;
+    text-align: center;
+    background: white;
+    border-radius: 12px;
+    padding: 3rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.suggestions-list {
+    text-align: left;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.suggestions-list h5 {
+    color: #007bff;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.suggestions-list ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.suggestions-list li {
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.helpful-links {
+    margin-top: 2rem;
+}
+
+.helpful-links h5 {
+    color: #28a745;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.helpful-link {
+    display: block;
+    padding: 0.75rem 1rem;
+    background: #e9ecef;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.helpful-link:hover {
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.back-button {
+    margin-top: 2rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+}
+
+@media (max-width: 768px) {
+    .error-content {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .link-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        
+        <h1 class="error-title">{{ title }}</h1>
+        <p class="error-message">{{ message }}</p>
+        
+        {% if suggestions %}
+        <div class="suggestions-list">
+            <h5><i class="fas fa-lightbulb"></i> Co możesz zrobić:</h5>
+            <ul>
+                {% for suggestion in suggestions %}
+                <li>{{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if helpful_links %}
+        <div class="helpful-links">
+            <h5><i class="fas fa-link"></i> Przydatne linki:</h5>
+            <div class="link-grid">
+                {% for link in helpful_links %}
+                <a href="{{ link.url }}" class="helpful-link">
+                    <i class="fas fa-arrow-right"></i> {{ link.text }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="back-button">
+            <button onclick="history.back()" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Wróć
+            </button>
+            <a href="{% url 'panel_uzytkownika' %}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Strona główna
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Track 404 errors for analytics
+if (typeof gtag !== 'undefined') {
+    gtag('event', 'page_not_found', {
+        'page_location': window.location.href,
+        'page_title': document.title
+    });
+}
+
+// Auto-suggest similar pages based on URL
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const suggestions = [];
+    
+    // Simple URL similarity suggestions
+    if (currentPath.includes('faktur')) {
+        suggestions.push({
+            url: '{% url "faktury_sprzedaz" %}',
+            text: 'Faktury sprzedaży'
+        });
+    }
+    
+    if (currentPath.includes('kontrah')) {
+        suggestions.push({
+            url: '{% url "kontrahenci" %}',
+            text: 'Lista kontrahentów'
+        });
+    }
+    
+    if (currentPath.includes('produkt')) {
+        suggestions.push({
+            url: '{% url "produkty" %}',
+            text: 'Lista produktów'
+        });
+    }
+    
+    // Add dynamic suggestions if any found
+    if (suggestions.length > 0) {
+        const linksContainer = document.querySelector('.link-grid');
+        if (linksContainer) {
+            suggestions.forEach(suggestion => {
+                const link = document.createElement('a');
+                link.href = suggestion.url;
+                link.className = 'helpful-link';
+                link.innerHTML = `<i class="fas fa-arrow-right"></i> ${suggestion.text}`;
+                linksContainer.appendChild(link);
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

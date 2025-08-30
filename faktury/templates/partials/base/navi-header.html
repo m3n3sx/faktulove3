@@ -1,6 +1,5 @@
 {% load static %}
 {% load i18n %}
-<!-- Bootstrap JS will be loaded via dependency manager -->
 
 <div class="navbar-header">
   <div class="row align-items-center justify-content-between">
@@ -14,231 +13,108 @@
           <iconify-icon icon="heroicons:bars-3-solid" class="icon"></iconify-icon>
         </button>
         <form class="navbar-search">
-          <input type="text" name="search" placeholder="Search">
+          <input type="text" name="search" placeholder="Szukaj...">
           <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
         </form>
       </div>
     </div>
     <div class="col-auto">
       <div class="d-flex flex-wrap align-items-center gap-3">
-        <button type="button" data-theme-toggle="" class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" aria-label="light">light</button>
-        <div class="dropdown d-none d-sm-inline-block">
-          <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="{% static 'assets/images/lang-flag.png' %}" alt="image" class="w-24 h-24 object-fit-cover rounded-circle">
-          </button>
-          <div class="dropdown-menu to-top dropdown-menu-sm" style="">
-            <div class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
-              <div>
-                <h6 class="text-lg text-primary-light fw-semibold mb-0">{% trans "Język" %}</h6>
-              </div>
-            </div>
-
-            <div class="max-h-400-px overflow-y-auto scroll-sm pe-8">
-              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="english"> 
-                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <img src="{% static 'assets/images/flags/flag1.png' %}" alt="" class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                    <span class="text-md fw-semibold mb-0">English</span>
-                  </span>
-                </label>
-                <input class="form-check-input" type="radio" name="crypto" id="english">
-              </div>
-  
-              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="japan"> 
-                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <img src="{% static 'assets/images/flags/flag2.png' %}" alt="" class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                    <span class="text-md fw-semibold mb-0">Japan</span>
-                  </span>  
-                </label>
-                <input class="form-check-input" type="radio" name="crypto" id="japan">
-              </div>
-              
-              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="france"> 
-                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <img src="{% static 'assets/images/flags/flag3.png' %}" alt="" class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                    <span class="text-md fw-semibold mb-0">France</span>
-                  </span>  
-                </label>
-                <input class="form-check-input" type="radio" name="crypto" id="france">
-              </div>
-              
-              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="germany"> 
-                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <img src="{% static 'assets/images/flags/flag4.png' %}" alt="" class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                    <span class="text-md fw-semibold mb-0">Germany</span>
-                  </span>  
-                </label>
-                <input class="form-check-input" type="radio" name="crypto" id="germany">
-              </div>
-              
-              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="korea"> 
-                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <img src="{% static 'assets/images/flags/flag5.png' %}" alt="" class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                    <span class="text-md fw-semibold mb-0">South Korea</span>
-                  </span>  
-                </label>
-                <input class="form-check-input" type="radio" name="crypto" id="korea">
-              </div>
-              
-              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="bangladesh"> 
-                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <img src="{% static 'assets/images/flags/flag6.png' %}" alt="" class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                    <span class="text-md fw-semibold mb-0">Bangladesh</span>
-                  </span>  
-                </label>
-                <input class="form-check-input" type="radio" name="crypto" id="bangladesh">
-              </div>
-              
-              <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="india"> 
-                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <img src="{% static 'assets/images/flags/flag7.png' %}" alt="" class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                    <span class="text-md fw-semibold mb-0">India</span>
-                  </span>  
-                </label>
-                <input class="form-check-input" type="radio" name="crypto" id="india">
-              </div>
-              <div class="form-check style-check d-flex align-items-center justify-content-between">
-                <label class="form-check-label line-height-1 fw-medium text-secondary-light" for="canada"> 
-                  <span class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <img src="{% static 'assets/images/flags/flag8.png' %}" alt="" class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                    <span class="text-md fw-semibold mb-0">Canada</span>
-                  </span>  
-                </label>
-                <input class="form-check-input" type="radio" name="crypto" id="canada">
-              </div>
-            </div>
-          </div>
-        </div><!-- Language dropdown end -->
-
-        <div class="dropdown">
-          <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <iconify-icon icon="mage:email" class="text-primary-light text-xl"></iconify-icon>
-            {% if unread_wiadomosci_count > 0 %}
-               <span class="badge bg-danger">{{ unread_wiadomosci_count }}</span>
-            {% endif %}
-          </button>
-          <div class="dropdown-menu to-top dropdown-menu-lg p-0" style="">
-            <div class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
-              <div>
-                <h6 class="text-lg text-primary-light fw-semibold mb-0">{% trans "Wiadomości" %}</h6>
-              </div>
-              <span class="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
-                {{ unread_wiadomosci_count }}
-              </span>
-            </div>
-            
-            <div class="max-h-400-px overflow-y-auto scroll-sm pe-4">
-              {% for wiadomosc in wiadomosci|slice:":5" %}
-                <a href="{% url 'szczegoly_wiadomosci' wiadomosc.id %}" class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
-                  <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                    <span class="w-40-px h-40-px rounded-circle flex-shrink-0 position-relative">
-                      <iconify-icon icon="solar:mail-line" class="text-primary-light text-2xl"></iconify-icon>
-                    </span> 
-                    <div>
-                      <h6 class="text-md fw-semibold mb-4">{{ wiadomosc.temat }}</h6>
-                      <p class="mb-0 text-sm text-muted text-w-100-px">{{ wiadomosc.tresc|truncatewords:10 }}</p>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column align-items-end"> 
-                    <span class="text-sm text-muted flex-shrink-0">{{ wiadomosc.data_wyslania|timesince }} temu</span>
-                  </div>
-                </a>
-              {% empty %}
-                <div class="text-center py-12 px-16 text-muted">
-                  {% trans "Brak nowych wiadomości" %}
-                </div>
-              {% endfor %}
-            </div>
-            
-            <div class="text-center py-12 px-16"> 
-              <a href="{% url 'lista_wiadomosci' %}" class="text-primary-600 fw-semibold text-md">{% trans "Zobacz wszystkie wiadomości" %}</a>
-            </div>
-          </div>
-        </div><!-- Message dropdown end -->
-
-        <div class="dropdown">
-    <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
-    </button>
-    <div class="dropdown-menu to-top dropdown-menu-lg p-0" style="">
-        <div class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
-            <div>
-                <h6 class="text-lg text-primary-light fw-semibold mb-0">Powiadomienia</h6>
-            </div>
-            <span class="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
-                {{ notifications|length }}
-            </span>
-        </div>
         
-        <div class="max-h-400-px overflow-y-auto scroll-sm pe-4">
-            {% for notification in notifications|slice:":5" %}
-                <a href="javascript:void(0)" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
-                    <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"> 
-                        <span class="w-40-px h-40-px rounded-circle flex-shrink-0 position-relative">
-                            <iconify-icon icon="solar:alert-circle-line" class="text-primary-light text-2xl"></iconify-icon>
-                        </span> 
-                        <div>
-                            <h6 class="text-md fw-semibold mb-4">{{ notification.title }}</h6>
-                            <p class="mb-0 text-sm text-muted text-w-100-px">{{ notification.content }}</p>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-column align-items-end"> 
-                        <span class="text-sm text-muted flex-shrink-0">{{ notification.timestamp|timesince }} temu</span>
-                    </div>
-                </a>
-            {% empty %}
-                <div class="text-center py-12 px-16 text-muted">
-                    Brak nowych powiadomień
-                </div>
-            {% endfor %}
+        <!-- Theme Toggle -->
+        <button type="button" data-theme-toggle="" class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" aria-label="light">
+          <iconify-icon icon="solar:sun-bold" class="text-xl"></iconify-icon>
+        </button>
+        
+        <!-- Language Dropdown -->
+        <div class="dropdown d-none d-sm-inline-block">
+          <button class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center" type="button" data-bs-toggle="dropdown">
+            <iconify-icon icon="solar:global-line" class="text-xl"></iconify-icon>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end" style="display: none;">
+            <h6 class="dropdown-header">Język</h6>
+            <a class="dropdown-item" href="#">
+              <img src="{% static 'assets/images/flags/poland.png' %}" alt="Polish" class="w-20 h-20 rounded-circle me-2">
+              Polski
+            </a>
+            <a class="dropdown-item" href="#">
+              <img src="{% static 'assets/images/flags/flag1.png' %}" alt="English" class="w-20 h-20 rounded-circle me-2">
+              English
+            </a>
+          </div>
         </div>
 
-        <div class="text-center py-12 px-16"> 
-            <a href="{% url 'notifications:list' %}" class="text-primary-600 fw-semibold text-md">Zobacz wszystkie powiadomienia</a>
+        <!-- Messages Dropdown -->
+        <div class="dropdown">
+          <button class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative" type="button" data-bs-toggle="dropdown">
+            <iconify-icon icon="mage:email" class="text-xl"></iconify-icon>
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">3</span>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end" style="display: none; width: 300px;">
+            <h6 class="dropdown-header">Wiadomości (3)</h6>
+            <a class="dropdown-item" href="{% url 'lista_wiadomosci' %}">
+              <div class="d-flex">
+                <iconify-icon icon="solar:mail-line" class="text-primary me-2"></iconify-icon>
+                <div>
+                  <div class="fw-bold">Nowa wiadomość</div>
+                  <small class="text-muted">Przykładowa treść...</small>
+                </div>
+              </div>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item text-center" href="{% url 'lista_wiadomosci' %}">Zobacz wszystkie</a>
+          </div>
         </div>
-    </div>
-</div>
+
+        <!-- Notifications Dropdown -->
+        <div class="dropdown">
+          <button class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative" type="button" data-bs-toggle="dropdown">
+            <iconify-icon icon="iconoir:bell" class="text-xl"></iconify-icon>
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">5</span>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end" style="display: none; width: 300px;">
+            <h6 class="dropdown-header">Powiadomienia (5)</h6>
+            <a class="dropdown-item" href="{% url 'notifications_list' %}">
+              <div class="d-flex">
+                <iconify-icon icon="solar:alert-circle-line" class="text-warning me-2"></iconify-icon>
+                <div>
+                  <div class="fw-bold">Nowe powiadomienie</div>
+                  <small class="text-muted">Przykładowa treść...</small>
+                </div>
+              </div>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item text-center" href="{% url 'notifications_list' %}">Zobacz wszystkie</a>
+          </div>
+        </div>
+
+        <!-- Profile Dropdown -->
         <div class="dropdown">
           <button class="d-flex justify-content-center align-items-center rounded-circle" type="button" data-bs-toggle="dropdown">
             <img src="{% static 'assets/images/defaultuser.png' %}" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
           </button>
-          <div class="dropdown-menu to-top dropdown-menu-sm">
-            <div class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
-              <div>
-                <h6 class="text-lg text-primary-light fw-semibold mb-2">{{ user.username }}</h6>
-                <span class="text-secondary-light fw-medium text-sm">Klient</span>
-              </div>
-              <button type="button" class="hover-text-danger">
-                <iconify-icon icon="radix-icons:cross-1" class="icon text-xl"></iconify-icon> 
-              </button>
-            </div>
-            <ul class="to-top-list">
-              <li>
-                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'view_profile' %}"> 
-                <iconify-icon icon="solar:user-linear" class="icon text-xl"></iconify-icon>  Mój profil</a>
-              </li>
-              <li>
-                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'email_inbox' %}"> 
-                <iconify-icon icon="tabler:message-check" class="icon text-xl"></iconify-icon>  Skrzynka</a>
-              </li>
-              <li>
-                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" href="{% url 'company_settings' %}"> 
-                <iconify-icon icon="icon-park-outline:setting-two" class="icon text-xl"></iconify-icon>  Ustawienia</a>
-              </li>
-              <li>
-                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3" href="javascript:void(0)"> 
-                <iconify-icon icon="lucide:power" class="icon text-xl"></iconify-icon>  Log Out</a>
-              </li>
-            </ul>
+          <div class="dropdown-menu dropdown-menu-end" style="display: none;">
+            <h6 class="dropdown-header">{{ user.username }}</h6>
+            <a class="dropdown-item" href="{% url 'view_profile' %}">
+              <iconify-icon icon="solar:user-linear" class="me-2"></iconify-icon>
+              Mój profil
+            </a>
+            <a class="dropdown-item" href="{% url 'email_inbox' %}">
+              <iconify-icon icon="tabler:message-check" class="me-2"></iconify-icon>
+              Skrzynka
+            </a>
+            <a class="dropdown-item" href="{% url 'company_settings' %}">
+              <iconify-icon icon="icon-park-outline:setting-two" class="me-2"></iconify-icon>
+              Ustawienia
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item text-danger" href="{% url 'account_logout' %}">
+              <iconify-icon icon="lucide:power" class="me-2"></iconify-icon>
+              Wyloguj
+            </a>
           </div>
-        </div><!-- Profile dropdown end -->
+        </div>
       </div>
     </div>
   </div>
-</div> 
+</div>

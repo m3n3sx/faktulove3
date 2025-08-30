@@ -1,0 +1,30 @@
+
+        <!-- Quick Actions Floating Button -->
+        <div class="quick-actions-fab" id="quickActionsFab">
+            <button type="button" class="fab-main-button" onclick="toggleQuickActions()">
+                <iconify-icon icon="heroicons:plus"></iconify-icon>
+            </button>
+            
+            <div class="fab-actions" id="fabActions" style="display: none;">
+                <a href="{% url 'dodaj_fakture' %}" class="fab-action" title="Nowa faktura (Ctrl+N)">
+                    <iconify-icon icon="heroicons:document-plus"></iconify-icon>
+                    <span>Faktura</span>
+                </a>
+                
+                <a href="{% url 'dodaj_kontrahenta' %}" class="fab-action" title="Nowy kontrahent (Ctrl+Shift+N)">
+                    <iconify-icon icon="heroicons:user-plus"></iconify-icon>
+                    <span>Kontrahent</span>
+                </a>
+                
+                <a href="{% url 'ocr_upload' %}" class="fab-action" title="OCR Upload (Ctrl+U)">
+                    <iconify-icon icon="heroicons:camera"></iconify-icon>
+                    <span>OCR</span>
+                </a>
+                
+                <button type="button" class="fab-action" onclick="showHelpModal()" title="Pomoc (Ctrl+/)">
+                    <iconify-icon icon="heroicons:question-mark-circle"></iconify-icon>
+                    <span>Pomoc</span>
+                </button>
+            </div>
+        </div>
+        

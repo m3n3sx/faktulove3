@@ -1,0 +1,197 @@
+{% extends "admin/base_site.html" %}
+{% load design_system %}
+
+{% block title %}{{ title }} | {{ site_title|default:"Django site admin" }}{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">Strona główna</a>
+        &rsaquo; {{ title }}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="django-design-system">
+        <h1>{{ title }}</h1>
+        
+        <div class="demo-intro">
+            <p>Ta strona prezentuje komponenty design system zintegrowane z panelem administracyjnym Django.</p>
+        </div>
+        
+        {% for component in demo_components %}
+            <section class="demo-section">
+                <h2>{{ component.name }}</h2>
+                <p class="demo-description">{{ component.description }}</p>
+                
+                <div class="demo-examples">
+                    {% if component.name == "Buttons" %}
+                        {% ds_flex gap="md" %}
+                            {% for example in component.examples %}
+                                {% ds_button example.text variant=example.type %}
+                            {% endfor %}
+                        {% ds_flex_end %}
+                        
+                    {% elif component.name == "Form Fields" %}
+                        {% ds_form_start %}
+                            {% ds_grid cols=2 gap="md" %}
+                                {% for example in component.examples %}
+                                    <div>
+                                        {% if example.type == "nip" %}
+                                            {% ds_input "demo_nip" label=example.label placeholder="123-456-78-90" %}
+                                        {% elif example.type == "currency" %}
+                                            <div class="form-group">
+                                                <label class="form-label">{{ example.label }}</label>
+                                                <div class="currency-input-wrapper">
+                                                    <input type="number" class="form-control currency-input" placeholder="0.00" step="0.01">
+                                                    <span class="currency-symbol">PLN</span>
+                                                </div>
+                                            </div>
+                                        {% elif example.type == "vat" %}
+                                            {% ds_vat_rate_selector "demo_vat" label=example.label %}
+                                        {% elif example.type == "date" %}
+                                            {% ds_input "demo_date" label=example.label placeholder="DD.MM.YYYY" %}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% ds_grid_end %}
+                        {% ds_form_end %}
+                        
+                    {% elif component.name == "Status Badges" %}
+                        {% ds_flex gap="sm" %}
+                            {% for example in component.examples %}
+                                {% ds_invoice_status_badge example.status %}
+                            {% endfor %}
+                        {% ds_flex_end %}
+                    {% endif %}
+                </div>
+            </section>
+        {% endfor %}
+        
+        <section class="demo-section">
+            <h2>Layout Components</h2>
+            <p class="demo-description">Grid, Stack, and Flex layout examples</p>
+            
+            <h3>Grid Layout</h3>
+            {% ds_grid cols=3 gap="md" %}
+                {% ds_card "Zawartość karty 1" title="Karta 1" %}
+                {% ds_card "Zawartość karty 2" title="Karta 2" %}
+                {% ds_card "Zawartość karty 3" title="Karta 3" %}
+            {% ds_grid_end %}
+            
+            <h3>Alerts</h3>
+            {% ds_alert "To jest alert informacyjny" variant="info" %}
+            {% ds_alert "Operacja zakończona sukcesem" variant="success" %}
+            {% ds_alert "Uwaga! Sprawdź dane" variant="warning" %}
+            {% ds_alert "Wystąpił błąd" variant="danger" dismissible=True %}
+            
+            <h3>Progress Bars</h3>
+            {% ds_progress 25 100 "Postęp 25%" %}
+            {% ds_progress 50 100 "Postęp 50%" %}
+            {% ds_progress 75 100 "Postęp 75%" %}
+            {% ds_progress 100 100 "Ukończone" %}
+        </section>
+        
+        <section class="demo-section">
+            <h2>Polish Business Components</h2>
+            <p class="demo-description">Specialized components for Polish business operations</p>
+            
+            <div class="business-demo">
+                <h3>Currency Formatting</h3>
+                <p>1234.56 → {{ "1234.56"|currency }}</p>
+                <p>0.23 → {{ "0.23"|vat_rate }}</p>
+                
+                <h3>Date Formatting</h3>
+                <p>2025-01-28 → {{ "2025-01-28"|polish_date }}</p>
+                <p>2025-01-28 → {{ "2025-01-28"|polish_date:"long" }}</p>
+                
+                <h3>NIP Formatting</h3>
+                <p>1234567890 → {{ "1234567890"|nip_format }}</p>
+                
+                <h3>Compliance Indicators</h3>
+                {% ds_flex gap="md" %}
+                    {% ds_compliance_indicator True %}
+                    {% ds_compliance_indicator False %}
+                {% ds_flex_end %}
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .demo-intro {
+            background: var(--color-background-secondary);
+            padding: var(--spacing-4);
+            border-radius: var(--border-radius-md);
+            margin-bottom: var(--spacing-6);
+            border: 1px solid var(--color-border-default);
+        }
+        
+        .demo-section {
+            margin-bottom: var(--spacing-8);
+            padding: var(--spacing-4);
+            background: var(--color-background-primary);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--color-border-default);
+        }
+        
+        .demo-section h2 {
+            color: var(--color-text-primary);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-2);
+        }
+        
+        .demo-section h3 {
+            color: var(--color-text-primary);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-medium);
+            margin: var(--spacing-4) 0 var(--spacing-2) 0;
+        }
+        
+        .demo-description {
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-4);
+        }
+        
+        .demo-examples {
+            margin-top: var(--spacing-4);
+        }
+        
+        .business-demo p {
+            font-family: var(--font-family-mono);
+            background: var(--color-background-secondary);
+            padding: var(--spacing-2);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: var(--spacing-2);
+        }
+        
+        .currency-input-wrapper {
+            display: flex;
+            align-items: stretch;
+        }
+        
+        .currency-input-wrapper .currency-input {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+            border-right: none !important;
+            text-align: right !important;
+        }
+        
+        .currency-input-wrapper .currency-symbol {
+            background: var(--color-background-secondary);
+            border: 1px solid var(--color-border-default);
+            border-left: none;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: var(--border-radius-md);
+            border-bottom-right-radius: var(--border-radius-md);
+            padding: var(--spacing-2) var(--spacing-3);
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-base);
+            display: flex;
+            align-items: center;
+        }
+    </style>
+{% endblock %}

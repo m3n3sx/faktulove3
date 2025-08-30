@@ -1,0 +1,164 @@
+{% load static %}
+
+<!-- Real-time Validation Scripts -->
+<script src="{% static 'js/real-time-validation.js' %}"></script>
+
+<script>
+// Initialize validation with Polish error messages
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up global validation configuration
+    if (typeof RealTimeValidator !== 'undefined') {
+        window.polishValidator = new RealTimeValidator({
+            validateOnInput: true,
+            validateOnBlur: true,
+            showSuccessMessages: true,
+            debounceDelay: 300,
+            apiEndpoint: '{% url "api_validate_field" %}'
+        });
+    }
+    
+    // Add Polish error messages
+    window.polishErrorMessages = {{ polish_error_messages|safe }};
+    
+    // Enhanced form submission handling
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        
+        if (form.dataset.validate === 'true') {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                const originalText = submitButton.textContent;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sprawdzanie...';
+                
+                // Restore button after validation
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalText;
+                }, 2000);
+            }
+            
+            // Validate form
+            if (window.polishValidator) {
+                window.polishValidator.validateForm(form).then(isValid => {
+                    if (isValid) {
+                        // Submit form programmatically
+                        form.removeAttribute('data-validate');
+                        form.submit();
+                    } else {
+                        // Show error notification
+                        if (window.feedbackSystem) {
+                            window.feedbackSystem.showError(
+                                'Błędy w formularzu',
+                                'Popraw błędy walidacji i spróbuj ponownie'
+                            );
+                        }
+                    }
+                });
+            }
+        }
+    });
+    
+    // Auto-format fields on blur
+    document.addEventListener('blur', function(e) {
+        const field = e.target;
+        
+        if (field.dataset.autoFormat) {
+            formatField(field);
+        }
+    }, true);
+    
+    function formatField(field) {
+        const formatType = field.dataset.autoFormat;
+        let value = field.value.trim();
+        
+        switch (formatType) {
+            case 'nip':
+                // Remove all non-digits and format as XXX-XXX-XX-XX
+                value = value.replace(/\D/g, '');
+                if (value.length === 10) {
+                    field.value = value.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1-$2-$3-$4');
+                }
+                break;
+                
+            case 'regon':
+                // Remove all non-digits
+                value = value.replace(/\D/g, '');
+                field.value = value;
+                break;
+                
+            case 'postal_code':
+                // Format as XX-XXX
+                value = value.replace(/\D/g, '');
+                if (value.length === 5) {
+                    field.value = value.replace(/(\d{2})(\d{3})/, '$1-$2');
+                }
+                break;
+                
+            case 'phone':
+                // Format Polish phone number
+                value = value.replace(/\D/g, '');
+                if (value.length === 9) {
+                    field.value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                } else if (value.length === 11 && value.startsWith('48')) {
+                    field.value = '+48 ' + value.substr(2).replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                }
+                break;
+                
+            case 'amount':
+                // Format as decimal with 2 places
+                const num = parseFloat(value);
+                if (!isNaN(num)) {
+                    field.value = num.toFixed(2);
+                }
+                break;
+        }
+    }
+});
+
+// Utility functions for validation
+window.ValidationUtils = {
+    validateNIP: function(nip) {
+        const clean = nip.replace(/\D/g, '');
+        if (clean.length !== 10) return false;
+        
+        const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+        const checksum = clean.split('').slice(0, 9)
+            .reduce((sum, digit, index) => sum + parseInt(digit) * weights[index], 0) % 11;
+        
+        return checksum === parseInt(clean[9]);
+    },
+    
+    validateREGON: function(regon) {
+        const clean = regon.replace(/\D/g, '');
+        if (clean.length !== 9 && clean.length !== 14) return false;
+        
+        if (clean.length === 9) {
+            const weights = [8, 9, 2, 3, 4, 5, 6, 7];
+            const checksum = clean.split('').slice(0, 8)
+                .reduce((sum, digit, index) => sum + parseInt(digit) * weights[index], 0) % 11;
+            return (checksum % 10) === parseInt(clean[8]);
+        }
+        
+        return true; // Simplified for 14-digit REGON
+    },
+    
+    validateEmail: function(email) {
+        const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return pattern.test(email);
+    },
+    
+    validatePostalCode: function(code) {
+        const pattern = /^\d{2}-\d{3}$/;
+        return pattern.test(code);
+    },
+    
+    validateAmount: function(amount) {
+        const num = parseFloat(amount);
+        return !isNaN(num) && num >= 0 && /^\d+(\.\d{1,2})?$/.test(amount);
+    }
+};
+</script>

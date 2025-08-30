@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mój profil{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-3">
+                <iconify-icon icon="solar:user-linear" class="text-primary me-2"></iconify-icon>
+                Mój profil
+            </h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'panel_uzytkownika' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Profil</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <iconify-icon icon="solar:id-card-linear" class="text-primary me-2"></iconify-icon>
+                        Informacje o użytkowniku
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                <small class="text-muted">Nazwa użytkownika</small>
+                                <div class="fw-medium">{{ user.username }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                <small class="text-muted">Email</small>
+                                <div class="fw-medium">{{ user.email }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                <small class="text-muted">Imię</small>
+                                <div class="fw-medium">{{ user.first_name|default:"Nie podano" }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                <small class="text-muted">Nazwisko</small>
+                                <div class="fw-medium">{{ user.last_name|default:"Nie podano" }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                <small class="text-muted">Data dołączenia</small>
+                                <div class="fw-medium">{{ user.date_joined|date:"d.m.Y H:i" }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                <small class="text-muted">Ostatnie logowanie</small>
+                                <div class="fw-medium">
+                                    {% if user.last_login %}
+                                        {{ user.last_login|date:"d.m.Y H:i" }}
+                                    {% else %}
+                                        Nigdy
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <div class="profile-field">
+                                <small class="text-muted">Status konta</small>
+                                <div>
+                                    {% if user.is_active %}
+                                        <span class="badge bg-success">Aktywne</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Nieaktywne</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="#" class="btn btn-primary">
+                            <iconify-icon icon="solar:pen-linear" class="me-2"></iconify-icon>
+                            Edytuj profil
+                        </a>
+                        
+                        <a href="#" class="btn btn-secondary">
+                            <iconify-icon icon="solar:key-linear" class="me-2"></iconify-icon>
+                            Zmień hasło
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <iconify-icon icon="solar:settings-linear" class="text-primary me-2"></iconify-icon>
+                        Szybkie akcje
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'company_settings' %}" class="btn btn-outline-primary btn-sm">
+                            <iconify-icon icon="solar:building-linear" class="me-2"></iconify-icon>
+                            Ustawienia firmy
+                        </a>
+                        
+                        <a href="{% url 'notifications_list' %}" class="btn btn-outline-primary btn-sm">
+                            <iconify-icon icon="solar:bell-linear" class="me-2"></iconify-icon>
+                            Powiadomienia
+                        </a>
+                        
+                        <a href="{% url 'account_logout' %}" class="btn btn-outline-danger btn-sm">
+                            <iconify-icon icon="solar:logout-linear" class="me-2"></iconify-icon>
+                            Wyloguj się
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-field {
+    padding: 12px 0;
+}
+.profile-field:not(:last-child) {
+    border-bottom: 1px solid #f1f5f9;
+}
+</style>
+{% endblock %}

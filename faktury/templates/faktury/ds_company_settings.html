@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load design_system_tags %}
+
+{% block title %}Ustawienia firmy{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            {% ds_typography variant="heading-xl" element="h1" class="mb-3" %}
+                <iconify-icon icon="solar:settings-linear" class="text-primary me-2"></iconify-icon>
+                Ustawienia firmy
+            {% end_ds_typography %}
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'panel_uzytkownika' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Ustawienia</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            {% ds_card variant="elevated" %}
+                <div class="card-header bg-transparent border-bottom">
+                    {% ds_typography variant="heading-md" element="h5" class="mb-0" %}
+                        <iconify-icon icon="solar:slider-vertical-linear" class="text-primary me-2"></iconify-icon>
+                        Ustawienia systemu
+                    {% end_ds_typography %}
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <!-- Company Data Section -->
+                        <div class="col-md-6">
+                            {% ds_card variant="outlined" class="h-100" %}
+                                <div class="card-header bg-transparent">
+                                    {% ds_typography variant="heading-sm" element="h6" class="mb-0" %}
+                                        <iconify-icon icon="solar:building-2-linear" class="text-info me-2"></iconify-icon>
+                                        Dane firmy
+                                    {% end_ds_typography %}
+                                </div>
+                                <div class="card-body">
+                                    <div class="settings-list">
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title">
+                                                    {% ds_typography variant="body-md" class="fw-medium" %}
+                                                        Edytuj dane firmy
+                                                    {% end_ds_typography %}
+                                                </div>
+                                                <div class="settings-item-description">
+                                                    {% ds_typography variant="body-sm" class="text-muted" %}
+                                                        Zarządzaj podstawowymi informacjami o firmie
+                                                    {% end_ds_typography %}
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                {% ds_button_start variant="ghost" size="sm" %}
+                                                    <a href="{% url 'edytuj_firme' %}" class="text-decoration-none">
+                                                        <iconify-icon icon="solar:pen-linear"></iconify-icon>
+                                                    </a>
+                                                {% end_ds_button %}
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title">
+                                                    {% ds_typography variant="body-md" class="fw-medium" %}
+                                                        Zarządzaj kontrahentami
+                                                    {% end_ds_typography %}
+                                                </div>
+                                                <div class="settings-item-description">
+                                                    {% ds_typography variant="body-sm" class="text-muted" %}
+                                                        Dodawaj i edytuj dane kontrahentów
+                                                    {% end_ds_typography %}
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                {% ds_button_start variant="ghost" size="sm" %}
+                                                    <a href="{% url 'kontrahenci' %}" class="text-decoration-none">
+                                                        <iconify-icon icon="solar:users-group-rounded-linear"></iconify-icon>
+                                                    </a>
+                                                {% end_ds_button %}
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title">
+                                                    {% ds_typography variant="body-md" class="fw-medium" %}
+                                                        Zarządzaj produktami
+                                                    {% end_ds_typography %}
+                                                </div>
+                                                <div class="settings-item-description">
+                                                    {% ds_typography variant="body-sm" class="text-muted" %}
+                                                        Katalog produktów i usług
+                                                    {% end_ds_typography %}
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                {% ds_button_start variant="ghost" size="sm" %}
+                                                    <a href="{% url 'produkty' %}" class="text-decoration-none">
+                                                        <iconify-icon icon="solar:box-linear"></iconify-icon>
+                                                    </a>
+                                                {% end_ds_button %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% end_ds_card %}
+                        </div>
+
+                        <!-- System Section -->
+                        <div class="col-md-6">
+                            {% ds_card variant="outlined" class="h-100" %}
+                                <div class="card-header bg-transparent">
+                                    {% ds_typography variant="heading-sm" element="h6" class="mb-0" %}
+                                        <iconify-icon icon="solar:server-linear" class="text-success me-2"></iconify-icon>
+                                        System
+                                    {% end_ds_typography %}
+                                </div>
+                                <div class="card-body">
+                                    <div class="settings-list">
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title">
+                                                    {% ds_typography variant="body-md" class="fw-medium" %}
+                                                        OCR - Przetwarzanie dokumentów
+                                                    {% end_ds_typography %}
+                                                </div>
+                                                <div class="settings-item-description">
+                                                    {% ds_typography variant="body-sm" class="text-muted" %}
+                                                        Automatyczne rozpoznawanie tekstu z dokumentów
+                                                    {% end_ds_typography %}
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                {% ds_button_start variant="ghost" size="sm" %}
+                                                    <a href="{% url 'ocr_upload' %}" class="text-decoration-none">
+                                                        <iconify-icon icon="solar:camera-linear"></iconify-icon>
+                                                    </a>
+                                                {% end_ds_button %}
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title">
+                                                    {% ds_typography variant="body-md" class="fw-medium" %}
+                                                        Zespoły i zadania
+                                                    {% end_ds_typography %}
+                                                </div>
+                                                <div class="settings-item-description">
+                                                    {% ds_typography variant="body-sm" class="text-muted" %}
+                                                        Zarządzanie zespołami i projektami
+                                                    {% end_ds_typography %}
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                {% ds_button_start variant="ghost" size="sm" %}
+                                                    <a href="{% url 'lista_zespolow' %}" class="text-decoration-none">
+                                                        <iconify-icon icon="solar:users-group-two-rounded-linear"></iconify-icon>
+                                                    </a>
+                                                {% end_ds_button %}
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title">
+                                                    {% ds_typography variant="body-md" class="fw-medium" %}
+                                                        Powiadomienia
+                                                    {% end_ds_typography %}
+                                                </div>
+                                                <div class="settings-item-description">
+                                                    {% ds_typography variant="body-sm" class="text-muted" %}
+                                                        Zarządzanie powiadomieniami systemowymi
+                                                    {% end_ds_typography %}
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                {% ds_button_start variant="ghost" size="sm" %}
+                                                    <a href="{% url 'notifications_list' %}" class="text-decoration-none">
+                                                        <iconify-icon icon="solar:bell-linear"></iconify-icon>
+                                                    </a>
+                                                {% end_ds_button %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% end_ds_card %}
+                        </div>
+                    </div>
+
+                    <hr class="my-5">
+
+                    <!-- Theme Settings Section -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% ds_card variant="outlined" %}
+                                <div class="card-header bg-transparent">
+                                    {% ds_typography variant="heading-sm" element="h6" class="mb-0" %}
+                                        <iconify-icon icon="solar:palette-linear" class="text-primary me-2"></iconify-icon>
+                                        Preferencje interfejsu
+                                    {% end_ds_typography %}
+                                </div>
+                                <div class="card-body">
+                                    {% ds_theme_controls show_advanced=True %}
+                                </div>
+                            {% end_ds_card %}
+                        </div>
+                    </div>
+
+                    <hr class="my-5">
+
+                    <!-- Quick Actions Section -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% ds_typography variant="heading-sm" element="h6" class="mb-4" %}
+                                <iconify-icon icon="solar:bolt-linear" class="text-warning me-2"></iconify-icon>
+                                Szybkie akcje
+                            {% end_ds_typography %}
+                            
+                            <div class="d-flex gap-3 flex-wrap">
+                                {% ds_button_start variant="primary" size="md" %}
+                                    <iconify-icon icon="solar:add-circle-linear" class="me-2"></iconify-icon>
+                                    <a href="{% url 'dodaj_fakture' %}" class="text-decoration-none text-white">
+                                        Nowa faktura
+                                    </a>
+                                {% end_ds_button %}
+                                
+                                {% ds_button_start variant="secondary" size="md" %}
+                                    <iconify-icon icon="solar:user-plus-linear" class="me-2"></iconify-icon>
+                                    <a href="{% url 'dodaj_kontrahenta' %}" class="text-decoration-none">
+                                        Nowy kontrahent
+                                    </a>
+                                {% end_ds_button %}
+                                
+                                {% ds_button_start variant="secondary" size="md" %}
+                                    <iconify-icon icon="solar:box-linear" class="me-2"></iconify-icon>
+                                    <a href="{% url 'dodaj_produkt' %}" class="text-decoration-none">
+                                        Nowy produkt
+                                    </a>
+                                {% end_ds_button %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% end_ds_card %}
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s ease-out;
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-item:hover {
+    background-color: #f8fafc;
+    border-radius: 8px;
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.settings-item-content {
+    flex: 1;
+}
+
+.settings-item-title {
+    margin-bottom: 4px;
+}
+
+.settings-item-description {
+    line-height: 1.4;
+}
+
+.settings-item-action {
+    flex-shrink: 0;
+    margin-left: 16px;
+}
+
+/* Theme-aware styles */
+.theme-dark .settings-item {
+    border-bottom-color: #334155;
+}
+
+.theme-dark .settings-item:hover {
+    background-color: #1e293b;
+}
+
+.theme-dark .card-header {
+    background-color: transparent !important;
+    border-bottom-color: #334155 !important;
+}
+
+/* High contrast mode */
+.contrast-high .settings-item {
+    padding: 20px 0;
+    border-bottom-width: 2px;
+}
+
+.contrast-high .settings-item:hover {
+    background-color: #e2e8f0;
+}
+
+.contrast-high.theme-dark .settings-item:hover {
+    background-color: #475569;
+}
+
+/* Reduced motion */
+.motion-reduced .settings-item {
+    transition: none !important;
+}
+
+.motion-reduced * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .settings-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .settings-item-action {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .settings-item:hover {
+        margin: 0;
+        padding: 16px 0;
+        background-color: transparent;
+    }
+}
+
+@media (max-width: 576px) {
+    .settings-item-content {
+        width: 100%;
+    }
+    
+    .settings-item-action {
+        align-self: center;
+        margin-top: 8px;
+    }
+}
+
+/* Focus styles for accessibility */
+.settings-item a:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Loading states */
+.settings-item[data-loading="true"] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.settings-item[data-loading="true"] .settings-item-action {
+    position: relative;
+}
+
+.settings-item[data-loading="true"] .settings-item-action::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+.motion-reduced .settings-item[data-loading="true"]::after {
+    animation: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading states to settings items when clicked
+    const settingsItems = document.querySelectorAll('.settings-item a');
+    
+    settingsItems.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const settingsItem = this.closest('.settings-item');
+            if (settingsItem) {
+                settingsItem.setAttribute('data-loading', 'true');
+                
+                // Remove loading state after navigation or timeout
+                setTimeout(() => {
+                    settingsItem.removeAttribute('data-loading');
+                }, 3000);
+            }
+        });
+    });
+    
+    // Keyboard navigation for settings items
+    settingsItems.forEach(link => {
+        link.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

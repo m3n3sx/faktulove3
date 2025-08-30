@@ -1,0 +1,378 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load static %}
+{% load design_system_tags %}
+{% load socialaccount %}
+
+{% block head_title %}{% trans "Logowanie" %}{% endblock %}
+
+{% block body %}
+<section class="auth bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="{% static 'assets/images/auth/login-img.png' %}" alt="FaktuLove Login">
+            <div class="text-center mt-24">
+                <h4 class="text-white fw-bold">Witaj ponownie!</h4>
+                <p class="text-white-75">Zaloguj się do swojego konta FaktuLove</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <!-- Header -->
+            <div class="text-center">
+                <a href="/" class="mb-40 max-w-290-px">
+                    <img src="{% static 'assets/images/logo.png' %}" alt="FaktuLove">
+                </a>
+                {% ds_typography variant="heading-lg" element="h1" class="mb-12" %}
+                    Zaloguj się
+                {% end_ds_typography %}
+                {% ds_typography variant="body-lg" class="mb-32 text-secondary-light" %}
+                    Wprowadź swoje dane aby kontynuować
+                {% end_ds_typography %}
+            </div>
+
+            <!-- Login Form using Design System -->
+            <div id="loginFormContainer">
+                <!-- Error Messages -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-24" role="alert">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Email/Username Field -->
+                <div class="mb-16">
+                    {% ds_input 
+                        name="login"
+                        type="text"
+                        label="Email lub nazwa użytkownika"
+                        placeholder="Wprowadź email lub nazwę użytkownika"
+                        required=True
+                        icon="mage:email"
+                        icon_position="start"
+                        size="lg"
+                        value=form.login.value|default:""
+                        error=form.login.errors.0|default:""
+                    %}
+                </div>
+
+                <!-- Password Field -->
+                <div class="mb-20">
+                    {% ds_input 
+                        name="password"
+                        type="password"
+                        label="Hasło"
+                        placeholder="Wprowadź hasło"
+                        required=True
+                        icon="solar:lock-password-outline"
+                        icon_position="start"
+                        size="lg"
+                        show_password_toggle=True
+                        error=form.password.errors.0|default:""
+                    %}
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="d-flex align-items-center justify-content-between mb-24">
+                    {% if form.remember %}
+                    <div class="form-check style-check d-flex align-items-center">
+                        {% ds_checkbox 
+                            name="remember"
+                            label="Zapamiętaj mnie"
+                            checked=form.remember.value|default:False
+                        %}
+                    </div>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+                    
+                    <a href="{% url 'account_reset_password' %}" class="text-primary-600 fw-medium text-sm">
+                        Zapomniałeś hasła?
+                    </a>
+                </div>
+
+                <!-- Submit Button -->
+                {% ds_button 
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    full_width=True
+                    loading_text="Logowanie..."
+                    class="mt-32"
+                    id="loginBtn"
+                %}
+                    Zaloguj się
+                {% end_ds_button %}
+            </div>
+
+            <!-- Theme Controls -->
+            <div class="mt-24 d-flex justify-content-center">
+                {% ds_theme_controls compact=True %}
+            </div>
+
+            <!-- Separator -->
+            <div class="mt-32 center-border-horizontal text-center">
+                <span class="bg-base z-1 px-4">lub zaloguj się przez</span>
+            </div>
+
+            <!-- Social Login -->
+            <div class="mt-32 d-flex align-items-center gap-3">
+                {% if providers %}
+                    {% for provider in providers %}
+                        {% if provider.id == "google" %}
+                        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-light text-secondary-light border-neutral-200 bg-neutral-50 hover-text-primary-600 hover-bg-primary-50 hover-border-primary-200 flex-fill">
+                            <iconify-icon icon="logos:google-icon" class="text-xl"></iconify-icon>
+                            Google
+                        </a>
+                        {% endif %}
+                        {% if provider.id == "facebook" %}
+                        <a href="{% provider_login_url 'facebook' %}" class="btn btn-outline-light text-secondary-light border-neutral-200 bg-neutral-50 hover-text-primary-600 hover-bg-primary-50 hover-border-primary-200 flex-fill">
+                            <iconify-icon icon="logos:facebook" class="text-xl"></iconify-icon>
+                            Facebook
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Register Link -->
+            <div class="mt-32 text-center text-sm">
+                {% ds_typography variant="body-sm" %}
+                    Nie masz konta? 
+                    <a href="{% url 'account_signup' %}" class="text-primary-600 fw-semibold">Zarejestruj się</a>
+                {% end_ds_typography %}
+            </div>
+
+            <!-- Email Verification Notice -->
+            {% if user.is_authenticated and not user.emailaddress_set.filter.verified %}
+            <div class="alert alert-warning mt-24">
+                <div class="d-flex align-items-center">
+                    <iconify-icon icon="mage:email-warning" class="text-warning me-8"></iconify-icon>
+                    <div class="flex-grow-1">
+                        <strong>Potwierdź swój adres email</strong>
+                        <p class="mb-0 text-sm">Sprawdź swoją skrzynkę i kliknij link potwierdzający.</p>
+                    </div>
+                    {% ds_button 
+                        variant="secondary"
+                        size="sm"
+                        id="resendConfirmation"
+                    %}
+                        Wyślij ponownie
+                    {% end_ds_button %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Login Scripts with Design System Integration -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginContainer = document.getElementById('loginFormContainer');
+    const loginBtn = document.getElementById('loginBtn');
+    const resendBtn = document.getElementById('resendConfirmation');
+
+    // Create form element and wrap existing form fields
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = '{% url "account_login" %}';
+    form.id = 'loginForm';
+    
+    // Add CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+    
+    // Move form fields into form
+    const formFields = loginContainer.children;
+    while (formFields.length > 0) {
+        form.appendChild(formFields[0]);
+    }
+    
+    loginContainer.appendChild(form);
+
+    // Form submission with design system button loading state
+    if (form && loginBtn) {
+        form.addEventListener('submit', function(e) {
+            // Set button to loading state
+            loginBtn.setAttribute('data-loading', 'true');
+            loginBtn.disabled = true;
+            
+            // Add loading spinner
+            const spinner = document.createElement('span');
+            spinner.className = 'spinner-border spinner-border-sm me-8';
+            spinner.setAttribute('aria-hidden', 'true');
+            loginBtn.insertBefore(spinner, loginBtn.firstChild);
+            
+            // Update button text
+            const originalText = loginBtn.textContent;
+            loginBtn.textContent = 'Logowanie...';
+        });
+    }
+
+    // Enhanced password toggle with design system integration
+    document.querySelectorAll('[data-password-toggle]').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-password-toggle');
+            const target = document.querySelector(targetId);
+            const icon = this.querySelector('iconify-icon');
+            
+            if (target && icon) {
+                if (target.type === 'password') {
+                    target.type = 'text';
+                    icon.setAttribute('icon', 'solar:eye-closed-outline');
+                    this.setAttribute('aria-label', 'Ukryj hasło');
+                } else {
+                    target.type = 'password';
+                    icon.setAttribute('icon', 'solar:eye-outline');
+                    this.setAttribute('aria-label', 'Pokaż hasło');
+                }
+            }
+        });
+    });
+
+    // Resend confirmation email with design system feedback
+    if (resendBtn) {
+        resendBtn.addEventListener('click', function() {
+            const btn = this;
+            const originalText = btn.textContent;
+            
+            // Set loading state
+            btn.setAttribute('data-loading', 'true');
+            btn.disabled = true;
+            btn.textContent = 'Wysyłanie...';
+
+            fetch('{% url "resend_confirmation_email" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    btn.textContent = 'Wysłano!';
+                    btn.setAttribute('data-variant', 'success');
+                    
+                    // Show success message
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'alert alert-success mt-2';
+                    successMsg.textContent = 'Email potwierdzający został wysłany!';
+                    btn.parentNode.appendChild(successMsg);
+                } else {
+                    btn.textContent = 'Błąd';
+                    btn.setAttribute('data-variant', 'danger');
+                }
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.removeAttribute('data-loading');
+                    btn.removeAttribute('data-variant');
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.textContent = 'Błąd';
+                btn.setAttribute('data-variant', 'danger');
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.removeAttribute('data-loading');
+                    btn.removeAttribute('data-variant');
+                }, 3000);
+            });
+        });
+    }
+
+    // Auto-focus on first empty field with design system focus styles
+    const loginField = document.querySelector('input[name="login"]');
+    const passwordField = document.querySelector('input[name="password"]');
+    
+    if (loginField && !loginField.value) {
+        loginField.focus();
+    } else if (passwordField && !passwordField.value) {
+        passwordField.focus();
+    }
+
+    // Enhanced form validation with design system error states
+    const inputs = form.querySelectorAll('input[required]');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            validateField(this);
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.classList.contains('error')) {
+                validateField(this);
+            }
+        });
+    });
+
+    function validateField(field) {
+        const value = field.value.trim();
+        const fieldContainer = field.closest('.ds-input-container') || field.closest('.form-field');
+        
+        // Remove existing error states
+        field.classList.remove('error');
+        fieldContainer?.classList.remove('error');
+        
+        // Check if field is required and empty
+        if (field.hasAttribute('required') && !value) {
+            showFieldError(field, 'To pole jest wymagane');
+            return false;
+        }
+        
+        // Email validation for login field
+        if (field.name === 'login' && value && value.includes('@')) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                showFieldError(field, 'Nieprawidłowy format email');
+                return false;
+            }
+        }
+        
+        // Clear any existing errors
+        clearFieldError(field);
+        return true;
+    }
+
+    function showFieldError(field, message) {
+        const fieldContainer = field.closest('.ds-input-container') || field.closest('.form-field');
+        
+        field.classList.add('error');
+        fieldContainer?.classList.add('error');
+        
+        // Find or create error message element
+        let errorElement = fieldContainer?.querySelector('.field-error');
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.className = 'field-error text-error-600 text-sm mt-1';
+            errorElement.setAttribute('role', 'alert');
+            fieldContainer?.appendChild(errorElement);
+        }
+        
+        errorElement.textContent = message;
+    }
+
+    function clearFieldError(field) {
+        const fieldContainer = field.closest('.ds-input-container') || field.closest('.form-field');
+        const errorElement = fieldContainer?.querySelector('.field-error');
+        
+        field.classList.remove('error');
+        fieldContainer?.classList.remove('error');
+        
+        if (errorElement) {
+            errorElement.remove();
+        }
+    }
+});
+</script>
+{% endblock body %}

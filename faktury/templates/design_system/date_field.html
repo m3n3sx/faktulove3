@@ -1,0 +1,77 @@
+{% load design_system %}
+
+<div class="form-group django-form django-polish-business{% if errors %} has-error{% endif %}">
+    {% if label %}
+        <label for="{{ field.id_for_label }}" class="form-label{% if required %} required{% endif %}">
+            {{ label }}
+            {% if required %}<span class="text-error" aria-label="wymagane">*</span>{% endif %}
+        </label>
+    {% endif %}
+    
+    <div class="form-input-wrapper date-input-wrapper">
+        {{ field|add_class:"form-control date-input" }}
+        
+        <div class="date-format-hint" id="{{ field.id_for_label }}_hint">
+            Format: {{ format }}
+        </div>
+        
+        {% if errors %}
+            <ul class="errorlist" role="alert" aria-live="polite">
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('{{ field.id_for_label }}');
+    
+    if (dateInput) {
+        // Add Polish date formatting
+        dateInput.addEventListener('blur', function() {
+            const value = this.value.trim();
+            if (value) {
+                // Try to parse and reformat the date
+                const dateRegex = /^(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{4})$/;
+                const match = value.match(dateRegex);
+                
+                if (match) {
+                    const day = match[1].padStart(2, '0');
+                    const month = match[2].padStart(2, '0');
+                    const year = match[3];
+                    
+                    // Validate date
+                    const date = new Date(year, month - 1, day);
+                    if (date.getFullYear() == year && date.getMonth() == month - 1 && date.getDate() == day) {
+                        this.value = `${day}.${month}.${year}`;
+                    }
+                }
+            }
+        });
+        
+        // Add placeholder based on format
+        if (!dateInput.placeholder) {
+            dateInput.placeholder = '{{ format|default:"DD.MM.YYYY" }}';
+        }
+        
+        // Set aria-describedby for accessibility
+        dateInput.setAttribute('aria-describedby', '{{ field.id_for_label }}_hint');
+    }
+});
+</script>
+
+<style>
+.date-input-wrapper .date-input {
+    font-family: var(--typography-date-family);
+    font-size: var(--typography-date-size);
+}
+
+.date-format-hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-1);
+}
+</style>

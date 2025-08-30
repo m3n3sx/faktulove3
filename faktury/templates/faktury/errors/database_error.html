@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Błąd bazy danych - FaktuLove{% endblock %}
+
+{% block extra_css %}
+<style>
+.error-container {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.error-content {
+    max-width: 700px;
+    background: white;
+    border-radius: 12px;
+    padding: 3rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-top: 4px solid #fd7e14;
+    text-align: center;
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: #fd7e14;
+    margin-bottom: 1.5rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.status-indicator {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.status-indicator h5 {
+    color: #856404;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.status-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #ffc107;
+    text-align: center;
+}
+
+.status-item .icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-item .label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.status-item .value {
+    font-weight: 600;
+    color: #495057;
+}
+
+.retry-section {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.retry-section h5 {
+    color: #0c5460;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.retry-countdown {
+    background: #17a2b8;
+    color: white;
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+    margin: 1rem 0;
+    font-weight: 600;
+}
+
+.suggestions-section {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.suggestions-section h5 {
+    color: #155724;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.suggestions-section ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.suggestions-section li {
+    margin-bottom: 0.5rem;
+    color: #155724;
+}
+
+.action-buttons {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    border: none;
+    color: #212529;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255,193,7,0.3);
+    color: #212529;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .error-content {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-database"></i>
+        </div>
+        
+        <h1 class="error-title">{{ title }}</h1>
+        <p class="error-message">{{ message }}</p>
+        
+        <div class="status-indicator">
+            <h5><i class="fas fa-info-circle"></i> Status systemu:</h5>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="icon">
+                        <i class="fas fa-server" style="color: #fd7e14;"></i>
+                    </div>
+                    <div class="label">Baza danych</div>
+                    <div class="value">Sprawdzanie...</div>
+                </div>
+                <div class="status-item">
+                    <div class="icon">
+                        <i class="fas fa-network-wired" style="color: #28a745;"></i>
+                    </div>
+                    <div class="label">Połączenie</div>
+                    <div class="value">Aktywne</div>
+                </div>
+                <div class="status-item">
+                    <div class="icon">
+                        <i class="fas fa-clock" style="color: #17a2b8;"></i>
+                    </div>
+                    <div class="label">Ostatnia próba</div>
+                    <div class="value" id="lastAttempt">Teraz</div>
+                </div>
+            </div>
+        </div>
+        
+        {% if can_retry %}
+        <div class="retry-section">
+            <h5><i class="fas fa-redo"></i> Automatyczne ponowienie próby:</h5>
+            <div class="retry-countdown" id="retryCountdown">
+                Ponowna próba za <span id="countdown">{{ retry_delay|default:5 }}</span> sekund...
+            </div>
+            <p style="margin: 0; color: #0c5460;">
+                System automatycznie spróbuje ponownie nawiązać połączenie z bazą danych.
+                Możesz też spróbować ręcznie klikając przycisk poniżej.
+            </p>
+        </div>
+        {% endif %}
+        
+        {% if suggestions %}
+        <div class="suggestions-section">
+            <h5><i class="fas fa-lightbulb"></i> Co możesz zrobić:</h5>
+            <ul>
+                {% for suggestion in suggestions %}
+                <li>{{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <button onclick="checkDatabaseStatus()" class="btn btn-warning">
+                <i class="fas fa-sync"></i> Sprawdź status
+            </button>
+            <button onclick="location.reload()" class="btn btn-primary">
+                <i class="fas fa-redo"></i> Spróbuj ponownie
+            </button>
+            <button onclick="history.back()" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Wróć
+            </button>
+        </div>
+        
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #dee2e6;">
+            <p class="text-muted">
+                <small>
+                    <i class="fas fa-shield-alt"></i>
+                    Twoje dane są bezpieczne. Problem jest tymczasowy i zostanie rozwiązany automatycznie.
+                </small>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+let countdownTimer;
+let retryAttempts = 0;
+const maxRetries = 3;
+
+// Start countdown if retry is enabled
+{% if can_retry %}
+startCountdown({{ retry_delay|default:5 }});
+{% endif %}
+
+function startCountdown(seconds) {
+    const countdownElement = document.getElementById('countdown');
+    const retryCountdownElement = document.getElementById('retryCountdown');
+    
+    if (!countdownElement) return;
+    
+    let remaining = seconds;
+    
+    countdownTimer = setInterval(function() {
+        countdownElement.textContent = remaining;
+        
+        if (remaining <= 0) {
+            clearInterval(countdownTimer);
+            retryCountdownElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ponawiam próbę...';
+            
+            // Auto-retry
+            setTimeout(function() {
+                location.reload();
+            }, 1000);
+        }
+        
+        remaining--;
+    }, 1000);
+}
+
+function checkDatabaseStatus() {
+    const statusItems = document.querySelectorAll('.status-item .value');
+    
+    // Update UI to show checking
+    statusItems[0].innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sprawdzanie...';
+    
+    // Simulate status check (in real implementation, this would be an AJAX call)
+    fetch('/api/health/database/', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            statusItems[0].innerHTML = '<span style="color: #28a745;">Dostępna</span>';
+            
+            // Show success message and reload
+            const retrySection = document.querySelector('.retry-section');
+            if (retrySection) {
+                retrySection.innerHTML = `
+                    <h5 style="color: #28a745;"><i class="fas fa-check-circle"></i> Połączenie przywrócone!</h5>
+                    <p style="color: #155724; margin: 0;">Baza danych jest ponownie dostępna. Strona zostanie odświeżona automatycznie.</p>
+                `;
+            }
+            
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            statusItems[0].innerHTML = '<span style="color: #dc3545;">Niedostępna</span>';
+            retryAttempts++;
+            
+            if (retryAttempts < maxRetries) {
+                setTimeout(() => checkDatabaseStatus(), 5000);
+            }
+        }
+    })
+    .catch(error => {
+        statusItems[0].innerHTML = '<span style="color: #dc3545;">Błąd sprawdzania</span>';
+        console.error('Status check failed:', error);
+    });
+    
+    // Update last attempt time
+    document.getElementById('lastAttempt').textContent = new Date().toLocaleTimeString('pl-PL');
+}
+
+// Update last attempt time periodically
+setInterval(function() {
+    const lastAttemptElement = document.getElementById('lastAttempt');
+    if (lastAttemptElement && lastAttemptElement.textContent === 'Teraz') {
+        lastAttemptElement.textContent = new Date().toLocaleTimeString('pl-PL');
+    }
+}, 1000);
+
+// Track database errors for monitoring
+if (typeof gtag !== 'undefined') {
+    gtag('event', 'database_error', {
+        'page_location': window.location.href,
+        'error_type': 'database_connection'
+    });
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+    }
+});
+</script>
+{% endblock %}

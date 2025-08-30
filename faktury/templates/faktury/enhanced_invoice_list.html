@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+{% load design_system_tags %}
+
+{% block title %}Lista faktur{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+<style>
+.invoice-list-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.filters-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.invoices-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.invoice-row:last-child {
+  border-bottom: none;
+}
+
+.invoice-row:hover {
+  background-color: #f9fafb;
+}
+
+.invoice-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filters-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invoice-list-container">
+  {% ds_breadcrumb items="Faktury,Lista faktur,#" %}
+  
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Lista faktur</h1>
+      <p class="text-gray-600 mt-1">Zarządzaj swoimi fakturami</p>
+    </div>
+    
+    <div class="quick-actions">
+      {% ds_button variant="secondary" href="{% url 'enhanced_contractor_create' %}" %}
+        Dodaj kontrahenta
+      {% end_ds_button %}
+      
+      {% ds_button variant="primary" href="{% url 'enhanced_invoice_create' %}" %}
+        Nowa faktura
+      {% end_ds_button %}
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.total_count }}</div>
+      <div class="stat-label">Wszystkich faktur</div>
+    </div>
+    
+    {% for status_code, status_info in stats.status_counts.items %}
+      <div class="stat-card">
+        <div class="stat-value">{{ status_info.count }}</div>
+        <div class="stat-label">{{ status_info.name }}</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <h2 class="text-lg font-semibold mb-4">Filtry</h2>
+    
+    <form method="get" class="filters-form">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        {% ds_select name="status" value=current_filters.status placeholder="Wszystkie statusy" %}
+          <option value="">Wszystkie statusy</option>
+          {% for status_code, status_name in status_choices %}
+            <option value="{{ status_code }}" {% if current_filters.status == status_code %}selected{% endif %}>
+              {{ status_name }}
+            </option>
+          {% endfor %}
+        {% end_ds_select %}
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Data od</label>
+        {% ds_date_picker name="date_from" value=current_filters.date_from %}
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Data do</label>
+        {% ds_date_picker name="date_to" value=current_filters.date_to %}
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Szukaj</label>
+        {% ds_input name="search" value=current_filters.search placeholder="Numer faktury lub nazwa kontrahenta" %}
+      </div>
+      
+      <div class="flex space-x-2">
+        {% ds_button variant="primary" type="submit" %}
+          Filtruj
+        {% end_ds_button %}
+        
+        {% ds_button variant="secondary" type="button" onclick="clearFilters()" %}
+          Wyczyść
+        {% end_ds_button %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Invoices Table -->
+  <div class="invoices-section">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold">Faktury</h2>
+      
+      <div class="flex items-center space-x-4">
+        <span class="text-sm text-gray-600">
+          Pokazano {{ page_obj.start_index }}-{{ page_obj.end_index }} z {{ page_obj.paginator.count }}
+        </span>
+        
+        {% ds_button variant="secondary" size="sm" onclick="exportInvoices()" %}
+          Eksportuj
+        {% end_ds_button %}
+      </div>
+    </div>
+    
+    {% if page_obj %}
+      {% ds_table %}
+        <thead>
+          <tr>
+            <th>Numer</th>
+            <th>Nabywca</th>
+            <th>Data wystawienia</th>
+            <th>Termin płatności</th>
+            <th>Kwota brutto</th>
+            <th>Status</th>
+            <th>Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for faktura in page_obj %}
+            <tr class="invoice-row">
+              <td>
+                <a href="{% url 'enhanced_invoice_detail' faktura.pk %}" 
+                   class="font-medium text-primary-600 hover:text-primary-800">
+                  {{ faktura.numer }}
+                </a>
+              </td>
+              <td>
+                <div>
+                  <div class="font-medium">{{ faktura.nabywca.nazwa }}</div>
+                  {% if faktura.nabywca.nip %}
+                    <div class="text-sm text-gray-500">
+                      NIP: {% ds_nip_format faktura.nabywca.nip %}
+                    </div>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                {% ds_date_format faktura.data_wystawienia locale="pl-PL" %}
+              </td>
+              <td>
+                <div>
+                  {% ds_date_format faktura.termin_platnosci locale="pl-PL" %}
+                  {% if faktura.termin_platnosci < today and faktura.status != 'oplacona' %}
+                    <span class="text-red-600 text-xs font-medium ml-1">Przeterminowana</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                {% ds_currency_format faktura.kwota_brutto currency="PLN" %}
+              </td>
+              <td>
+                {% ds_invoice_status_badge status=faktura.status size="sm" %}
+              </td>
+              <td>
+                <div class="invoice-actions">
+                  {% ds_button variant="secondary" size="sm" href="{% url 'enhanced_invoice_detail' faktura.pk %}" %}
+                    Zobacz
+                  {% end_ds_button %}
+                  
+                  {% if faktura.status == 'wystawiona' %}
+                    {% ds_button variant="secondary" size="sm" href="{% url 'enhanced_invoice_edit' faktura.pk %}" %}
+                      Edytuj
+                    {% end_ds_button %}
+                  {% endif %}
+                  
+                  <div class="relative">
+                    {% ds_button variant="secondary" size="sm" onclick="toggleActionMenu({{ faktura.pk }})" %}
+                      ⋮
+                    {% end_ds_button %}
+                    
+                    <div id="action-menu-{{ faktura.pk }}" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 hidden">
+                      <div class="py-1">
+                        <a href="{% url 'invoice_pdf' faktura.pk %}" 
+                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          Pobierz PDF
+                        </a>
+                        
+                        {% if faktura.status != 'oplacona' %}
+                          <button onclick="quickStatusUpdate({{ faktura.pk }}, 'oplacona')"
+                                  class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            Oznacz jako opłaconą
+                          </button>
+                        {% endif %}
+                        
+                        {% if faktura.status == 'wystawiona' %}
+                          <button onclick="sendInvoiceEmail({{ faktura.pk }})"
+                                  class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            Wyślij e-mail
+                          </button>
+                        {% endif %}
+                        
+                        <button onclick="duplicateInvoice({{ faktura.pk }})"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          Duplikuj
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      {% end_ds_table %}
+      
+      <!-- Pagination -->
+      {% if page_obj.has_other_pages %}
+        <div class="mt-6 flex justify-center">
+          {% ds_pagination page_obj=page_obj %}
+        </div>
+      {% endif %}
+      
+    {% else %}
+      <div class="text-center py-12">
+        <div class="text-gray-400 mb-4">
+          <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Brak faktur</h3>
+        <p class="text-gray-600 mb-4">Nie znaleziono faktur spełniających kryteria wyszukiwania.</p>
+        
+        {% ds_button variant="primary" href="{% url 'enhanced_invoice_create' %}" %}
+          Utwórz pierwszą fakturę
+        {% end_ds_button %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Quick Status Update Modal -->
+<div id="status-update-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg max-w-md w-full p-6">
+      <h3 class="text-lg font-medium mb-4">Oznacz jako opłaconą</h3>
+      
+      <form id="quick-status-form">
+        {% csrf_token %}
+        <input type="hidden" id="invoice-id" name="invoice_id">
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kwota płatności</label>
+            {% ds_currency_input id="quick-payment-amount" currency="PLN" required=True %}
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-4 mt-6">
+          {% ds_button variant="secondary" type="button" onclick="closeStatusUpdateModal()" %}
+            Anuluj
+          {% end_ds_button %}
+          
+          {% ds_button variant="primary" type="submit" %}
+            Oznacz jako opłaconą
+          {% end_ds_button %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter functions
+function clearFilters() {
+  window.location.href = '{% url "enhanced_invoice_list" %}';
+}
+
+// Action menu functions
+function toggleActionMenu(invoiceId) {
+  const menu = document.getElementById(`action-menu-${invoiceId}`);
+  
+  // Close all other menus
+  document.querySelectorAll('[id^="action-menu-"]').forEach(m => {
+    if (m !== menu) m.classList.add('hidden');
+  });
+  
+  menu.classList.toggle('hidden');
+}
+
+// Close menus when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('[id^="action-menu-"]') && !e.target.closest('button')) {
+    document.querySelectorAll('[id^="action-menu-"]').forEach(m => {
+      m.classList.add('hidden');
+    });
+  }
+});
+
+// Quick status update
+function quickStatusUpdate(invoiceId, status) {
+  if (status === 'oplacona') {
+    document.getElementById('invoice-id').value = invoiceId;
+    document.getElementById('status-update-modal').classList.remove('hidden');
+  } else {
+    updateInvoiceStatus(invoiceId, status);
+  }
+}
+
+function updateInvoiceStatus(invoiceId, status, amount = null) {
+  const formData = new FormData();
+  formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+  formData.append('status', status);
+  
+  if (amount) {
+    formData.append('kwota_oplacona', amount);
+  }
+  
+  fetch(`/faktury/enhanced/${invoiceId}/status/`, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Błąd: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Wystąpił błąd podczas aktualizacji statusu');
+  });
+}
+
+// Status update modal functions
+function closeStatusUpdateModal() {
+  document.getElementById('status-update-modal').classList.add('hidden');
+}
+
+document.getElementById('quick-status-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const invoiceId = document.getElementById('invoice-id').value;
+  const amount = document.getElementById('quick-payment-amount').value;
+  
+  updateInvoiceStatus(invoiceId, 'oplacona', amount);
+  closeStatusUpdateModal();
+});
+
+// Other action functions
+function sendInvoiceEmail(invoiceId) {
+  // Implementation for sending invoice via email
+  alert('Funkcja wysyłania e-mail będzie wkrótce dostępna');
+}
+
+function duplicateInvoice(invoiceId) {
+  if (confirm('Czy chcesz utworzyć kopię tej faktury?')) {
+    window.location.href = `/faktury/enhanced/create/?duplicate=${invoiceId}`;
+  }
+}
+
+function exportInvoices() {
+  // Get current filters
+  const params = new URLSearchParams(window.location.search);
+  params.append('export', 'csv');
+  
+  window.location.href = `{% url "enhanced_invoice_list" %}?${params.toString()}`;
+}
+
+// Close modal on outside click
+document.getElementById('status-update-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeStatusUpdateModal();
+  }
+});
+
+// Auto-refresh every 30 seconds for status updates
+setInterval(function() {
+  // Only refresh if no modals are open
+  if (!document.querySelector('.fixed:not(.hidden)')) {
+    location.reload();
+  }
+}, 30000);
+</script>
+{% endblock %}

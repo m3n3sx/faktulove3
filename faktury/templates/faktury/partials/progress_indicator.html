@@ -1,0 +1,25 @@
+<!-- Progress indicator for long-running operations -->
+<div id="progress-{{ operation_id }}" class="progress-indicator" style="display: none;">
+    <div class="progress-header">
+        <div class="progress-title">
+            <div class="progress-spinner"></div>
+            <span>{{ title }}</span>
+        </div>
+        <div class="progress-percentage">0%</div>
+    </div>
+    <div class="progress-bar-container">
+        <div class="progress-bar" style="width: 0%"></div>
+    </div>
+    <div class="progress-details">Inicjalizacja...</div>
+    
+    {% if steps %}
+    <div class="progress-steps">
+        {% for step in steps %}
+        <div class="progress-step pending" data-step="{{ forloop.counter0 }}">
+            <div class="progress-step-icon">{{ forloop.counter }}</div>
+            <div class="progress-step-text">{{ step }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

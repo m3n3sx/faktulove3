@@ -1,0 +1,558 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load design_system %}
+
+{% block title %}Status przesyłania - {{ progress.filename }}{% endblock %}
+
+{% block extra_head %}
+<!-- Design System CSS -->
+<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+<!-- Progress page specific styles -->
+<style>
+.progress-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.status-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.status-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background-color: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 50%, #3b82f6 100%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.active {
+  animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.status-processing .progress-fill,
+.status-uploading .progress-fill {
+  animation: progress-shimmer 2s infinite;
+}
+
+.status-completed .progress-fill {
+  background: #10b981;
+}
+
+.status-failed .progress-fill {
+  background: #ef4444;
+}
+
+.status-cancelled .progress-fill {
+  background: #6b7280;
+}
+
+.status-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.detail-item {
+  text-align: center;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+  color: #dc2626;
+}
+
+.auto-refresh-info {
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 16px;
+}
+
+@media (max-width: 640px) {
+  .status-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container mx-auto px-4 py-8">
+  <div class="progress-container">
+    
+    <!-- Back Navigation -->
+    <div class="mb-6">
+      <a href="{% url 'ocr_upload' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+        ← Powrót do przesyłania plików
+      </a>
+    </div>
+
+    <!-- Status Card -->
+    <div class="status-card status-{{ progress.status }}" id="status-card">
+      <div class="text-center">
+        
+        <!-- Status Icon -->
+        <div class="status-icon" id="status-icon">
+          {% if progress.status == 'queued' %}⏳
+          {% elif progress.status == 'validating' %}🔍
+          {% elif progress.status == 'uploading' %}⬆️
+          {% elif progress.status == 'processing' %}⚙️
+          {% elif progress.status == 'completed' %}✅
+          {% elif progress.status == 'failed' %}❌
+          {% elif progress.status == 'cancelled' %}🚫
+          {% else %}❓{% endif %}
+        </div>
+        
+        <!-- File Name -->
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ progress.filename }}</h2>
+        
+        <!-- Status Text -->
+        <p class="text-gray-600 mb-4" id="status-text">
+          {% if progress.status == 'queued' %}Oczekuje w kolejce
+          {% elif progress.status == 'validating' %}Walidacja pliku
+          {% elif progress.status == 'uploading' %}Przesyłanie pliku
+          {% elif progress.status == 'processing' %}Przetwarzanie OCR
+          {% elif progress.status == 'completed' %}Przetwarzanie zakończone
+          {% elif progress.status == 'failed' %}Przetwarzanie nie powiodło się
+          {% elif progress.status == 'cancelled' %}Przesyłanie anulowane
+          {% else %}Status nieznany{% endif %}
+        </p>
+        
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+          <div class="progress-fill {% if progress.status in 'uploading,processing' %}active{% endif %}" 
+               style="width: {{ progress.progress_percent|default:0 }}%"
+               id="progress-fill"></div>
+        </div>
+        
+        <!-- Progress Percentage -->
+        <p class="text-sm font-medium text-gray-700" id="progress-text">
+          {{ progress.progress_percent|default:0|floatformat:0 }}%
+        </p>
+      </div>
+      
+      <!-- Status Details -->
+      <div class="status-details">
+        <div class="detail-item">
+          <div class="detail-label">Rozmiar pliku</div>
+          <div class="detail-value" id="file-size">
+            {% if progress.file_size %}
+              {% if progress.file_size < 1048576 %}
+                {{ progress.file_size|filesizeformat }}
+              {% else %}
+                {{ progress.file_size|filesizeformat }}
+              {% endif %}
+            {% else %}
+              -
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Czas rozpoczęcia</div>
+          <div class="detail-value" id="started-at">
+            {% if progress.started_at %}
+              {{ progress.started_at|date:"H:i:s" }}
+            {% else %}
+              -
+            {% endif %}
+          </div>
+        </div>
+        
+        {% if progress.estimated_time_remaining %}
+        <div class="detail-item">
+          <div class="detail-label">Pozostały czas</div>
+          <div class="detail-value" id="time-remaining">
+            {{ progress.estimated_time_remaining }}s
+          </div>
+        </div>
+        {% endif %}
+        
+        {% if progress.upload_speed %}
+        <div class="detail-item">
+          <div class="detail-label">Prędkość</div>
+          <div class="detail-value" id="upload-speed">
+            {{ progress.upload_speed|filesizeformat }}/s
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      
+      <!-- Error Message -->
+      {% if progress.error_message %}
+      <div class="error-message" id="error-message">
+        <strong>Błąd:</strong> {{ progress.error_message }}
+      </div>
+      {% endif %}
+      
+      <!-- Action Buttons -->
+      <div class="action-buttons" id="action-buttons">
+        {% if progress.status == 'completed' %}
+          <a href="{% url 'ocr_results_list' %}" class="btn btn-primary">
+            Zobacz wyniki OCR
+          </a>
+          <a href="{% url 'ocr_upload' %}" class="btn btn-secondary">
+            Prześlij kolejny plik
+          </a>
+        {% elif progress.status == 'failed' %}
+          <button onclick="retryUpload()" class="btn btn-primary" id="retry-btn">
+            Spróbuj ponownie
+          </button>
+          <a href="{% url 'ocr_upload' %}" class="btn btn-secondary">
+            Powrót do przesyłania
+          </a>
+        {% elif progress.status in 'queued,validating,uploading,processing' %}
+          <button onclick="cancelUpload()" class="btn btn-danger" id="cancel-btn">
+            Anuluj przesyłanie
+          </button>
+          <a href="{% url 'ocr_upload' %}" class="btn btn-secondary">
+            Prześlij inny plik
+          </a>
+        {% else %}
+          <a href="{% url 'ocr_upload' %}" class="btn btn-primary">
+            Powrót do przesyłania
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Auto-refresh Info -->
+    {% if progress.status in 'queued,validating,uploading,processing' %}
+    <div class="auto-refresh-info">
+      <p>Strona odświeża się automatycznie co {{ refresh_interval|default:2000|div:1000 }} sekund</p>
+      <p>Ostatnia aktualizacja: <span id="last-update">{{ "now"|date:"H:i:s" }}</span></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Configuration
+const uploadId = '{{ upload_id }}';
+const refreshInterval = {{ refresh_interval|default:2000 }};
+const csrfToken = '{{ csrf_token }}';
+
+// Auto-refresh for active uploads
+let refreshTimer = null;
+
+function startAutoRefresh() {
+    if (refreshTimer) return;
+    
+    refreshTimer = setInterval(async () => {
+        try {
+            const response = await fetch(`/api/v1/ocr/progress/${uploadId}/`, {
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const progress = await response.json();
+                updateProgressDisplay(progress);
+                updateLastUpdateTime();
+                
+                // Stop refreshing if upload is complete
+                if (['completed', 'failed', 'cancelled'].includes(progress.status)) {
+                    stopAutoRefresh();
+                }
+            }
+        } catch (error) {
+            console.error('Error updating progress:', error);
+        }
+    }, refreshInterval);
+}
+
+function stopAutoRefresh() {
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+    }
+}
+
+function updateProgressDisplay(progress) {
+    // Update status icon
+    const statusIcon = document.getElementById('status-icon');
+    const statusIcons = {
+        'queued': '⏳',
+        'validating': '🔍',
+        'uploading': '⬆️',
+        'processing': '⚙️',
+        'completed': '✅',
+        'failed': '❌',
+        'cancelled': '🚫'
+    };
+    if (statusIcon) {
+        statusIcon.textContent = statusIcons[progress.status] || '❓';
+    }
+    
+    // Update status text
+    const statusText = document.getElementById('status-text');
+    const statusTexts = {
+        'queued': 'Oczekuje w kolejce',
+        'validating': 'Walidacja pliku',
+        'uploading': 'Przesyłanie pliku',
+        'processing': 'Przetwarzanie OCR',
+        'completed': 'Przetwarzanie zakończone',
+        'failed': 'Przetwarzanie nie powiodło się',
+        'cancelled': 'Przesyłanie anulowane'
+    };
+    if (statusText) {
+        statusText.textContent = statusTexts[progress.status] || 'Status nieznany';
+    }
+    
+    // Update progress bar
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    if (progressFill && progressText) {
+        const percent = Math.round(progress.progress_percent || 0);
+        progressFill.style.width = `${percent}%`;
+        progressText.textContent = `${percent}%`;
+        
+        // Update progress bar class for animation
+        progressFill.className = 'progress-fill';
+        if (['uploading', 'processing'].includes(progress.status)) {
+            progressFill.classList.add('active');
+        }
+    }
+    
+    // Update status card class
+    const statusCard = document.getElementById('status-card');
+    if (statusCard) {
+        statusCard.className = `status-card status-${progress.status}`;
+    }
+    
+    // Update error message
+    const errorMessage = document.getElementById('error-message');
+    if (progress.error_message) {
+        if (!errorMessage) {
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'error-message';
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<strong>Błąd:</strong> ${progress.error_message}`;
+            document.querySelector('.status-details').after(errorDiv);
+        } else {
+            errorMessage.innerHTML = `<strong>Błąd:</strong> ${progress.error_message}`;
+        }
+    } else if (errorMessage) {
+        errorMessage.remove();
+    }
+    
+    // Update action buttons based on status
+    updateActionButtons(progress.status);
+}
+
+function updateActionButtons(status) {
+    const actionButtons = document.getElementById('action-buttons');
+    if (!actionButtons) return;
+    
+    let buttonsHtml = '';
+    
+    switch (status) {
+        case 'completed':
+            buttonsHtml = `
+                <a href="/ocr/results/" class="btn btn-primary">Zobacz wyniki OCR</a>
+                <a href="/ocr/upload/" class="btn btn-secondary">Prześlij kolejny plik</a>
+            `;
+            break;
+        case 'failed':
+            buttonsHtml = `
+                <button onclick="retryUpload()" class="btn btn-primary" id="retry-btn">Spróbuj ponownie</button>
+                <a href="/ocr/upload/" class="btn btn-secondary">Powrót do przesyłania</a>
+            `;
+            break;
+        case 'queued':
+        case 'validating':
+        case 'uploading':
+        case 'processing':
+            buttonsHtml = `
+                <button onclick="cancelUpload()" class="btn btn-danger" id="cancel-btn">Anuluj przesyłanie</button>
+                <a href="/ocr/upload/" class="btn btn-secondary">Prześlij inny plik</a>
+            `;
+            break;
+        default:
+            buttonsHtml = `
+                <a href="/ocr/upload/" class="btn btn-primary">Powrót do przesyłania</a>
+            `;
+    }
+    
+    actionButtons.innerHTML = buttonsHtml;
+}
+
+function updateLastUpdateTime() {
+    const lastUpdate = document.getElementById('last-update');
+    if (lastUpdate) {
+        const now = new Date();
+        lastUpdate.textContent = now.toLocaleTimeString('pl-PL');
+    }
+}
+
+async function cancelUpload() {
+    if (!confirm('Czy na pewno chcesz anulować przesyłanie?')) return;
+    
+    try {
+        const response = await fetch(`/api/v1/ocr/cancel/${uploadId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Nie udało się anulować przesyłania');
+        }
+    } catch (error) {
+        console.error('Error cancelling upload:', error);
+        alert('Wystąpił błąd podczas anulowania przesyłania');
+    }
+}
+
+async function retryUpload() {
+    try {
+        const response = await fetch(`/api/v1/ocr/retry/${uploadId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Nie udało się ponowić przesyłania');
+        }
+    } catch (error) {
+        console.error('Error retrying upload:', error);
+        alert('Wystąpił błąd podczas ponowienia przesyłania');
+    }
+}
+
+// Initialize auto-refresh for active uploads
+document.addEventListener('DOMContentLoaded', function() {
+    const currentStatus = '{{ progress.status }}';
+    if (['queued', 'validating', 'uploading', 'processing'].includes(currentStatus)) {
+        startAutoRefresh();
+    }
+});
+
+// Stop auto-refresh when page is hidden
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        stopAutoRefresh();
+    } else {
+        const currentStatus = '{{ progress.status }}';
+        if (['queued', 'validating', 'uploading', 'processing'].includes(currentStatus)) {
+            startAutoRefresh();
+        }
+    }
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    stopAutoRefresh();
+});
+</script>
+{% endblock %}

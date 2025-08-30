@@ -1,0 +1,294 @@
+{% extends "admin/base_site.html" %}
+{% load design_system %}
+
+{% block title %}{{ title }} | {{ site_title|default:"Django site admin" }}{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">Strona główna</a>
+        &rsaquo; {{ title }}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="django-design-system django-polish-business">
+        <h1>{{ title }}</h1>
+        
+        <div class="tools-intro">
+            <p>Narzędzia pomocne w zarządzaniu polskim biznesem i dokumentami.</p>
+        </div>
+        
+        {% ds_grid cols=2 gap="lg" %}
+            {% for tool in tools %}
+                {% ds_card "" title=tool.name %}
+                    <p>{{ tool.description }}</p>
+                    {% ds_button "Otwórz narzędzie" variant="primary" onclick="openTool('{{ tool.url }}')" %}
+                {% endcard %}
+            {% endfor %}
+        {% ds_grid_end %}
+        
+        <section class="tool-section" id="nip-validator">
+            <h2>Walidator NIP</h2>
+            {% ds_form_start %}
+                <div class="form-group">
+                    <label for="nip-input" class="form-label">Numer NIP</label>
+                    <input type="text" id="nip-input" class="form-control nip-input" placeholder="123-456-78-90">
+                    <div id="nip-result" class="validation-result"></div>
+                </div>
+                {% ds_button "Sprawdź NIP" type="button" onclick="validateNIP()" %}
+            {% ds_form_end %}
+        </section>
+        
+        <section class="tool-section" id="vat-calculator">
+            <h2>Kalkulator VAT</h2>
+            {% ds_form_start %}
+                {% ds_grid cols=3 gap="md" %}
+                    <div class="form-group">
+                        <label for="net-amount" class="form-label">Kwota netto</label>
+                        <div class="currency-input-wrapper">
+                            <input type="number" id="net-amount" class="form-control currency-input" placeholder="0.00" step="0.01">
+                            <span class="currency-symbol">PLN</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="vat-rate" class="form-label">Stawka VAT</label>
+                        <select id="vat-rate" class="form-control vat-rate-select">
+                            <option value="0">0%</option>
+                            <option value="0.05">5%</option>
+                            <option value="0.08">8%</option>
+                            <option value="0.23" selected>23%</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kwota brutto</label>
+                        <div class="currency-input-wrapper">
+                            <input type="number" id="gross-amount" class="form-control currency-input" readonly>
+                            <span class="currency-symbol">PLN</span>
+                        </div>
+                    </div>
+                {% ds_grid_end %}
+                {% ds_button "Oblicz" type="button" onclick="calculateVAT()" %}
+            {% ds_form_end %}
+        </section>
+        
+        <section class="tool-section" id="date-formatter">
+            <h2>Formatowanie dat</h2>
+            {% ds_form_start %}
+                {% ds_grid cols=2 gap="md" %}
+                    <div class="form-group">
+                        <label for="input-date" class="form-label">Data (YYYY-MM-DD)</label>
+                        <input type="date" id="input-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sformatowana data</label>
+                        <input type="text" id="formatted-date" class="form-control" readonly>
+                    </div>
+                {% ds_grid_end %}
+                {% ds_button "Formatuj" type="button" onclick="formatDate()" %}
+            {% ds_form_end %}
+        </section>
+        
+        <section class="tool-section" id="currency-formatter">
+            <h2>Formatowanie walut</h2>
+            {% ds_form_start %}
+                {% ds_grid cols=2 gap="md" %}
+                    <div class="form-group">
+                        <label for="input-amount" class="form-label">Kwota</label>
+                        <input type="number" id="input-amount" class="form-control" placeholder="1234.56" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sformatowana kwota</label>
+                        <input type="text" id="formatted-amount" class="form-control" readonly>
+                    </div>
+                {% ds_grid_end %}
+                {% ds_button "Formatuj" type="button" onclick="formatCurrency()" %}
+            {% ds_form_end %}
+        </section>
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .tools-intro {
+            background: var(--color-background-secondary);
+            padding: var(--spacing-4);
+            border-radius: var(--border-radius-md);
+            margin-bottom: var(--spacing-6);
+            border: 1px solid var(--color-border-default);
+        }
+        
+        .tool-section {
+            margin-top: var(--spacing-8);
+            padding: var(--spacing-4);
+            background: var(--color-background-primary);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--color-border-default);
+        }
+        
+        .tool-section h2 {
+            color: var(--color-text-primary);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-4);
+        }
+        
+        .validation-result {
+            margin-top: var(--spacing-2);
+            padding: var(--spacing-2);
+            border-radius: var(--border-radius-sm);
+            font-size: var(--font-size-sm);
+        }
+        
+        .validation-result.valid {
+            background: var(--color-status-success-background);
+            color: var(--color-status-success);
+            border: 1px solid var(--color-status-success-border);
+        }
+        
+        .validation-result.invalid {
+            background: var(--color-status-error-background);
+            color: var(--color-status-error);
+            border: 1px solid var(--color-status-error-border);
+        }
+        
+        .currency-input-wrapper {
+            display: flex;
+            align-items: stretch;
+        }
+        
+        .currency-input-wrapper .currency-input {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+            border-right: none !important;
+            text-align: right !important;
+        }
+        
+        .currency-input-wrapper .currency-symbol {
+            background: var(--color-background-secondary);
+            border: 1px solid var(--color-border-default);
+            border-left: none;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: var(--border-radius-md);
+            border-bottom-right-radius: var(--border-radius-md);
+            padding: var(--spacing-2) var(--spacing-3);
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-base);
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    
+    <script>
+        function openTool(url) {
+            document.querySelector(url).scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function validateNIP() {
+            const input = document.getElementById('nip-input');
+            const result = document.getElementById('nip-result');
+            const nip = input.value.trim();
+            
+            if (!nip) {
+                result.textContent = 'Wprowadź numer NIP';
+                result.className = 'validation-result invalid';
+                return;
+            }
+            
+            // Remove all non-digit characters
+            const cleanNip = nip.replace(/\D/g, '');
+            
+            if (cleanNip.length !== 10) {
+                result.textContent = 'NIP musi mieć 10 cyfr';
+                result.className = 'validation-result invalid';
+                return;
+            }
+            
+            // Calculate checksum
+            const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+            let sum = 0;
+            
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cleanNip[i]) * weights[i];
+            }
+            
+            const checksum = sum % 11;
+            const lastDigit = parseInt(cleanNip[9]);
+            
+            if (checksum === lastDigit) {
+                result.textContent = 'NIP jest prawidłowy ✓';
+                result.className = 'validation-result valid';
+                
+                // Format NIP
+                const formatted = cleanNip.slice(0, 3) + '-' + cleanNip.slice(3, 6) + '-' + 
+                                cleanNip.slice(6, 8) + '-' + cleanNip.slice(8, 10);
+                input.value = formatted;
+            } else {
+                result.textContent = 'NIP jest nieprawidłowy ✗';
+                result.className = 'validation-result invalid';
+            }
+        }
+        
+        function calculateVAT() {
+            const netAmount = parseFloat(document.getElementById('net-amount').value) || 0;
+            const vatRate = parseFloat(document.getElementById('vat-rate').value) || 0;
+            
+            const vatAmount = netAmount * vatRate;
+            const grossAmount = netAmount + vatAmount;
+            
+            document.getElementById('gross-amount').value = grossAmount.toFixed(2);
+        }
+        
+        function formatDate() {
+            const inputDate = document.getElementById('input-date').value;
+            const formattedDate = document.getElementById('formatted-date');
+            
+            if (inputDate) {
+                const date = new Date(inputDate);
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear();
+                
+                formattedDate.value = `${day}.${month}.${year}`;
+            }
+        }
+        
+        function formatCurrency() {
+            const inputAmount = parseFloat(document.getElementById('input-amount').value) || 0;
+            const formattedAmount = document.getElementById('formatted-amount');
+            
+            const formatted = inputAmount.toLocaleString('pl-PL', {
+                style: 'currency',
+                currency: 'PLN',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            formattedAmount.value = formatted;
+        }
+        
+        // Auto-calculate VAT on input change
+        document.addEventListener('DOMContentLoaded', function() {
+            const netAmountInput = document.getElementById('net-amount');
+            const vatRateSelect = document.getElementById('vat-rate');
+            
+            if (netAmountInput && vatRateSelect) {
+                netAmountInput.addEventListener('input', calculateVAT);
+                vatRateSelect.addEventListener('change', calculateVAT);
+            }
+            
+            // Auto-format date on input change
+            const inputDateField = document.getElementById('input-date');
+            if (inputDateField) {
+                inputDateField.addEventListener('change', formatDate);
+            }
+            
+            // Auto-format currency on input change
+            const inputAmountField = document.getElementById('input-amount');
+            if (inputAmountField) {
+                inputAmountField.addEventListener('input', formatCurrency);
+            }
+        });
+    </script>
+{% endblock %}

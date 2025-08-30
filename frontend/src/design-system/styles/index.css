@@ -1,0 +1,15 @@
+/* FaktuLove Design System Styles */
+
+/* Import design tokens */
+@import './tokens.css';
+
+/* Base styles */
+@import './base.css';
+
+/* Component styles will be imported here as they are created */
+/* @import './components/button.css'; */
+/* @import './components/input.css'; */
+/* @import './components/card.css'; */
+
+/* Utility classes */
+@import './utilities.css';

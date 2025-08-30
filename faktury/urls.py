@@ -2,11 +2,13 @@ from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
 from . import views_modules
-from .views_modules import ocr_status_views
+from .views_modules import ocr_status_views, search_api_views, data_export_import_views, health_monitoring_views
+from .admin_api import DashboardStatsView, SystemHealthView, RecentActivityView
 
 urlpatterns = [
 path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus'),
     path('', views.panel_uzytkownika, name='panel_uzytkownika'),
+    path('dashboard/', views.panel_uzytkownika, name='dashboard'),  # Alias for main dashboard
     path('edytuj_fakture/<int:pk>/', views.edytuj_fakture, name='edytuj_fakture'),
     path('usun_fakture/<int:pk>/', views.usun_fakture, name='usun_fakture'),
     path('dodaj_kontrahenta/', views.dodaj_kontrahenta, name='dodaj_kontrahenta'),
@@ -108,28 +110,34 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
     path('api/faktury/', views.api_faktury_list, name='api_faktury_list'),
     path('api/faktury/<int:pk>/', views.api_faktura_detail, name='api_faktura_detail'),
     
-    # OCR URLs
-    path('ocr/', views_modules.ocr_views.ocr_upload_view, name='ocr_upload'),
-    path('ocr/upload/', views_modules.ocr_views.ocr_upload_view, name='ocr_upload_alt'),
-    path('ocr/status/<int:document_id>/', views_modules.ocr_views.ocr_status_view, name='ocr_status'),
-    path('ocr/results/', views_modules.ocr_views.ocr_results_list, name='ocr_results'),
-    path('ocr/result/<int:result_id>/', views_modules.ocr_views.ocr_result_detail, name='ocr_result_detail'),
-    path('ocr/create-invoice/<int:result_id>/', views_modules.ocr_views.create_invoice_from_ocr, name='create_invoice_from_ocr'),
-    path('ocr/test-csrf/', views_modules.ocr_views.test_csrf_view, name='ocr_test_csrf'),
-    path('ocr/get-csrf-token/', views_modules.ocr_views.get_csrf_token, name='get_csrf_token'),
+
     path('api/kontrahenci/', views.api_kontrahenci_list, name='api_kontrahenci_list'),
     path('api/kontrahenci/<int:pk>/', views.api_kontrahent_detail, name='api_kontrahent_detail'),
     path('api/produkty/', views.api_produkty_list, name='api_produkty_list'),
     path('api/produkty/<int:pk>/', views.api_produkt_detail, name='api_produkt_detail'),
     path('api/zadania/', views.api_zadania_list, name='api_zadania_list'),
     path('api/zadania/<int:pk>/', views.api_zadanie_detail, name='api_zadanie_detail'),
+    
+    # Error reporting APIs
+    path('api/javascript-errors/', views_modules.error_api_views.javascript_errors, name='api_javascript_errors'),
+    path('api/static-file-error/', views_modules.error_api_views.static_file_errors, name='api_static_file_errors'),
+    path('api/performance-metrics/', views_modules.error_api_views.performance_metrics, name='api_performance_metrics'),
+    path('api/health/network/', views_modules.error_api_views.network_status, name='api_network_status'),
+    path('api/sync/offline-data/', views_modules.error_api_views.OfflineSyncView.as_view(), name='api_offline_sync'),
+    path('api/sync/status/', views_modules.error_api_views.OfflineSyncView.as_view(), name='api_sync_status'),
+    path('api/error-report/', views_modules.error_api_views.ErrorReportView.as_view(), name='api_error_report'),
+    
+    # Validation APIs
+    path('api/validate-field/', views_modules.validation_api_views.validate_field, name='api_validate_field'),
+    path('api/validate-form/', views_modules.validation_api_views.FormValidationView.as_view(), name='api_validate_form'),
+    path('api/validation-rules/', views_modules.validation_api_views.validation_rules, name='api_validation_rules'),
+    path('api/validate-business-number/', views_modules.validation_api_views.validate_business_number, name='api_validate_business_number'),
     path('wiadomosci/', views.lista_wiadomosci, name='lista_wiadomosci'),
     path('wiadomosci/wyslij/', views.wyslij_wiadomosc, name='wyslij_wiadomosc'),
     path('wiadomosci/systemowa/', views.wyslij_systemowa, name='wyslij_systemowa'),
     path('wiadomosci/<int:pk>/', views.szczegoly_wiadomosci, name='szczegoly_wiadomosci'),
     path('wiadomosci/odp/<int:pk>/', views.odp_wiadomosc, name='odp_wiadomosc'),
     path('dodaj/produkt/ajax/', views.dodaj_produkt_ajax, name='dodaj_produkt_ajax'),
-    path('dodaj_fakture/', views.dodaj_fakture_sprzedaz, name='dodaj_fakture'),
     path('pobierz_dane_produktu/', views.pobierz_dane_produktu, name='pobierz_dane_produktu'),
     path('faktura/<int:pk>/generuj_kp/', views.generate_kp, name='generate_kp'),
     path('zadania/usun/<int:zadanie_id>/', views.usun_zadanie, name='usun_zadanie'),
@@ -142,6 +150,7 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
     path('ocr/', include([
         # Main OCR views (HTML responses)
         path('upload/', views_modules.ocr_views.ocr_upload_view, name='ocr_upload'),
+        path('upload/progress/<str:upload_id>/', views_modules.ocr_views.ocr_upload_progress_view, name='ocr_upload_progress'),
         path('status/<int:document_id>/', views_modules.ocr_views.ocr_status_view, name='ocr_status'),
         path('results/', views_modules.ocr_views.ocr_results_list, name='ocr_results_list'),
         path('result/<int:result_id>/', views_modules.ocr_views.ocr_result_detail, name='ocr_result_detail'),
@@ -157,7 +166,18 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
         
         # REST API endpoints (JSON responses with DRF authentication)
         # Authentication: @api_view + @permission_classes([IsAuthenticated])
+        path('api/validate-upload/', views_modules.ocr_views.api_validate_upload, name='ocr_api_validate_upload'),
         path('api/upload/', views_modules.ocr_views.api_upload_document, name='ocr_api_upload'),
+        path('api/progress/<str:upload_id>/', views_modules.ocr_views.api_upload_progress, name='ocr_api_upload_progress'),
+        path('api/cancel/<str:upload_id>/', views_modules.ocr_views.api_cancel_upload, name='ocr_api_cancel_upload'),
+        path('api/retry/<str:upload_id>/', views_modules.ocr_views.api_retry_upload, name='ocr_api_retry_upload'),
+        path('api/queue/status/', views_modules.ocr_views.api_queue_status, name='ocr_api_queue_status'),
+        path('api/feedback/<int:result_id>/', views_modules.ocr_views.api_ocr_feedback, name='ocr_api_feedback'),
+        path('api/confidence/<int:result_id>/', views_modules.ocr_views.api_confidence_explanation, name='ocr_api_confidence'),
+        path('api/suggestions/<int:result_id>/', views_modules.ocr_views.api_improvement_suggestions, name='ocr_api_suggestions'),
+        path('api/correction/<int:result_id>/', views_modules.ocr_views.api_correction_interface, name='ocr_api_correction'),
+        path('api/correction/<int:result_id>/apply/', views_modules.ocr_views.api_apply_corrections, name='ocr_api_apply_corrections'),
+        path('api/documents/<int:document_id>/retry/', views_modules.ocr_views.api_retry_processing, name='ocr_api_retry_processing'),
         path('api/documents/<int:document_id>/status/', views_modules.ocr_views.api_processing_status, name='ocr_api_status'),
         path('api/documents/<int:document_id>/status/unified/', ocr_status_views.api_get_status, name='ocr_api_status_unified'),
         path('api/documents/status/bulk/', ocr_status_views.api_bulk_status, name='ocr_api_bulk_status'),
@@ -165,4 +185,58 @@ path('api/get-company-data/', views.pobierz_dane_z_gus, name='pobierz_dane_z_gus
     ])),
     
     # REST API endpoints are included in main project URLs (faktulove/urls.py)
+    
+    # Admin Dashboard API endpoints
+    path('admin/dashboard/stats/', DashboardStatsView.as_view(), name='admin_dashboard_stats'),
+    path('admin/dashboard/health/', SystemHealthView.as_view(), name='admin_system_health'),
+    path('admin/dashboard/recent-activity/', RecentActivityView.as_view(), name='admin_recent_activity'),
+    
+    # Company Management URLs
+    path('companies/', include('faktury.urls_company')),
+    
+    # Advanced Search URLs
+    path('search/', views.advanced_search_view, name='advanced_search'),
+    path('search/quick/', search_api_views.QuickSearchView.as_view(), name='quick_search'),
+    
+    # Search API endpoints
+    path('api/search/invoices/', search_api_views.search_invoices_api, name='api_search_invoices'),
+    path('api/search/companies/', search_api_views.search_companies_api, name='api_search_companies'),
+    path('api/search/suggestions/', search_api_views.search_suggestions_api, name='api_search_suggestions'),
+    path('api/search/filter-options/', search_api_views.filter_options_api, name='api_filter_options'),
+    path('api/search/history/', search_api_views.search_history_api, name='api_search_history'),
+    path('api/search/save/', search_api_views.save_search_api, name='api_save_search'),
+    path('api/search/saved/', search_api_views.saved_searches_api, name='api_saved_searches'),
+    path('api/search/saved/<str:search_name>/', search_api_views.delete_saved_search_api, name='api_delete_saved_search'),
+    path('api/search/stats/', search_api_views.search_stats_api, name='api_search_stats'),
+    
+    # Data Export and Import URLs
+    path('data-management/', views.data_management_view, name='data_management'),
+    
+    # Export API endpoints
+    path('api/export/invoices/', data_export_import_views.export_invoices_api, name='api_export_invoices'),
+    path('api/export/companies/', data_export_import_views.export_companies_api, name='api_export_companies'),
+    path('api/export/products/', data_export_import_views.export_products_api, name='api_export_products'),
+    path('api/export/templates/', data_export_import_views.export_templates_api, name='api_export_templates'),
+    path('api/export/statistics/', data_export_import_views.export_statistics_api, name='api_export_statistics'),
+    path('api/export/progress/<str:progress_id>/', data_export_import_views.export_progress_api, name='api_export_progress'),
+    
+    # Import API endpoints
+    path('api/import/data/', data_export_import_views.import_data_api, name='api_import_data'),
+    
+    # Backup and Restore API endpoints
+    path('api/create/backup/', data_export_import_views.create_backup_api, name='api_create_backup'),
+    path('api/restore/backup/', data_export_import_views.restore_backup_api, name='api_restore_backup'),
+    
+    # Bulk Operations
+    path('api/bulk-operations/', data_export_import_views.BulkOperationsView.as_view(), name='api_bulk_operations'),
+    
+    # Health Monitoring URLs (Admin only)
+    path('admin/health/', include([
+        path('dashboard/', views_modules.health_monitoring_views.SystemHealthDashboardView.as_view(), name='admin_health_dashboard'),
+        path('api/history/', views_modules.health_monitoring_views.health_history_api, name='admin_health_history_api'),
+        path('api/trigger/', views_modules.health_monitoring_views.trigger_health_check, name='admin_trigger_health_check'),
+        path('api/component/<str:component_name>/', views_modules.health_monitoring_views.component_details_api, name='admin_component_details'),
+        path('api/test-alerts/', views_modules.health_monitoring_views.test_alerting_system, name='admin_test_alerts'),
+        path('api/metrics/', views_modules.health_monitoring_views.system_metrics_api, name='admin_system_metrics'),
+    ])),
 ]

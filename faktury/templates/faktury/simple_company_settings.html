@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ustawienia firmy{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-3">
+                <iconify-icon icon="solar:settings-linear" class="text-primary me-2"></iconify-icon>
+                Ustawienia firmy
+            </h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'panel_uzytkownika' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Ustawienia</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-transparent border-bottom">
+                    <h5 class="mb-0">
+                        <iconify-icon icon="solar:slider-vertical-linear" class="text-primary me-2"></iconify-icon>
+                        Ustawienia systemu
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <!-- Company Data Section -->
+                        <div class="col-md-6">
+                            <div class="card border h-100">
+                                <div class="card-header bg-transparent">
+                                    <h6 class="mb-0">
+                                        <iconify-icon icon="solar:building-2-linear" class="text-info me-2"></iconify-icon>
+                                        Dane firmy
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="settings-list">
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title fw-medium">
+                                                    Edytuj dane firmy
+                                                </div>
+                                                <div class="settings-item-description text-muted">
+                                                    Zarządzaj podstawowymi informacjami o firmie
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                <a href="{% url 'edytuj_firme' %}" class="btn btn-sm btn-outline-primary">
+                                                    <iconify-icon icon="solar:pen-linear"></iconify-icon>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title fw-medium">
+                                                    Zarządzaj kontrahentami
+                                                </div>
+                                                <div class="settings-item-description text-muted">
+                                                    Dodawaj i edytuj dane kontrahentów
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                <a href="{% url 'kontrahenci' %}" class="btn btn-sm btn-outline-primary">
+                                                    <iconify-icon icon="solar:users-group-rounded-linear"></iconify-icon>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title fw-medium">
+                                                    Zarządzaj produktami
+                                                </div>
+                                                <div class="settings-item-description text-muted">
+                                                    Katalog produktów i usług
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                <a href="{% url 'produkty' %}" class="btn btn-sm btn-outline-primary">
+                                                    <iconify-icon icon="solar:box-linear"></iconify-icon>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Section -->
+                        <div class="col-md-6">
+                            <div class="card border h-100">
+                                <div class="card-header bg-transparent">
+                                    <h6 class="mb-0">
+                                        <iconify-icon icon="solar:server-linear" class="text-success me-2"></iconify-icon>
+                                        System
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="settings-list">
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title fw-medium">
+                                                    OCR - Przetwarzanie dokumentów
+                                                </div>
+                                                <div class="settings-item-description text-muted">
+                                                    Automatyczne rozpoznawanie tekstu z dokumentów
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                <a href="{% url 'ocr_upload' %}" class="btn btn-sm btn-outline-primary">
+                                                    <iconify-icon icon="solar:camera-linear"></iconify-icon>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title fw-medium">
+                                                    Zespoły i zadania
+                                                </div>
+                                                <div class="settings-item-description text-muted">
+                                                    Zarządzanie zespołami i projektami
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                <a href="{% url 'lista_zespolow' %}" class="btn btn-sm btn-outline-primary">
+                                                    <iconify-icon icon="solar:users-group-two-rounded-linear"></iconify-icon>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="settings-item">
+                                            <div class="settings-item-content">
+                                                <div class="settings-item-title fw-medium">
+                                                    Powiadomienia
+                                                </div>
+                                                <div class="settings-item-description text-muted">
+                                                    Zarządzanie powiadomieniami systemowymi
+                                                </div>
+                                            </div>
+                                            <div class="settings-item-action">
+                                                <a href="{% url 'notifications_list' %}" class="btn btn-sm btn-outline-primary">
+                                                    <iconify-icon icon="solar:bell-linear"></iconify-icon>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-5">
+
+                    <!-- Quick Actions Section -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="mb-4">
+                                <iconify-icon icon="solar:bolt-linear" class="text-warning me-2"></iconify-icon>
+                                Szybkie akcje
+                            </h6>
+                            
+                            <div class="d-flex gap-3 flex-wrap">
+                                <a href="{% url 'dodaj_fakture' %}" class="btn btn-primary">
+                                    <iconify-icon icon="solar:add-circle-linear" class="me-2"></iconify-icon>
+                                    Nowa faktura
+                                </a>
+                                
+                                <a href="{% url 'dodaj_kontrahenta' %}" class="btn btn-secondary">
+                                    <iconify-icon icon="solar:user-plus-linear" class="me-2"></iconify-icon>
+                                    Nowy kontrahent
+                                </a>
+                                
+                                <a href="{% url 'dodaj_produkt' %}" class="btn btn-secondary">
+                                    <iconify-icon icon="solar:box-linear" class="me-2"></iconify-icon>
+                                    Nowy produkt
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-item:hover {
+    background-color: #f8fafc;
+    border-radius: 8px;
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.settings-item-content {
+    flex: 1;
+}
+
+.settings-item-title {
+    margin-bottom: 4px;
+}
+
+.settings-item-description {
+    line-height: 1.4;
+    font-size: 0.875rem;
+}
+
+.settings-item-action {
+    flex-shrink: 0;
+    margin-left: 16px;
+}
+
+@media (max-width: 768px) {
+    .settings-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .settings-item-action {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

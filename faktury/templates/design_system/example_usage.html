@@ -1,0 +1,181 @@
+{% load design_system %}
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System - Przykład użycia</title>
+    <link rel="stylesheet" href="{% url 'django.contrib.staticfiles.views.serve' path='faktury/css/design-system.css' %}">
+</head>
+<body class="django-design-system">
+    {% ds_accessibility_skip_links %}
+    
+    <header>
+        <nav id="navigation">
+            {% ds_breadcrumb %}
+            {% ds_theme_toggle %}
+        </nav>
+    </header>
+    
+    <main id="main-content">
+        <div class="container">
+            <h1>Przykład użycia Design System</h1>
+            
+            <!-- Alerts -->
+            <section>
+                <h2>Alerty</h2>
+                {% ds_alert "To jest alert informacyjny" variant="info" %}
+                {% ds_alert "Operacja zakończona sukcesem" variant="success" %}
+                {% ds_alert "Uwaga! Sprawdź wprowadzone dane" variant="warning" %}
+                {% ds_alert "Wystąpił błąd podczas przetwarzania" variant="danger" dismissible=True %}
+            </section>
+            
+            <!-- Buttons -->
+            <section>
+                <h2>Przyciski</h2>
+                {% ds_flex gap="md" %}
+                    {% ds_button "Przycisk główny" variant="primary" %}
+                    {% ds_button "Przycisk drugorzędny" variant="secondary" %}
+                    {% ds_button "Przycisk niebezpieczny" variant="danger" %}
+                {% ds_flex_end %}
+            </section>
+            
+            <!-- Badges -->
+            <section>
+                <h2>Znaczniki</h2>
+                {% ds_flex gap="sm" %}
+                    {% ds_badge "Nowy" variant="primary" %}
+                    {% ds_badge "Aktywny" variant="success" %}
+                    {% ds_badge "Oczekujący" variant="warning" %}
+                    {% ds_badge "Anulowany" variant="danger" %}
+                {% ds_flex_end %}
+            </section>
+            
+            <!-- Polish Business Components -->
+            <section>
+                <h2>Komponenty biznesowe</h2>
+                {% ds_flex gap="md" %}
+                    {% ds_invoice_status_badge "paid" %}
+                    {% ds_invoice_status_badge "overdue" %}
+                    {% ds_compliance_indicator True %}
+                    {% ds_compliance_indicator False %}
+                {% ds_flex_end %}
+            </section>
+            
+            <!-- Progress -->
+            <section>
+                <h2>Pasek postępu</h2>
+                {% ds_progress 75 100 "Postęp przetwarzania" %}
+                {% ds_progress 45 100 "Upload pliku" %}
+            </section>
+            
+            <!-- Loading -->
+            <section>
+                <h2>Ładowanie</h2>
+                {% ds_flex gap="md" align="center" %}
+                    {% ds_loading_spinner size="sm" %}
+                    {% ds_loading_spinner size="md" %}
+                    {% ds_loading_spinner size="lg" %}
+                {% ds_flex_end %}
+            </section>
+            
+            <!-- Form Example -->
+            <section>
+                <h2>Formularz</h2>
+                {% ds_form_start action="/submit" method="post" %}
+                    {% ds_fieldset_start "Dane faktury" %}
+                        {% ds_grid cols=2 gap="md" %}
+                            <div>
+                                {% ds_input "invoice_number" label="Numer faktury" required=True %}
+                            </div>
+                            <div>
+                                {% ds_select "company" options=companies label="Firma" required=True %}
+                            </div>
+                        {% ds_grid_end %}
+                        
+                        {% ds_grid cols=2 gap="md" %}
+                            <div>
+                                <!-- Example of Polish business field usage -->
+                                <div class="form-group django-form django-polish-business">
+                                    <label for="nip" class="form-label required">
+                                        NIP <span class="text-error">*</span>
+                                    </label>
+                                    <input type="text" name="nip" id="nip" class="form-control nip-input" required>
+                                </div>
+                            </div>
+                            <div>
+                                <!-- VAT rate selector example -->
+                                {% ds_vat_rate_selector "vat_rate" label="Stawka VAT" required=True %}
+                            </div>
+                        {% ds_grid_end %}
+                    {% ds_fieldset_end %}
+                    
+                    {% ds_flex justify="end" gap="sm" %}
+                        {% ds_button "Anuluj" variant="secondary" type="button" %}
+                        {% ds_button "Zapisz" variant="primary" type="submit" %}
+                    {% ds_flex_end %}
+                {% ds_form_end %}
+            </section>
+            
+            <!-- Table Example -->
+            <section>
+                <h2>Tabela</h2>
+                {% ds_table data=invoices columns=invoice_columns striped=True hover=True %}
+            </section>
+            
+            <!-- Cards -->
+            <section>
+                <h2>Karty</h2>
+                {% ds_grid cols=3 gap="lg" %}
+                    {% ds_card "Zawartość pierwszej karty" title="Karta 1" %}
+                    {% ds_card "Zawartość drugiej karty" title="Karta 2" %}
+                    {% ds_card "Zawartość trzeciej karty" title="Karta 3" %}
+                {% ds_grid_end %}
+            </section>
+            
+            <!-- Tooltips -->
+            <section>
+                <h2>Podpowiedzi</h2>
+                <p>
+                    {% ds_tooltip "Najedź na ten tekst" "To jest podpowiedź" position="top" %}
+                    aby zobaczyć podpowiedź.
+                </p>
+            </section>
+        </div>
+    </main>
+    
+    <script>
+        // Example data for demonstration
+        const companies = [
+            ['1', 'Firma ABC Sp. z o.o.'],
+            ['2', 'XYZ Corporation'],
+            ['3', 'Przedsiębiorstwo 123']
+        ];
+        
+        const invoices = [
+            {
+                'number': 'FV/2025/001',
+                'company': 'Firma ABC',
+                'amount': '1250.00',
+                'status': 'paid',
+                'date': '2025-01-15'
+            },
+            {
+                'number': 'FV/2025/002', 
+                'company': 'XYZ Corp',
+                'amount': '750.50',
+                'status': 'sent',
+                'date': '2025-01-20'
+            }
+        ];
+        
+        const invoice_columns = [
+            {'key': 'number', 'header': 'Numer', 'sortable': true},
+            {'key': 'company', 'header': 'Firma'},
+            {'key': 'amount', 'header': 'Kwota', 'class': 'text-right'},
+            {'key': 'status', 'header': 'Status'},
+            {'key': 'date', 'header': 'Data'}
+        ];
+    </script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+{% load static %}
+
+<!-- Feedback System Scripts -->
+<script src="{% static 'js/feedback-system.js' %}"></script>
+
+<script>
+// Initialize feedback system with Polish messages
+document.addEventListener('DOMContentLoaded', function() {
+    // Configure feedback system
+    if (window.feedbackSystem) {
+        // Set Polish messages
+        window.feedbackSystem.polishMessages = {
+            success: {
+                saved: 'Dane zostały zapisane pomyślnie',
+                updated: 'Dane zostały zaktualizowane',
+                deleted: 'Element został usunięty',
+                sent: 'Wiadomość została wysłana',
+                uploaded: 'Plik został przesłany',
+                processed: 'Operacja zakończona pomyślnie'
+            },
+            error: {
+                network: 'Błąd połączenia sieciowego',
+                server: 'Błąd serwera',
+                validation: 'Błąd walidacji danych',
+                permission: 'Brak uprawnień',
+                notFound: 'Nie znaleziono zasobu',
+                timeout: 'Przekroczono limit czasu'
+            },
+            warning: {
+                unsaved: 'Masz niezapisane zmiany',
+                leaving: 'Czy na pewno chcesz opuścić stronę?',
+                delete: 'Czy na pewno chcesz usunąć ten element?',
+                overwrite: 'Plik już istnieje. Czy chcesz go zastąpić?'
+            },
+            info: {
+                loading: 'Ładowanie...',
+                processing: 'Przetwarzanie...',
+                saving: 'Zapisywanie...',
+                uploading: 'Przesyłanie...',
+                syncing: 'Synchronizacja...'
+            }
+        };
+    }
+    
+    // Handle AJAX form submissions with feedback
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        
+        if (form.dataset.ajaxSubmit === 'true') {
+            e.preventDefault();
+            handleAjaxFormSubmission(form);
+        }
+    });
+    
+    // Handle file uploads with progress
+    document.addEventListener('change', function(e) {
+        const input = e.target;
+        
+        if (input.type === 'file' && input.dataset.uploadProgress === 'true') {
+            handleFileUploadWithProgress(input);
+        }
+    });
+    
+    // Handle long-running operations
+    window.addEventListener('beforeunload', function(e) {
+        const activeOperations = window.feedbackSystem.progressBars.size;
+        
+        if (activeOperations > 0) {
+            const message = 'Trwają operacje w tle. Czy na pewno chcesz opuścić stronę?';
+            e.returnValue = message;
+            return message;
+        }
+    });
+});
+
+function handleAjaxFormSubmission(form) {
+    const formData = new FormData(form);
+    const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
+    const originalText = submitButton ? submitButton.textContent : '';
+    
+    // Show loading state
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Zapisywanie...';
+    }
+    
+    // Show progress indicator for long operations
+    const progressId = `form-submit-${Date.now()}`;
+    window.feedbackSystem.createProgressIndicator(progressId, 'Zapisywanie danych', {
+        details: 'Przesyłanie formularza...'
+    });
+    
+    fetch(form.action, {
+        method: form.method || 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        window.feedbackSystem.updateProgress(progressId, 50, 'Przetwarzanie danych...');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        window.feedbackSystem.updateProgress(progressId, 100, 'Zakończono pomyślnie');
+        
+        if (data.success) {
+            window.feedbackSystem.showSuccess(
+                'Sukces',
+                data.message || 'Dane zostały zapisane pomyślnie',
+                {
+                    actions: data.redirect_url ? [{
+                        id: 'redirect',
+                        text: 'Przejdź dalej',
+                        callback: () => window.location.href = data.redirect_url
+                    }] : []
+                }
+            );
+            
+            // Reset form if specified
+            if (data.reset_form) {
+                form.reset();
+            }
+            
+            // Redirect after delay if specified
+            if (data.redirect_url && data.auto_redirect !== false) {
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 2000);
+            }
+        } else {
+            throw new Error(data.message || 'Wystąpił błąd podczas zapisywania');
+        }
+    })
+    .catch(error => {
+        console.error('Form submission error:', error);
+        
+        window.feedbackSystem.removeProgress(progressId);
+        window.feedbackSystem.showError(
+            'Błąd',
+            error.message || 'Wystąpił błąd podczas zapisywania danych',
+            {
+                actions: [{
+                    id: 'retry',
+                    text: 'Spróbuj ponownie',
+                    callback: () => handleAjaxFormSubmission(form)
+                }]
+            }
+        );
+    })
+    .finally(() => {
+        // Restore submit button
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+        }
+    });
+}
+
+function handleFileUploadWithProgress(input) {
+    const files = Array.from(input.files);
+    
+    files.forEach((file, index) => {
+        const progressId = `upload-${Date.now()}-${index}`;
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            formData.append('csrfmiddlewaretoken', csrfToken.value);
+        }
+        
+        window.feedbackSystem.createProgressIndicator(progressId, `Przesyłanie: ${file.name}`, {
+            details: `Rozmiar: ${formatFileSize(file.size)}`
+        });
+        
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percentage = (e.loaded / e.total) * 100;
+                window.feedbackSystem.updateProgress(
+                    progressId, 
+                    percentage, 
+                    `Przesłano: ${formatFileSize(e.loaded)} / ${formatFileSize(e.total)}`
+                );
+            }
+        });
+        
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    
+                    if (response.success) {
+                        window.feedbackSystem.completeProgress(progressId, 'Plik przesłany pomyślnie');
+                        
+                        // Trigger custom event for file upload completion
+                        const event = new CustomEvent('fileUploaded', {
+                            detail: { file, response }
+                        });
+                        input.dispatchEvent(event);
+                    } else {
+                        throw new Error(response.message || 'Błąd przesyłania pliku');
+                    }
+                } catch (e) {
+                    throw new Error('Nieprawidłowa odpowiedź serwera');
+                }
+            } else {
+                throw new Error(`HTTP ${xhr.status}: ${xhr.statusText}`);
+            }
+        });
+        
+        xhr.addEventListener('error', () => {
+            window.feedbackSystem.removeProgress(progressId);
+            window.feedbackSystem.showError(
+                'Błąd przesyłania',
+                `Nie udało się przesłać pliku: ${file.name}`,
+                {
+                    actions: [{
+                        id: 'retry',
+                        text: 'Spróbuj ponownie',
+                        callback: () => handleFileUploadWithProgress(input)
+                    }]
+                }
+            );
+        });
+        
+        // Get upload URL from input data attribute or use default
+        const uploadUrl = input.dataset.uploadUrl || '/api/upload/';
+        
+        xhr.open('POST', uploadUrl);
+        xhr.send(formData);
+    });
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Global utility functions
+window.showSuccessMessage = function(title, message, options = {}) {
+    return window.feedbackSystem.showSuccess(title, message, options);
+};
+
+window.showErrorMessage = function(title, message, options = {}) {
+    return window.feedbackSystem.showError(title, message, options);
+};
+
+window.showWarningMessage = function(title, message, options = {}) {
+    return window.feedbackSystem.showWarning(title, message, options);
+};
+
+window.showInfoMessage = function(title, message, options = {}) {
+    return window.feedbackSystem.showInfo(title, message, options);
+};
+
+window.showConfirmDialog = function(title, message, options = {}) {
+    return window.feedbackSystem.showConfirmation(title, message, options);
+};
+
+window.createProgressIndicator = function(id, title, options = {}) {
+    return window.feedbackSystem.createProgressIndicator(id, title, options);
+};
+
+window.updateProgress = function(id, percentage, details, currentStep = null) {
+    return window.feedbackSystem.updateProgress(id, percentage, details, currentStep);
+};
+</script>

@@ -30,18 +30,40 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeAnalyticsWidgets() {
-    // Initialize all widget charts
+    // Initialize all widget charts with element existence check
     try {
-        createWidgetChartWeek('new-user-chart', '#487fff');
-        createWidgetChartMonth('monthly-chart', '#28a745');
-        createWidgetChartQuarter('quarterly-chart', '#ffc107');
-        createWidgetChartYear('yearly-chart', '#dc3545');
+        const chartConfigs = [
+            {id: 'new-user-chart', color: '#487fff', type: 'week'},
+            {id: 'monthly-chart', color: '#28a745', type: 'month'},
+            {id: 'quarterly-chart', color: '#ffc107', type: 'quarter'},
+            {id: 'yearly-chart', color: '#dc3545', type: 'year'},
+            {id: 'cost-weekly-chart', color: '#6f42c1', type: 'week'},
+            {id: 'cost-monthly-chart', color: '#fd7e14', type: 'month'},
+            {id: 'cost-quarterly-chart', color: '#20c997', type: 'quarter'},
+            {id: 'cost-yearly-chart', color: '#e83e8c', type: 'year'}
+        ];
         
-        // Initialize cost charts
-        createWidgetChartWeek('cost-weekly-chart', '#6f42c1');
-        createWidgetChartMonth('cost-monthly-chart', '#fd7e14');
-        createWidgetChartQuarter('cost-quarterly-chart', '#20c997');
-        createWidgetChartYear('cost-yearly-chart', '#e83e8c');
+        chartConfigs.forEach(config => {
+            const element = document.getElementById(config.id);
+            if (element) {
+                switch(config.type) {
+                    case 'week':
+                        createWidgetChartWeek(config.id, config.color);
+                        break;
+                    case 'month':
+                        createWidgetChartMonth(config.id, config.color);
+                        break;
+                    case 'quarter':
+                        createWidgetChartQuarter(config.id, config.color);
+                        break;
+                    case 'year':
+                        createWidgetChartYear(config.id, config.color);
+                        break;
+                }
+            } else {
+                console.log(`Chart element ${config.id} not found, skipping`);
+            }
+        });
         
         console.log('Analytics widgets initialized successfully');
     } catch (error) {
@@ -71,6 +93,12 @@ function showAnalyticsFallbacks() {
 
 // Chart creation functions with error handling
 function createWidgetChartWeek(chartId, chartColor) {
+    const element = document.getElementById(chartId);
+    if (!element) {
+        console.log(`Chart element ${chartId} not found`);
+        return;
+    }
+    
     try {
         let currentYear = new Date().getFullYear();
         
@@ -207,6 +235,12 @@ function createWidgetChartYear(chartId, chartColor) {
 }
 
 function createWidgetChart(chartId, chartColor, data, seriesName) {
+    const element = document.getElementById(chartId);
+    if (!element) {
+        console.log(`Chart element ${chartId} not found`);
+        return;
+    }
+    
     try {
         let currentYear = new Date().getFullYear();
         

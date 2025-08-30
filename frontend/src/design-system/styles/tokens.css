@@ -1,0 +1,799 @@
+/* Design System CSS Custom Properties */
+:root {
+  /* Color Tokens */
+  /* Primary Colors */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Secondary Colors */
+  --color-secondary-50: #f9fafb;
+  --color-secondary-100: #f3f4f6;
+  --color-secondary-200: #e5e7eb;
+  --color-secondary-300: #d1d5db;
+  --color-secondary-400: #9ca3af;
+  --color-secondary-500: #6b7280;
+  --color-secondary-600: #4b5563;
+  --color-secondary-700: #374151;
+  --color-secondary-800: #1f2937;
+  --color-secondary-900: #111827;
+
+  /* Success Colors */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #059669;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+
+  /* Warning Colors */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+
+  /* Error Colors */
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
+
+  /* Neutral Colors */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+
+  /* Semantic Colors */
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-neutral-500);
+  --color-text-inverse: var(--color-neutral-50);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-placeholder: var(--color-neutral-400);
+  --color-text-link: var(--color-primary-600);
+  --color-text-link-hover: var(--color-primary-700);
+
+  --color-background-primary: var(--color-neutral-50);
+  --color-background-secondary: var(--color-neutral-100);
+  --color-background-muted: var(--color-neutral-200);
+  --color-background-inverse: var(--color-neutral-900);
+  --color-background-overlay: rgba(0, 0, 0, 0.5);
+  --color-background-disabled: var(--color-neutral-100);
+  --color-background-hover: var(--color-neutral-50);
+  --color-background-pressed: var(--color-neutral-100);
+
+  --color-border-default: var(--color-neutral-200);
+  --color-border-muted: var(--color-neutral-100);
+  --color-border-strong: var(--color-neutral-300);
+  --color-border-focus: var(--color-primary-600);
+  --color-border-error: var(--color-error-600);
+  --color-border-success: var(--color-success-600);
+  --color-border-warning: var(--color-warning-600);
+
+  --color-interactive: var(--color-primary-600);
+  --color-interactive-hover: var(--color-primary-700);
+  --color-interactive-active: var(--color-primary-800);
+  --color-interactive-disabled: var(--color-neutral-300);
+  --color-interactive-focus: var(--color-primary-600);
+
+  --color-status-success: var(--color-success-600);
+  --color-status-success-background: var(--color-success-50);
+  --color-status-success-border: var(--color-success-200);
+  --color-status-warning: var(--color-warning-600);
+  --color-status-warning-background: var(--color-warning-50);
+  --color-status-warning-border: var(--color-warning-200);
+  --color-status-error: var(--color-error-600);
+  --color-status-error-background: var(--color-error-50);
+  --color-status-error-border: var(--color-error-200);
+  --color-status-info: var(--color-primary-600);
+  --color-status-info-background: var(--color-primary-50);
+  --color-status-info-border: var(--color-primary-200);
+
+  /* Polish Business Colors */
+  --color-polish-business-primary: var(--color-primary-600);
+  --color-polish-business-accent: var(--color-success-600);
+  --color-polish-business-warning: var(--color-warning-600);
+  --color-polish-business-danger: var(--color-error-600);
+
+  /* Invoice Status Colors */
+  --color-invoice-draft: var(--color-neutral-500);
+  --color-invoice-draft-background: var(--color-neutral-50);
+  --color-invoice-sent: var(--color-primary-600);
+  --color-invoice-sent-background: var(--color-primary-50);
+  --color-invoice-paid: var(--color-success-600);
+  --color-invoice-paid-background: var(--color-success-50);
+  --color-invoice-overdue: var(--color-error-600);
+  --color-invoice-overdue-background: var(--color-error-50);
+  --color-invoice-cancelled: var(--color-neutral-400);
+  --color-invoice-cancelled-background: var(--color-neutral-50);
+
+  /* VAT and Tax Colors */
+  --color-vat-standard: var(--color-primary-600);
+  --color-vat-reduced: var(--color-success-600);
+  --color-vat-zero: var(--color-neutral-600);
+  --color-vat-exempt: var(--color-warning-600);
+
+  /* Currency Colors */
+  --color-currency-positive: var(--color-success-700);
+  --color-currency-negative: var(--color-error-700);
+  --color-currency-neutral: var(--color-neutral-700);
+
+  /* Form Validation Colors */
+  --color-form-valid: var(--color-success-600);
+  --color-form-valid-background: var(--color-success-50);
+  --color-form-invalid: var(--color-error-600);
+  --color-form-invalid-background: var(--color-error-50);
+  --color-form-pending: var(--color-warning-600);
+  --color-form-pending-background: var(--color-warning-50);
+
+  /* Typography Tokens */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-family-serif: Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-family-mono: Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* Polish Business Typography */
+  --typography-invoice-title-size: var(--font-size-2xl);
+  --typography-invoice-title-weight: var(--font-weight-bold);
+  --typography-invoice-title-line-height: var(--line-height-tight);
+  --typography-invoice-title-letter-spacing: -0.025em;
+
+  --typography-invoice-number-size: var(--font-size-lg);
+  --typography-invoice-number-weight: var(--font-weight-semibold);
+  --typography-invoice-number-family: var(--font-family-mono);
+  --typography-invoice-number-letter-spacing: 0.05em;
+
+  --typography-company-name-size: var(--font-size-xl);
+  --typography-company-name-weight: var(--font-weight-semibold);
+  --typography-company-name-line-height: var(--line-height-snug);
+
+  --typography-currency-size: var(--font-size-base);
+  --typography-currency-weight: var(--font-weight-semibold);
+  --typography-currency-family: var(--font-family-mono);
+
+  --typography-currency-large-size: var(--font-size-lg);
+  --typography-currency-large-weight: var(--font-weight-bold);
+
+  --typography-date-size: var(--font-size-sm);
+  --typography-date-family: var(--font-family-mono);
+
+  --typography-nip-size: var(--font-size-sm);
+  --typography-nip-weight: var(--font-weight-medium);
+  --typography-nip-family: var(--font-family-mono);
+  --typography-nip-letter-spacing: 0.1em;
+
+  --typography-status-badge-size: var(--font-size-xs);
+  --typography-status-badge-weight: var(--font-weight-medium);
+  --typography-status-badge-letter-spacing: 0.05em;
+
+  --typography-table-header-size: var(--font-size-sm);
+  --typography-table-header-weight: var(--font-weight-semibold);
+  --typography-table-header-letter-spacing: 0.025em;
+
+  --typography-form-label-size: var(--font-size-sm);
+  --typography-form-label-weight: var(--font-weight-medium);
+
+  --typography-form-helper-size: var(--font-size-xs);
+  --typography-form-error-size: var(--font-size-xs);
+  --typography-form-error-weight: var(--font-weight-medium);
+
+  /* Spacing Tokens */
+  --spacing-0: 0px;
+  --spacing-px: 1px;
+  --spacing-0_5: 0.125rem;
+  --spacing-1: 0.25rem;
+  --spacing-1_5: 0.375rem;
+  --spacing-2: 0.5rem;
+  --spacing-2_5: 0.625rem;
+  --spacing-3: 0.75rem;
+  --spacing-3_5: 0.875rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-7: 1.75rem;
+  --spacing-8: 2rem;
+  --spacing-9: 2.25rem;
+  --spacing-10: 2.5rem;
+  --spacing-11: 2.75rem;
+  --spacing-12: 3rem;
+  --spacing-14: 3.5rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+  --spacing-28: 7rem;
+  --spacing-32: 8rem;
+  --spacing-36: 9rem;
+  --spacing-40: 10rem;
+  --spacing-44: 11rem;
+  --spacing-48: 12rem;
+  --spacing-52: 13rem;
+  --spacing-56: 14rem;
+  --spacing-60: 15rem;
+  --spacing-64: 16rem;
+  --spacing-72: 18rem;
+  --spacing-80: 20rem;
+  --spacing-96: 24rem;
+
+  /* Semantic Spacing */
+  --spacing-component-padding: var(--spacing-3);
+  --spacing-component-padding-lg: var(--spacing-4);
+  --spacing-component-margin: var(--spacing-4);
+  --spacing-component-margin-lg: var(--spacing-6);
+
+  --spacing-layout: var(--spacing-6);
+  --spacing-layout-lg: var(--spacing-8);
+  --spacing-layout-xl: var(--spacing-12);
+
+  --spacing-section: var(--spacing-12);
+  --spacing-section-lg: var(--spacing-16);
+  --spacing-section-xl: var(--spacing-20);
+
+  --spacing-page: var(--spacing-8);
+  --spacing-page-lg: var(--spacing-12);
+  --spacing-page-xl: var(--spacing-16);
+
+  --spacing-form-field: var(--spacing-4);
+  --spacing-form-group: var(--spacing-6);
+  --spacing-form-section: var(--spacing-8);
+
+  --spacing-table-cell: var(--spacing-3);
+  --spacing-table-cell-compact: var(--spacing-2);
+  --spacing-table-cell-loose: var(--spacing-4);
+
+  --spacing-card: var(--spacing-6);
+  --spacing-card-lg: var(--spacing-8);
+
+  --spacing-modal: var(--spacing-6);
+  --spacing-modal-lg: var(--spacing-8);
+
+  /* Polish Business Spacing */
+  --spacing-invoice-header: var(--spacing-8);
+  --spacing-invoice-item: var(--spacing-3);
+  --spacing-invoice-section: var(--spacing-6);
+  --spacing-invoice-total: var(--spacing-4);
+
+  --spacing-contractor-info: var(--spacing-4);
+  --spacing-contractor-section: var(--spacing-6);
+
+  --spacing-document-header: var(--spacing-8);
+  --spacing-document-section: var(--spacing-6);
+  --spacing-document-footer: var(--spacing-8);
+
+  --spacing-dashboard-card: var(--spacing-6);
+  --spacing-dashboard-section: var(--spacing-8);
+  --spacing-dashboard-widget: var(--spacing-6);
+
+  /* Layout Tokens */
+  --container-max-width-xs: 475px;
+  --container-max-width-sm: 640px;
+  --container-max-width-md: 768px;
+  --container-max-width-lg: 1024px;
+  --container-max-width-xl: 1280px;
+  --container-max-width-2xl: 1536px;
+
+  --grid-gap-xs: var(--spacing-1);
+  --grid-gap-sm: var(--spacing-2);
+  --grid-gap-md: var(--spacing-4);
+  --grid-gap-lg: var(--spacing-6);
+  --grid-gap-xl: var(--spacing-8);
+  --grid-gap-2xl: var(--spacing-12);
+
+  /* Polish Business Layout */
+  --layout-invoice-header-height: var(--spacing-20);
+  --layout-invoice-footer-height: var(--spacing-16);
+  --layout-invoice-sidebar-width: var(--spacing-64);
+  --layout-invoice-content-padding: var(--spacing-8);
+
+  --layout-form-field-spacing: var(--spacing-4);
+  --layout-form-group-spacing: var(--spacing-6);
+  --layout-form-section-spacing: var(--spacing-8);
+
+  --layout-dashboard-header-height: var(--spacing-16);
+  --layout-dashboard-sidebar-width: var(--spacing-64);
+  --layout-dashboard-card-spacing: var(--spacing-6);
+
+  /* Document Dimensions */
+  --document-a4-width: 210mm;
+  --document-a4-height: 297mm;
+  --document-a4-margin: 20mm;
+  --document-invoice-width: 210mm;
+  --document-invoice-height: 297mm;
+
+  /* Shadow Tokens */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* Focus Ring Tokens */
+  --focus-ring-default: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  --focus-ring-success: 0 0 0 3px rgba(5, 150, 105, 0.1);
+  --focus-ring-warning: 0 0 0 3px rgba(217, 119, 6, 0.1);
+  --focus-ring-error: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  --focus-ring-neutral: 0 0 0 3px rgba(107, 114, 128, 0.1);
+
+  /* Border Radius Tokens */
+  --border-radius-none: 0px;
+  --border-radius-xs: 0.125rem;
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.375rem;
+  --border-radius-lg: 0.5rem;
+  --border-radius-xl: 0.75rem;
+  --border-radius-2xl: 1rem;
+  --border-radius-3xl: 1.5rem;
+  --border-radius-full: 9999px;
+
+  /* Animation Tokens */
+  --animation-duration-fast: 150ms;
+  --animation-duration-normal: 300ms;
+  --animation-duration-slow: 500ms;
+
+  --animation-easing-ease: ease;
+  --animation-easing-ease-in: ease-in;
+  --animation-easing-ease-out: ease-out;
+  --animation-easing-ease-in-out: ease-in-out;
+  --animation-easing-linear: linear;
+
+  /* Z-Index Tokens */
+  --z-index-hide: -1;
+  --z-index-auto: auto;
+  --z-index-base: 0;
+  --z-index-docked: 10;
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1100;
+  --z-index-banner: 1200;
+  --z-index-overlay: 1300;
+  --z-index-modal: 1400;
+  --z-index-popover: 1500;
+  --z-index-skip-link: 1600;
+  --z-index-toast: 1700;
+  --z-index-tooltip: 1800;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Text colors in dark mode */
+    --color-text-primary: var(--color-neutral-50);
+    --color-text-secondary: var(--color-neutral-300);
+    --color-text-muted: var(--color-neutral-400);
+    --color-text-inverse: var(--color-neutral-900);
+    --color-text-disabled: var(--color-neutral-500);
+    --color-text-placeholder: var(--color-neutral-500);
+    --color-text-link: var(--color-primary-400);
+    --color-text-link-hover: var(--color-primary-300);
+
+    /* Background colors in dark mode */
+    --color-background-primary: var(--color-neutral-900);
+    --color-background-secondary: var(--color-neutral-800);
+    --color-background-muted: var(--color-neutral-700);
+    --color-background-inverse: var(--color-neutral-50);
+    --color-background-overlay: rgba(0, 0, 0, 0.8);
+    --color-background-disabled: var(--color-neutral-800);
+    --color-background-hover: var(--color-neutral-800);
+    --color-background-pressed: var(--color-neutral-700);
+
+    /* Border colors in dark mode */
+    --color-border-default: var(--color-neutral-700);
+    --color-border-muted: var(--color-neutral-800);
+    --color-border-strong: var(--color-neutral-600);
+    --color-border-focus: var(--color-primary-500);
+    --color-border-error: var(--color-error-500);
+    --color-border-success: var(--color-success-500);
+    --color-border-warning: var(--color-warning-500);
+
+    /* Interactive colors in dark mode */
+    --color-interactive: var(--color-primary-500);
+    --color-interactive-hover: var(--color-primary-400);
+    --color-interactive-active: var(--color-primary-600);
+    --color-interactive-disabled: var(--color-neutral-600);
+    --color-interactive-focus: var(--color-primary-500);
+
+    /* Status colors in dark mode */
+    --color-status-success: var(--color-success-400);
+    --color-status-success-background: var(--color-success-900);
+    --color-status-success-border: var(--color-success-700);
+    --color-status-warning: var(--color-warning-400);
+    --color-status-warning-background: var(--color-warning-900);
+    --color-status-warning-border: var(--color-warning-700);
+    --color-status-error: var(--color-error-400);
+    --color-status-error-background: var(--color-error-900);
+    --color-status-error-border: var(--color-error-700);
+    --color-status-info: var(--color-primary-400);
+    --color-status-info-background: var(--color-primary-900);
+    --color-status-info-border: var(--color-primary-700);
+
+    /* Polish business colors in dark mode */
+    --color-polish-business-primary: var(--color-primary-500);
+    --color-polish-business-accent: var(--color-success-400);
+    --color-polish-business-warning: var(--color-warning-400);
+    --color-polish-business-danger: var(--color-error-400);
+
+    /* Invoice status colors in dark mode */
+    --color-invoice-draft: var(--color-neutral-400);
+    --color-invoice-draft-background: var(--color-neutral-800);
+    --color-invoice-sent: var(--color-primary-400);
+    --color-invoice-sent-background: var(--color-primary-900);
+    --color-invoice-paid: var(--color-success-400);
+    --color-invoice-paid-background: var(--color-success-900);
+    --color-invoice-overdue: var(--color-error-400);
+    --color-invoice-overdue-background: var(--color-error-900);
+    --color-invoice-cancelled: var(--color-neutral-500);
+    --color-invoice-cancelled-background: var(--color-neutral-800);
+
+    /* VAT and tax colors in dark mode */
+    --color-vat-standard: var(--color-primary-400);
+    --color-vat-reduced: var(--color-success-400);
+    --color-vat-zero: var(--color-neutral-400);
+    --color-vat-exempt: var(--color-warning-400);
+
+    /* Currency colors in dark mode */
+    --color-currency-positive: var(--color-success-400);
+    --color-currency-negative: var(--color-error-400);
+    --color-currency-neutral: var(--color-neutral-300);
+
+    /* Form validation colors in dark mode */
+    --color-form-valid: var(--color-success-400);
+    --color-form-valid-background: var(--color-success-900);
+    --color-form-invalid: var(--color-error-400);
+    --color-form-invalid-background: var(--color-error-900);
+    --color-form-pending: var(--color-warning-400);
+    --color-form-pending-background: var(--color-warning-900);
+
+    /* Enhanced focus rings for dark mode */
+    --focus-ring-default: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    --focus-ring-success: 0 0 0 3px rgba(34, 197, 94, 0.3);
+    --focus-ring-warning: 0 0 0 3px rgba(245, 158, 11, 0.3);
+    --focus-ring-error: 0 0 0 3px rgba(239, 68, 68, 0.3);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    /* High contrast light mode overrides */
+    --color-text-primary: #000000;
+    --color-text-secondary: #000000;
+    --color-text-muted: #000000;
+    --color-text-inverse: #ffffff;
+    --color-text-disabled: #666666;
+    --color-text-placeholder: #666666;
+    --color-text-link: #0000ff;
+    --color-text-link-hover: #0000cc;
+
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #ffffff;
+    --color-background-muted: #f0f0f0;
+    --color-background-inverse: #000000;
+    --color-background-overlay: rgba(0, 0, 0, 0.9);
+    --color-background-disabled: #f0f0f0;
+    --color-background-hover: #f0f0f0;
+    --color-background-pressed: #e0e0e0;
+
+    --color-border-default: #000000;
+    --color-border-muted: #666666;
+    --color-border-strong: #000000;
+    --color-border-focus: #0000ff;
+    --color-border-error: #ff0000;
+    --color-border-success: #008000;
+    --color-border-warning: #ff8000;
+
+    --color-interactive: #0000ff;
+    --color-interactive-hover: #0000cc;
+    --color-interactive-active: #000099;
+    --color-interactive-disabled: #666666;
+    --color-interactive-focus: #0000ff;
+
+    --color-status-success: #008000;
+    --color-status-success-background: #ffffff;
+    --color-status-success-border: #008000;
+    --color-status-warning: #ff8000;
+    --color-status-warning-background: #ffffff;
+    --color-status-warning-border: #ff8000;
+    --color-status-error: #ff0000;
+    --color-status-error-background: #ffffff;
+    --color-status-error-border: #ff0000;
+    --color-status-info: #0000ff;
+    --color-status-info-background: #ffffff;
+    --color-status-info-border: #0000ff;
+
+    /* Enhanced focus rings for high contrast */
+    --focus-ring-default: 0 0 0 3px #ffff00;
+    --focus-ring-success: 0 0 0 3px #00ff00;
+    --focus-ring-warning: 0 0 0 3px #ffaa00;
+    --focus-ring-error: 0 0 0 3px #ff0000;
+    --focus-ring-neutral: 0 0 0 3px #666666;
+  }
+}
+
+/* High contrast dark mode */
+@media (prefers-color-scheme: dark) and (prefers-contrast: high) {
+  :root {
+    /* High contrast dark mode overrides */
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #ffffff;
+    --color-text-muted: #ffffff;
+    --color-text-inverse: #000000;
+    --color-text-disabled: #999999;
+    --color-text-placeholder: #999999;
+    --color-text-link: #66ccff;
+    --color-text-link-hover: #99ddff;
+
+    --color-background-primary: #000000;
+    --color-background-secondary: #000000;
+    --color-background-muted: #1a1a1a;
+    --color-background-inverse: #ffffff;
+    --color-background-overlay: rgba(255, 255, 255, 0.9);
+    --color-background-disabled: #1a1a1a;
+    --color-background-hover: #1a1a1a;
+    --color-background-pressed: #333333;
+
+    --color-border-default: #ffffff;
+    --color-border-muted: #999999;
+    --color-border-strong: #ffffff;
+    --color-border-focus: #66ccff;
+    --color-border-error: #ff6666;
+    --color-border-success: #66ff66;
+    --color-border-warning: #ffcc66;
+
+    --color-interactive: #66ccff;
+    --color-interactive-hover: #99ddff;
+    --color-interactive-active: #33aaff;
+    --color-interactive-disabled: #999999;
+    --color-interactive-focus: #66ccff;
+
+    --color-status-success: #66ff66;
+    --color-status-success-background: #000000;
+    --color-status-success-border: #66ff66;
+    --color-status-warning: #ffcc66;
+    --color-status-warning-background: #000000;
+    --color-status-warning-border: #ffcc66;
+    --color-status-error: #ff6666;
+    --color-status-error-background: #000000;
+    --color-status-error-border: #ff6666;
+    --color-status-info: #66ccff;
+    --color-status-info-background: #000000;
+    --color-status-info-border: #66ccff;
+
+    /* Enhanced focus rings for high contrast dark mode */
+    --focus-ring-default: 0 0 0 3px #ffff00;
+    --focus-ring-success: 0 0 0 3px #00ff00;
+    --focus-ring-warning: 0 0 0 3px #ffaa00;
+    --focus-ring-error: 0 0 0 3px #ff0000;
+    --focus-ring-neutral: 0 0 0 3px #999999;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --animation-duration-fast: 0ms;
+    --animation-duration-normal: 0ms;
+    --animation-duration-slow: 0ms;
+  }
+}
+
+/* Polish business specific styles */
+.polish-business {
+  /* Currency formatting */
+  .currency {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* Date formatting */
+  .date {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Invoice specific styles */
+  .invoice-number {
+    font-family: var(--font-family-mono);
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* NIP formatting */
+  .nip {
+    font-family: var(--font-family-mono);
+    letter-spacing: 0.05em;
+  }
+}
+
+/* Theme-specific styles */
+.theme-light {
+  color-scheme: light;
+}
+
+.theme-dark {
+  color-scheme: dark;
+}
+
+.theme-high-contrast {
+  /* Additional high contrast styles */
+}
+
+.theme-reduced-motion {
+  /* Override animations for reduced motion */
+}
+
+.theme-reduced-motion *,
+.theme-reduced-motion *::before,
+.theme-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Theme-aware component styles */
+.theme-dark .polish-business .invoice-number {
+  color: var(--color-text-primary);
+  background-color: var(--color-background-secondary);
+}
+
+.theme-dark .polish-business .currency {
+  color: var(--color-text-primary);
+}
+
+.theme-dark .polish-business .nip {
+  color: var(--color-text-secondary);
+}
+
+.theme-high-contrast .polish-business .invoice-number {
+  border: 2px solid var(--color-border-default);
+  font-weight: bold;
+}
+
+.theme-high-contrast .polish-business .currency {
+  font-weight: bold;
+}
+
+.theme-high-contrast .polish-business .nip {
+  font-weight: bold;
+  border: 1px solid var(--color-border-default);
+  padding: 2px 4px;
+}
+
+/* Accessibility utilities */
+.focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus-visible:focus-visible {
+  box-shadow: var(--focus-ring-default);
+}
+
+.theme-high-contrast .focus-visible:focus-visible {
+  box-shadow: var(--focus-ring-default);
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* User preference detection utilities */
+.prefers-dark {
+  display: none;
+}
+
+.prefers-light {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  .prefers-dark {
+    display: block;
+  }
+  
+  .prefers-light {
+    display: none;
+  }
+}
+
+.prefers-high-contrast {
+  display: none;
+}
+
+@media (prefers-contrast: high) {
+  .prefers-high-contrast {
+    display: block;
+  }
+}
+
+.prefers-reduced-motion {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prefers-reduced-motion {
+    display: block;
+  }
+}
+
+/* Print styles for invoices */
+@media print {
+  .invoice-print {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 20mm;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

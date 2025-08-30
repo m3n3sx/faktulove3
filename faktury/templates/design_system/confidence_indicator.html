@@ -1,0 +1,102 @@
+{% load design_system_tags %}
+
+<div class="ds-confidence-indicator ds-confidence-{{ size }}">
+    {% if confidence is None %}
+        <div class="ds-flex ds-items-center ds-gap-2">
+            {% ds_badge "Nieznana" variant="neutral" size=size %}
+            {% if show_description %}
+                <span class="ds-text-sm ds-text-neutral-500">{{ description }}</span>
+            {% endif %}
+        </div>
+    {% else %}
+        {% if show_progress %}
+            <div class="ds-space-y-2">
+                <div class="ds-flex ds-items-center ds-justify-between">
+                    <span class="ds-text-sm ds-font-medium ds-text-{{ variant }}-700">
+                        Pewność OCR: {{ text }}
+                    </span>
+                    {% ds_badge confidence|floatformat:0|add:"%" variant=variant size=size %}
+                </div>
+                <div class="ds-progress ds-progress-{{ variant }} ds-progress-{{ size }}">
+                    <div class="ds-progress-bar" style="width: {{ confidence }}%"></div>
+                </div>
+                {% if show_description %}
+                    <p class="ds-text-xs ds-text-{{ variant }}-700">{{ description }}</p>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="ds-flex ds-items-center ds-gap-2">
+                {% ds_badge confidence|floatformat:0|add:"%" variant=variant size=size %}
+                {% if show_description %}
+                    <div class="ds-flex ds-flex-col">
+                        <span class="ds-text-sm ds-font-medium ds-text-{{ variant }}-700">{{ text }} pewność</span>
+                        <span class="ds-text-xs ds-text-{{ variant }}-700 ds-opacity-75">{{ description }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<style>
+.ds-confidence-indicator {
+    display: inline-block;
+}
+
+.ds-confidence-xs {
+    font-size: 0.75rem;
+}
+
+.ds-confidence-sm {
+    font-size: 0.875rem;
+}
+
+.ds-confidence-md {
+    font-size: 1rem;
+}
+
+.ds-confidence-lg {
+    font-size: 1.125rem;
+}
+
+.ds-progress {
+    width: 100%;
+    height: 8px;
+    background-color: var(--color-neutral-200);
+    border-radius: var(--border-radius-full);
+    overflow: hidden;
+}
+
+.ds-progress-sm {
+    height: 6px;
+}
+
+.ds-progress-md {
+    height: 8px;
+}
+
+.ds-progress-lg {
+    height: 12px;
+}
+
+.ds-progress-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.ds-progress-success .ds-progress-bar {
+    background-color: var(--color-success-500);
+}
+
+.ds-progress-warning .ds-progress-bar {
+    background-color: var(--color-warning-500);
+}
+
+.ds-progress-error .ds-progress-bar {
+    background-color: var(--color-error-500);
+}
+
+.ds-progress-neutral .ds-progress-bar {
+    background-color: var(--color-neutral-500);
+}
+</style>

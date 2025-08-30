@@ -1,0 +1,25 @@
+{% load design_system_tags %}
+
+<nav class="ds-breadcrumb" aria-label="Breadcrumb" data-testid="breadcrumb">
+  <ol class="ds-breadcrumb__list">
+    {% for item in items %}
+      <li class="ds-breadcrumb__item{% if forloop.last %} ds-breadcrumb__item--current{% endif %}">
+        {% if item.url and not forloop.last %}
+          <a href="{{ item.url }}" class="ds-breadcrumb__link">
+            {{ item.label }}
+          </a>
+        {% else %}
+          <span class="ds-breadcrumb__text" {% if forloop.last %}aria-current="page"{% endif %}>
+            {{ item.label }}
+          </span>
+        {% endif %}
+        
+        {% if not forloop.last %}
+          <svg class="ds-breadcrumb__separator" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+</nav>

@@ -1,0 +1,93 @@
+<!-- Design System Checkbox Field Component -->
+<div class="ds-checkbox-container form-check d-flex align-items-start">
+    <input
+        type="checkbox"
+        id="{{ id }}"
+        name="{{ name }}"
+        class="form-check-input ds-checkbox mt-1 {{ class }}"
+        {% if checked %}checked{% endif %}
+        {% if required %}required{% endif %}
+        value="1"
+    />
+    <label for="{{ id }}" class="form-check-label ds-checkbox-label ms-2">
+        {% if label_html %}
+            {{ label_html|safe }}
+        {% else %}
+            {{ label }}
+        {% endif %}
+        {% if required %}
+        <span class="text-danger ms-1" aria-label="wymagane">*</span>
+        {% endif %}
+    </label>
+</div>
+
+<style>
+.ds-checkbox-container {
+    margin-bottom: 1rem;
+}
+
+.ds-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #ffffff;
+    transition: all 0.2s ease-out;
+    cursor: pointer;
+}
+
+.ds-checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
+}
+
+.ds-checkbox:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.ds-checkbox:invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.ds-checkbox-label {
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.ds-checkbox-label a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.ds-checkbox-label a:hover {
+    text-decoration: underline;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .ds-checkbox {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+    
+    .ds-checkbox:checked {
+        background-color: #60a5fa;
+        border-color: #60a5fa;
+    }
+    
+    .ds-checkbox-label {
+        color: #f9fafb;
+    }
+    
+    .ds-checkbox-label a {
+        color: #60a5fa;
+    }
+}
+</style>

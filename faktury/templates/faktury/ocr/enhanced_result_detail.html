@@ -1,0 +1,812 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load design_system %}
+
+{% block title %}Wyniki OCR - {{ ocr_result.document.original_filename }}{% endblock %}
+
+{% block extra_head %}
+<!-- Design System CSS -->
+<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+<!-- Enhanced OCR Result CSS -->
+<style>
+.ocr-result-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.confidence-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.confidence-score {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.confidence-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+.confidence-very-high { background: #10b981; }
+.confidence-high { background: #3b82f6; }
+.confidence-medium { background: #f59e0b; }
+.confidence-low { background: #ef4444; }
+.confidence-very-low { background: #6b7280; }
+
+.confidence-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.confidence-description {
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.field-confidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.field-confidence-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.field-confidence-item.needs-attention {
+  border-color: #f59e0b;
+  background: #fef3c7;
+}
+
+.field-name {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.field-value {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+
+.field-confidence-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.field-confidence-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.suggestions-section {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.warnings-section {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.correction-interface {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.correction-field {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.correction-field.needs-attention {
+  border-color: #f59e0b;
+  background: #fefbf3;
+}
+
+.correction-field label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.correction-field input,
+.correction-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.correction-field input:focus,
+.correction-field textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.field-help {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.field-suggestions {
+  margin-top: 8px;
+}
+
+.field-suggestion {
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #1e40af;
+  margin-bottom: 4px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #059669;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loading-content {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ocr-result-container {
+    padding: 16px;
+  }
+  
+  .confidence-score {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .field-confidence-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="ocr-result-container">
+  
+  <!-- Page Header -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Wyniki OCR</h1>
+        <p class="text-gray-600">{{ ocr_result.document.original_filename }}</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'ocr_results_list' %}" class="btn btn-secondary">
+          ← Powrót do listy
+        </a>
+        {% if ocr_result.faktura %}
+        <a href="{% url 'szczegoly_faktury' id=ocr_result.faktura.id %}" class="btn btn-primary">
+          Zobacz fakturę
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Confidence Overview -->
+  <div class="confidence-card" id="confidence-overview">
+    <h2 class="text-xl font-semibold mb-4">Analiza pewności rozpoznawania</h2>
+    
+    <div class="confidence-score">
+      <div class="confidence-circle confidence-loading" id="confidence-circle">
+        <div class="spinner"></div>
+      </div>
+      <div class="confidence-info">
+        <h3 id="confidence-title">Ładowanie analizy...</h3>
+        <p class="confidence-description" id="confidence-description">
+          Analizowanie wyników OCR...
+        </p>
+        <div id="confidence-recommendations" class="hidden">
+          <h4 class="font-medium text-gray-900 mb-2">Zalecenia:</h4>
+          <ul id="recommendations-list" class="text-sm text-gray-600 space-y-1"></ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Field Confidence Grid -->
+    <div class="field-confidence-grid" id="field-confidence-grid">
+      <!-- Will be populated by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Suggestions Section -->
+  <div class="suggestions-section hidden" id="suggestions-section">
+    <h3 class="font-semibold text-blue-900 mb-3">💡 Sugestie poprawy jakości</h3>
+    <div id="suggestions-list"></div>
+  </div>
+
+  <!-- Warnings Section -->
+  <div class="warnings-section hidden" id="warnings-section">
+    <h3 class="font-semibold text-yellow-900 mb-3">⚠️ Ostrzeżenia</h3>
+    <div id="warnings-list"></div>
+  </div>
+
+  <!-- Manual Correction Interface -->
+  <div class="correction-interface" id="correction-interface">
+    <h2 class="text-xl font-semibold mb-4">Korekta danych</h2>
+    <p class="text-gray-600 mb-6">Sprawdź i popraw rozpoznane dane przed utworzeniem faktury.</p>
+    
+    <form id="correction-form">
+      <div id="correction-fields">
+        <!-- Will be populated by JavaScript -->
+      </div>
+      
+      <div class="action-buttons">
+        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+          Resetuj zmiany
+        </button>
+        <button type="button" class="btn btn-primary" onclick="previewChanges()">
+          Podgląd zmian
+        </button>
+        <button type="submit" class="btn btn-success">
+          Zapisz poprawki
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Processing Actions -->
+  <div class="confidence-card">
+    <h2 class="text-xl font-semibold mb-4">Akcje</h2>
+    
+    <div class="grid md:grid-cols-3 gap-4">
+      <button class="btn btn-primary" onclick="createInvoice()" id="create-invoice-btn">
+        Utwórz fakturę
+      </button>
+      
+      <button class="btn btn-secondary" onclick="retryProcessing()">
+        Przetwórz ponownie
+      </button>
+      
+      <button class="btn btn-secondary" onclick="downloadReport()">
+        Pobierz raport
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay hidden" id="loading-overlay">
+  <div class="loading-content">
+    <div class="spinner"></div>
+    <p>Przetwarzanie...</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Configuration
+const ocrResultId = {{ ocr_result.id }};
+const documentId = {{ ocr_result.document.id }};
+const csrfToken = '{{ csrf_token }}';
+
+// State
+let feedbackData = null;
+let correctionData = null;
+let originalValues = {};
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+  loadOCRFeedback();
+  loadCorrectionInterface();
+});
+
+async function loadOCRFeedback() {
+  try {
+    const response = await fetch(`/ocr/api/feedback/${ocrResultId}/`, {
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      feedbackData = await response.json();
+      displayConfidenceOverview(feedbackData);
+      displayFieldConfidences(feedbackData.field_confidences);
+      displaySuggestions(feedbackData.suggestions);
+      displayWarnings(feedbackData.warnings);
+    } else {
+      showError('Nie udało się załadować analizy OCR');
+    }
+  } catch (error) {
+    console.error('Error loading OCR feedback:', error);
+    showError('Błąd podczas ładowania analizy OCR');
+  }
+}
+
+async function loadCorrectionInterface() {
+  try {
+    const response = await fetch(`/ocr/api/correction/${ocrResultId}/`, {
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      correctionData = await response.json();
+      displayCorrectionFields(correctionData.correction_fields);
+      
+      // Store original values
+      correctionData.correction_fields.forEach(field => {
+        originalValues[field.name] = field.current_value;
+      });
+    } else {
+      showError('Nie udało się załadować interfejsu korekty');
+    }
+  } catch (error) {
+    console.error('Error loading correction interface:', error);
+    showError('Błąd podczas ładowania interfejsu korekty');
+  }
+}
+
+function displayConfidenceOverview(feedback) {
+  const circle = document.getElementById('confidence-circle');
+  const title = document.getElementById('confidence-title');
+  const description = document.getElementById('confidence-description');
+  const recommendations = document.getElementById('confidence-recommendations');
+  const recommendationsList = document.getElementById('recommendations-list');
+  
+  // Update confidence circle
+  circle.className = `confidence-circle confidence-${feedback.confidence_level}`;
+  circle.innerHTML = `${Math.round(feedback.overall_confidence)}%`;
+  
+  // Get confidence explanation
+  fetch(`/ocr/api/confidence/${ocrResultId}/`, {
+    headers: {
+      'X-CSRFToken': csrfToken,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(explanation => {
+    title.textContent = explanation.title;
+    description.textContent = explanation.description;
+    
+    // Display recommendations
+    if (explanation.recommendations && explanation.recommendations.length > 0) {
+      recommendationsList.innerHTML = '';
+      explanation.recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.textContent = `• ${rec}`;
+        recommendationsList.appendChild(li);
+      });
+      recommendations.classList.remove('hidden');
+    }
+  })
+  .catch(error => {
+    console.error('Error loading confidence explanation:', error);
+    title.textContent = 'Analiza pewności';
+    description.textContent = `Ogólna pewność: ${Math.round(feedback.overall_confidence)}%`;
+  });
+}
+
+function displayFieldConfidences(fieldConfidences) {
+  const grid = document.getElementById('field-confidence-grid');
+  grid.innerHTML = '';
+  
+  fieldConfidences.forEach(field => {
+    const fieldDiv = document.createElement('div');
+    fieldDiv.className = `field-confidence-item ${field.confidence < 70 ? 'needs-attention' : ''}`;
+    
+    const confidenceColor = getConfidenceColor(field.confidence);
+    
+    fieldDiv.innerHTML = `
+      <div class="field-name">${getFieldLabel(field.field_name)}</div>
+      <div class="field-value">${field.value || '(brak wartości)'}</div>
+      <div class="field-confidence-bar">
+        <div class="field-confidence-fill" style="width: ${field.confidence}%; background-color: ${confidenceColor};"></div>
+      </div>
+      <div class="text-sm text-gray-600">${Math.round(field.confidence)}% pewności</div>
+      ${field.suggestions.length > 0 ? `
+        <div class="field-suggestions">
+          ${field.suggestions.map(s => `<div class="field-suggestion">${s}</div>`).join('')}
+        </div>
+      ` : ''}
+    `;
+    
+    grid.appendChild(fieldDiv);
+  });
+}
+
+function displaySuggestions(suggestions) {
+  const section = document.getElementById('suggestions-section');
+  const list = document.getElementById('suggestions-list');
+  
+  if (suggestions && suggestions.length > 0) {
+    list.innerHTML = suggestions.map(s => `<p class="mb-2">• ${s}</p>`).join('');
+    section.classList.remove('hidden');
+  }
+}
+
+function displayWarnings(warnings) {
+  const section = document.getElementById('warnings-section');
+  const list = document.getElementById('warnings-list');
+  
+  if (warnings && warnings.length > 0) {
+    list.innerHTML = warnings.map(w => `<p class="mb-2">• ${w}</p>`).join('');
+    section.classList.remove('hidden');
+  }
+}
+
+function displayCorrectionFields(fields) {
+  const container = document.getElementById('correction-fields');
+  container.innerHTML = '';
+  
+  fields.forEach(field => {
+    const fieldDiv = document.createElement('div');
+    fieldDiv.className = `correction-field ${field.needs_attention ? 'needs-attention' : ''}`;
+    
+    let inputHtml = '';
+    if (field.type === 'date') {
+      inputHtml = `<input type="date" id="${field.name}" name="${field.name}" value="${field.current_value}" ${field.required ? 'required' : ''}>`;
+    } else if (field.type === 'decimal') {
+      inputHtml = `<input type="number" step="0.01" id="${field.name}" name="${field.name}" value="${field.current_value}" ${field.required ? 'required' : ''}>`;
+    } else {
+      inputHtml = `<input type="text" id="${field.name}" name="${field.name}" value="${field.current_value}" ${field.required ? 'required' : ''}>`;
+    }
+    
+    fieldDiv.innerHTML = `
+      <label for="${field.name}">
+        ${field.label} ${field.required ? '*' : ''}
+        <span class="text-sm font-normal text-gray-500">(${Math.round(field.confidence)}% pewności)</span>
+      </label>
+      ${inputHtml}
+      ${field.help_text ? `<div class="field-help">${field.help_text}</div>` : ''}
+      ${field.suggestions && field.suggestions.length > 0 ? `
+        <div class="field-suggestions">
+          ${field.suggestions.map(s => `<div class="field-suggestion">${s}</div>`).join('')}
+        </div>
+      ` : ''}
+    `;
+    
+    container.appendChild(fieldDiv);
+  });
+}
+
+async function submitCorrections(event) {
+  event.preventDefault();
+  
+  const form = document.getElementById('correction-form');
+  const formData = new FormData(form);
+  const corrections = {};
+  
+  // Collect changes only
+  for (let [key, value] of formData.entries()) {
+    if (value !== originalValues[key]) {
+      corrections[key] = value;
+    }
+  }
+  
+  if (Object.keys(corrections).length === 0) {
+    alert('Nie wprowadzono żadnych zmian.');
+    return;
+  }
+  
+  showLoading(true);
+  
+  try {
+    const response = await fetch(`/ocr/api/correction/${ocrResultId}/apply/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ corrections })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      alert(`Pomyślnie zapisano poprawki: ${result.message}`);
+      
+      // Update original values
+      Object.assign(originalValues, corrections);
+      
+      // Reload feedback
+      await loadOCRFeedback();
+      
+      // Enable create invoice button
+      document.getElementById('create-invoice-btn').disabled = false;
+    } else {
+      alert(`Błąd: ${result.errors.join(', ')}`);
+    }
+  } catch (error) {
+    console.error('Error applying corrections:', error);
+    alert('Wystąpił błąd podczas zapisywania poprawek');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function resetForm() {
+  const form = document.getElementById('correction-form');
+  
+  // Reset to original values
+  Object.keys(originalValues).forEach(key => {
+    const input = form.querySelector(`[name="${key}"]`);
+    if (input) {
+      input.value = originalValues[key];
+    }
+  });
+}
+
+function previewChanges() {
+  const form = document.getElementById('correction-form');
+  const formData = new FormData(form);
+  const changes = [];
+  
+  for (let [key, value] of formData.entries()) {
+    if (value !== originalValues[key]) {
+      changes.push(`${getFieldLabel(key)}: "${originalValues[key]}" → "${value}"`);
+    }
+  }
+  
+  if (changes.length === 0) {
+    alert('Nie wprowadzono żadnych zmian.');
+  } else {
+    alert(`Zmiany do zapisania:\n\n${changes.join('\n')}`);
+  }
+}
+
+async function createInvoice() {
+  if (feedbackData && feedbackData.needs_review) {
+    if (!confirm('Wyniki OCR wymagają weryfikacji. Czy na pewno chcesz utworzyć fakturę?')) {
+      return;
+    }
+  }
+  
+  showLoading(true);
+  
+  try {
+    const response = await fetch(`/ocr/create-invoice/${ocrResultId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    
+    if (response.ok) {
+      // Redirect will be handled by the server
+      window.location.href = response.url;
+    } else {
+      alert('Nie udało się utworzyć faktury');
+    }
+  } catch (error) {
+    console.error('Error creating invoice:', error);
+    alert('Wystąpił błąd podczas tworzenia faktury');
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function retryProcessing() {
+  if (!confirm('Czy na pewno chcesz ponownie przetworzyć dokument?')) {
+    return;
+  }
+  
+  showLoading(true);
+  
+  try {
+    const response = await fetch(`/ocr/api/documents/${documentId}/retry/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      alert('Ponowne przetwarzanie zostało rozpoczęte. Strona zostanie odświeżona.');
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      alert('Nie udało się rozpocząć ponownego przetwarzania');
+    }
+  } catch (error) {
+    console.error('Error retrying processing:', error);
+    alert('Wystąpił błąd podczas ponownego przetwarzania');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function downloadReport() {
+  // Generate and download OCR analysis report
+  const reportData = {
+    document: '{{ ocr_result.document.original_filename }}',
+    confidence: feedbackData ? feedbackData.overall_confidence : 0,
+    processing_time: {{ ocr_result.processing_time|default:0 }},
+    field_confidences: feedbackData ? feedbackData.field_confidences : [],
+    suggestions: feedbackData ? feedbackData.suggestions : [],
+    warnings: feedbackData ? feedbackData.warnings : []
+  };
+  
+  const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ocr_report_${ocrResultId}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Utility functions
+function getFieldLabel(fieldName) {
+  const labels = {
+    'numer_faktury': 'Numer faktury',
+    'data_wystawienia': 'Data wystawienia',
+    'data_sprzedazy': 'Data sprzedaży',
+    'sprzedawca_nazwa': 'Nazwa sprzedawcy',
+    'sprzedawca_nip': 'NIP sprzedawcy',
+    'nabywca_nazwa': 'Nazwa nabywcy',
+    'nabywca_nip': 'NIP nabywcy',
+    'suma_netto': 'Suma netto',
+    'suma_brutto': 'Suma brutto'
+  };
+  return labels[fieldName] || fieldName;
+}
+
+function getConfidenceColor(confidence) {
+  if (confidence >= 95) return '#10b981';
+  if (confidence >= 85) return '#3b82f6';
+  if (confidence >= 70) return '#f59e0b';
+  if (confidence >= 50) return '#ef4444';
+  return '#6b7280';
+}
+
+function showLoading(show) {
+  const overlay = document.getElementById('loading-overlay');
+  if (show) {
+    overlay.classList.remove('hidden');
+  } else {
+    overlay.classList.add('hidden');
+  }
+}
+
+function showError(message) {
+  alert(`Błąd: ${message}`);
+}
+
+// Attach form submit handler
+document.getElementById('correction-form').addEventListener('submit', submitCorrections);
+</script>
+{% endblock %}

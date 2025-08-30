@@ -1,0 +1,272 @@
+{% extends "admin/base.html" %}
+{% load design_system %}
+{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'faktury/css/design-system.css' %}">
+    <style>
+        /* Django Admin Design System Integration */
+        body {
+            font-family: var(--font-family-sans) !important;
+            background-color: var(--color-background-primary) !important;
+            color: var(--color-text-primary) !important;
+        }
+        
+        /* Header styling */
+        #header {
+            background: var(--color-interactive) !important;
+            color: var(--color-text-inverse) !important;
+            border-bottom: 1px solid var(--color-border-default) !important;
+        }
+        
+        #branding h1 {
+            color: var(--color-text-inverse) !important;
+            font-weight: var(--font-weight-bold) !important;
+        }
+        
+        #branding h1 a:link,
+        #branding h1 a:visited {
+            color: var(--color-text-inverse) !important;
+        }
+        
+        /* Navigation styling */
+        .module h2,
+        .module caption,
+        .inline-group h2 {
+            background: var(--color-background-secondary) !important;
+            color: var(--color-text-primary) !important;
+            border-bottom: 1px solid var(--color-border-default) !important;
+            font-weight: var(--font-weight-semibold) !important;
+        }
+        
+        /* Form styling */
+        .form-row {
+            border-bottom: 1px solid var(--color-border-muted) !important;
+        }
+        
+        .form-row label {
+            color: var(--color-text-primary) !important;
+            font-weight: var(--font-weight-medium) !important;
+        }
+        
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="url"],
+        input[type="number"],
+        input[type="tel"],
+        textarea,
+        select {
+            border: 1px solid var(--color-border-default) !important;
+            border-radius: var(--border-radius-md) !important;
+            padding: var(--spacing-2) var(--spacing-3) !important;
+            background-color: var(--color-background-primary) !important;
+            color: var(--color-text-primary) !important;
+            font-size: var(--font-size-base) !important;
+            transition: all var(--animation-duration-fast) var(--animation-easing-ease-out) !important;
+        }
+        
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: 2px solid transparent !important;
+            outline-offset: 2px !important;
+            border-color: var(--color-interactive) !important;
+            box-shadow: var(--focus-ring-default) !important;
+        }
+        
+        /* Button styling */
+        .button,
+        input[type="submit"],
+        input[type="button"],
+        .submit-row input,
+        a.button {
+            background: var(--color-interactive) !important;
+            color: var(--color-text-inverse) !important;
+            border: 1px solid var(--color-interactive) !important;
+            border-radius: var(--border-radius-md) !important;
+            padding: var(--spacing-2) var(--spacing-4) !important;
+            font-size: var(--font-size-base) !important;
+            font-weight: var(--font-weight-medium) !important;
+            text-decoration: none !important;
+            transition: all var(--animation-duration-fast) var(--animation-easing-ease-out) !important;
+        }
+        
+        .button:hover,
+        input[type="submit"]:hover,
+        input[type="button"]:hover,
+        .submit-row input:hover,
+        a.button:hover {
+            background: var(--color-interactive-hover) !important;
+            border-color: var(--color-interactive-hover) !important;
+        }
+        
+        .button:focus,
+        input[type="submit"]:focus,
+        input[type="button"]:focus,
+        .submit-row input:focus,
+        a.button:focus {
+            outline: 2px solid transparent !important;
+            outline-offset: 2px !important;
+            box-shadow: var(--focus-ring-default) !important;
+        }
+        
+        /* Secondary buttons */
+        .button.default,
+        input[type="button"].default {
+            background: var(--color-background-primary) !important;
+            color: var(--color-text-primary) !important;
+            border-color: var(--color-border-default) !important;
+        }
+        
+        .button.default:hover,
+        input[type="button"].default:hover {
+            background: var(--color-background-hover) !important;
+            border-color: var(--color-border-strong) !important;
+        }
+        
+        /* Table styling */
+        #result_list {
+            border: 1px solid var(--color-border-default) !important;
+            border-radius: var(--border-radius-md) !important;
+            overflow: hidden !important;
+        }
+        
+        #result_list thead th {
+            background: var(--color-background-secondary) !important;
+            color: var(--color-text-primary) !important;
+            border-bottom: 1px solid var(--color-border-default) !important;
+            font-weight: var(--typography-table-header-weight) !important;
+        }
+        
+        #result_list tbody td {
+            border-bottom: 1px solid var(--color-border-muted) !important;
+            color: var(--color-text-primary) !important;
+        }
+        
+        #result_list tbody tr:hover {
+            background: var(--color-background-hover) !important;
+        }
+        
+        /* Messages styling */
+        .messagelist {
+            margin: 0 0 var(--spacing-4) 0 !important;
+        }
+        
+        .messagelist li {
+            padding: var(--spacing-3) var(--spacing-4) !important;
+            border-radius: var(--border-radius-md) !important;
+            margin-bottom: var(--spacing-2) !important;
+            border: 1px solid transparent !important;
+        }
+        
+        .messagelist .success {
+            background: var(--color-status-success-background) !important;
+            color: var(--color-status-success) !important;
+            border-color: var(--color-status-success-border) !important;
+        }
+        
+        .messagelist .warning {
+            background: var(--color-status-warning-background) !important;
+            color: var(--color-status-warning) !important;
+            border-color: var(--color-status-warning-border) !important;
+        }
+        
+        .messagelist .error {
+            background: var(--color-status-error-background) !important;
+            color: var(--color-status-error) !important;
+            border-color: var(--color-status-error-border) !important;
+        }
+        
+        .messagelist .info {
+            background: var(--color-status-info-background) !important;
+            color: var(--color-status-info) !important;
+            border-color: var(--color-status-info-border) !important;
+        }
+        
+        /* Breadcrumbs */
+        .breadcrumbs {
+            background: var(--color-background-secondary) !important;
+            color: var(--color-text-muted) !important;
+            border-bottom: 1px solid var(--color-border-default) !important;
+            padding: var(--spacing-2) var(--spacing-4) !important;
+        }
+        
+        .breadcrumbs a {
+            color: var(--color-interactive) !important;
+            text-decoration: none !important;
+        }
+        
+        .breadcrumbs a:hover {
+            text-decoration: underline !important;
+        }
+        
+        /* Polish business specific styling */
+        .field-nip input {
+            font-family: var(--typography-nip-family) !important;
+            font-size: var(--typography-nip-size) !important;
+            font-weight: var(--typography-nip-weight) !important;
+            letter-spacing: var(--typography-nip-letter-spacing) !important;
+        }
+        
+        .field-amount input,
+        .field-total_amount input,
+        .field-net_amount input,
+        .field-gross_amount input {
+            font-family: var(--typography-currency-family) !important;
+            font-size: var(--typography-currency-size) !important;
+            font-weight: var(--typography-currency-weight) !important;
+            text-align: right !important;
+        }
+        
+        .field-date input,
+        .field-issue_date input,
+        .field-due_date input {
+            font-family: var(--typography-date-family) !important;
+            font-size: var(--typography-date-size) !important;
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--color-background-primary) !important;
+                color: var(--color-text-primary) !important;
+            }
+        }
+        
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            input:focus,
+            textarea:focus,
+            select:focus {
+                outline: 2px solid var(--color-border-focus) !important;
+                outline-offset: 2px !important;
+            }
+        }
+        
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            input,
+            textarea,
+            select,
+            .button,
+            input[type="submit"],
+            input[type="button"] {
+                transition: none !important;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block usertools %}
+    <div id="user-tools">
+        {% ds_theme_toggle %}
+        {{ block.super }}
+    </div>
+{% endblock %}
+
+{% block nav-global %}
+    {{ block.super }}
+    {% ds_accessibility_skip_links %}
+{% endblock %}

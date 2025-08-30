@@ -1,0 +1,299 @@
+/**
+ * Polish Business Theme Variations
+ * Specialized themes for Polish business compliance and regulations
+ */
+
+/* Compliance-focused theme */
+.theme-compliance {
+  /* Enhanced status colors for better compliance visibility */
+  --color-compliance-compliant: #059669;
+  --color-compliance-warning: #d97706;
+  --color-compliance-error: #dc2626;
+  --color-compliance-pending: #6366f1;
+  
+  /* Invoice status colors with compliance focus */
+  --color-invoice-paid: #10b981;
+  --color-invoice-overdue: #ef4444;
+  --color-invoice-draft: #6b7280;
+  --color-invoice-sent: #3b82f6;
+  --color-invoice-cancelled: #9ca3af;
+  
+  /* VAT rate colors */
+  --color-vat-standard: #1f2937;
+  --color-vat-reduced: #f59e0b;
+  --color-vat-zero: #6b7280;
+  --color-vat-exempt: #8b5cf6;
+  
+  /* Enhanced borders for compliance elements */
+  --border-compliance: 2px solid var(--color-compliance-compliant);
+  --border-warning: 2px solid var(--color-compliance-warning);
+  --border-error: 2px solid var(--color-compliance-error);
+}
+
+/* Dark compliance theme */
+.theme-dark.theme-compliance {
+  --color-compliance-compliant: #34d399;
+  --color-compliance-warning: #fbbf24;
+  --color-compliance-error: #f87171;
+  --color-compliance-pending: #818cf8;
+  
+  --color-invoice-paid: #34d399;
+  --color-invoice-overdue: #f87171;
+  --color-invoice-draft: #9ca3af;
+  --color-invoice-sent: #60a5fa;
+  --color-invoice-cancelled: #6b7280;
+}
+
+/* High contrast compliance theme */
+.theme-high-contrast.theme-compliance {
+  --color-compliance-compliant: #00ff00;
+  --color-compliance-warning: #ffaa00;
+  --color-compliance-error: #ff0000;
+  --color-compliance-pending: #0066ff;
+  
+  --color-invoice-paid: #00ff00;
+  --color-invoice-overdue: #ff0000;
+  --color-invoice-draft: #666666;
+  --color-invoice-sent: #0066ff;
+  --color-invoice-cancelled: #999999;
+}
+
+/* Polish business form theme */
+.polish-business-form {
+  /* Enhanced spacing for Polish business forms */
+  --spacing-form-group: 1.5rem;
+  --spacing-form-section: 2rem;
+  --spacing-invoice-section: 2.5rem;
+  
+  /* Typography for Polish business documents */
+  --font-family-business: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-numbers: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Enhanced focus rings for business forms */
+  --focus-ring-business: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  --focus-ring-error: 0 0 0 3px rgba(239, 68, 68, 0.3);
+  --focus-ring-success: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+/* Polish currency formatting */
+.currency-pln {
+  font-family: var(--font-family-numbers);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.025em;
+}
+
+/* NIP/REGON formatting */
+.business-number {
+  font-family: var(--font-family-numbers);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+/* Invoice number formatting */
+.invoice-number {
+  font-family: var(--font-family-numbers);
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: 0.025em;
+}
+
+/* Polish business card styling */
+.polish-business-card {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-invoice-section);
+  background: var(--color-background-primary);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.polish-business-card:hover {
+  border-color: var(--color-primary-300);
+  box-shadow: var(--shadow-md);
+}
+
+/* Status indicators with Polish business styling */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.status-indicator--paid {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--color-invoice-paid);
+  border-color: var(--color-invoice-paid);
+}
+
+.status-indicator--overdue {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-invoice-overdue);
+  border-color: var(--color-invoice-overdue);
+}
+
+.status-indicator--draft {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: var(--color-invoice-draft);
+  border-color: var(--color-invoice-draft);
+}
+
+.status-indicator--sent {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-invoice-sent);
+  border-color: var(--color-invoice-sent);
+}
+
+/* VAT rate indicators */
+.vat-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family-numbers);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.vat-indicator--standard {
+  background-color: rgba(31, 41, 55, 0.1);
+  color: var(--color-vat-standard);
+  border-color: var(--color-vat-standard);
+}
+
+.vat-indicator--reduced {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-vat-reduced);
+  border-color: var(--color-vat-reduced);
+}
+
+.vat-indicator--zero {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: var(--color-vat-zero);
+  border-color: var(--color-vat-zero);
+}
+
+.vat-indicator--exempt {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--color-vat-exempt);
+  border-color: var(--color-vat-exempt);
+}
+
+/* Compliance indicators */
+.compliance-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--border-radius-lg);
+  border: 2px solid;
+  transition: all 0.2s ease;
+}
+
+.compliance-indicator--compliant {
+  background-color: rgba(5, 150, 105, 0.05);
+  border-color: var(--color-compliance-compliant);
+  color: var(--color-compliance-compliant);
+}
+
+.compliance-indicator--warning {
+  background-color: rgba(217, 119, 6, 0.05);
+  border-color: var(--color-compliance-warning);
+  color: var(--color-compliance-warning);
+}
+
+.compliance-indicator--error {
+  background-color: rgba(220, 38, 38, 0.05);
+  border-color: var(--color-compliance-error);
+  color: var(--color-compliance-error);
+}
+
+.compliance-indicator--pending {
+  background-color: rgba(99, 102, 241, 0.05);
+  border-color: var(--color-compliance-pending);
+  color: var(--color-compliance-pending);
+}
+
+/* Polish business table styling */
+.polish-business-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.polish-business-table th {
+  background-color: var(--color-background-secondary);
+  border-bottom: 2px solid var(--color-border-strong);
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.polish-business-table td {
+  border-bottom: 1px solid var(--color-border-default);
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.polish-business-table .currency {
+  font-family: var(--font-family-numbers);
+  font-weight: 600;
+  text-align: right;
+}
+
+.polish-business-table .business-number {
+  font-family: var(--font-family-numbers);
+  font-weight: 500;
+}
+
+/* Responsive adjustments for Polish business components */
+@media (max-width: 768px) {
+  .polish-business-card {
+    padding: var(--spacing-4);
+  }
+  
+  .status-indicator {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .polish-business-table th,
+  .polish-business-table td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Print styles for Polish business documents */
+@media print {
+  .polish-business-card {
+    border: 1px solid #000;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  
+  .status-indicator {
+    border: 1px solid #000;
+    background: transparent !important;
+  }
+  
+  .polish-business-table {
+    border: 1px solid #000;
+  }
+  
+  .polish-business-table th,
+  .polish-business-table td {
+    border: 1px solid #000;
+  }
+}

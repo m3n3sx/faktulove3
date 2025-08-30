@@ -1,0 +1,825 @@
+/* Design System Utility Classes */
+
+/* Accessibility utilities */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.not-sr-only {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+}
+
+/* Focus utilities */
+.focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus-visible:focus-visible {
+  box-shadow: var(--focus-ring-default);
+}
+
+.focus-success:focus-visible {
+  box-shadow: var(--focus-ring-success);
+}
+
+.focus-warning:focus-visible {
+  box-shadow: var(--focus-ring-warning);
+}
+
+.focus-error:focus-visible {
+  box-shadow: var(--focus-ring-error);
+}
+
+/* Text utilities */
+.text-primary {
+  color: var(--color-text-primary);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-inverse {
+  color: var(--color-text-inverse);
+}
+
+.text-success {
+  color: var(--color-status-success);
+}
+
+.text-warning {
+  color: var(--color-status-warning);
+}
+
+.text-error {
+  color: var(--color-status-error);
+}
+
+.text-info {
+  color: var(--color-status-info);
+}
+
+/* Background utilities */
+.bg-primary {
+  background-color: var(--color-background-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-background-secondary);
+}
+
+.bg-muted {
+  background-color: var(--color-background-muted);
+}
+
+.bg-inverse {
+  background-color: var(--color-background-inverse);
+}
+
+/* Border utilities */
+.border-default {
+  border-color: var(--color-border-default);
+}
+
+.border-muted {
+  border-color: var(--color-border-muted);
+}
+
+.border-strong {
+  border-color: var(--color-border-strong);
+}
+
+/* Interactive utilities */
+.interactive {
+  color: var(--color-interactive);
+  cursor: pointer;
+  transition: color var(--animation-duration-fast) var(--animation-easing-ease-out);
+}
+
+.interactive:hover {
+  color: var(--color-interactive-hover);
+}
+
+.interactive:active {
+  color: var(--color-interactive-active);
+}
+
+.interactive:disabled {
+  color: var(--color-interactive-disabled);
+  cursor: not-allowed;
+}
+
+/* Layout utilities */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-4);
+  padding-right: var(--spacing-4);
+}
+
+.container-xs {
+  max-width: var(--container-max-width-xs);
+}
+
+.container-sm {
+  max-width: var(--container-max-width-sm);
+}
+
+.container-md {
+  max-width: var(--container-max-width-md);
+}
+
+.container-lg {
+  max-width: var(--container-max-width-lg);
+}
+
+.container-xl {
+  max-width: var(--container-max-width-xl);
+}
+
+.container-2xl {
+  max-width: var(--container-max-width-2xl);
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: var(--container-max-width-sm);
+    padding-left: var(--spacing-6);
+    padding-right: var(--spacing-6);
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: var(--container-max-width-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: var(--container-max-width-lg);
+    padding-left: var(--spacing-8);
+    padding-right: var(--spacing-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: var(--container-max-width-xl);
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: var(--container-max-width-2xl);
+  }
+}
+
+/* Grid utilities */
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+
+.gap-xs { gap: var(--grid-gap-xs); }
+.gap-sm { gap: var(--grid-gap-sm); }
+.gap-md { gap: var(--grid-gap-md); }
+.gap-lg { gap: var(--grid-gap-lg); }
+.gap-xl { gap: var(--grid-gap-xl); }
+.gap-2xl { gap: var(--grid-gap-2xl); }
+
+/* Flexbox utilities */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.justify-start { justify-content: flex-start; }
+.justify-end { justify-content: flex-end; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+.justify-evenly { justify-content: space-evenly; }
+
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.items-center { align-items: center; }
+.items-baseline { align-items: baseline; }
+.items-stretch { align-items: stretch; }
+
+.flex-wrap { flex-wrap: wrap; }
+.flex-nowrap { flex-wrap: nowrap; }
+
+/* Spacing utilities */
+.space-y-xs > * + * { margin-top: var(--spacing-1); }
+.space-y-sm > * + * { margin-top: var(--spacing-2); }
+.space-y-md > * + * { margin-top: var(--spacing-4); }
+.space-y-lg > * + * { margin-top: var(--spacing-6); }
+.space-y-xl > * + * { margin-top: var(--spacing-8); }
+
+.space-x-xs > * + * { margin-left: var(--spacing-1); }
+.space-x-sm > * + * { margin-left: var(--spacing-2); }
+.space-x-md > * + * { margin-left: var(--spacing-4); }
+.space-x-lg > * + * { margin-left: var(--spacing-6); }
+.space-x-xl > * + * { margin-left: var(--spacing-8); }
+
+/* Polish business layout utilities */
+.layout-invoice {
+  display: grid;
+  grid-template-rows: var(--layout-invoice-header-height) 1fr var(--layout-invoice-footer-height);
+  min-height: 100vh;
+}
+
+.layout-invoice-content {
+  padding: var(--layout-invoice-content-padding);
+}
+
+.layout-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-form-section-spacing);
+}
+
+.layout-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-form-field-spacing);
+}
+
+.layout-dashboard {
+  display: grid;
+  grid-template-columns: var(--layout-dashboard-sidebar-width) 1fr;
+  grid-template-rows: var(--layout-dashboard-header-height) 1fr;
+  min-height: 100vh;
+}
+
+.layout-dashboard-content {
+  padding: var(--spacing-page);
+  display: grid;
+  gap: var(--layout-dashboard-card-spacing);
+}
+
+/* Semantic spacing utilities */
+.spacing-component {
+  padding: var(--spacing-component-padding);
+}
+
+.spacing-component-lg {
+  padding: var(--spacing-component-padding-lg);
+}
+
+.spacing-layout {
+  margin: var(--spacing-layout);
+}
+
+.spacing-layout-lg {
+  margin: var(--spacing-layout-lg);
+}
+
+.spacing-section {
+  margin-bottom: var(--spacing-section);
+}
+
+.spacing-section-lg {
+  margin-bottom: var(--spacing-section-lg);
+}
+
+.spacing-form-field {
+  margin-bottom: var(--spacing-form-field);
+}
+
+.spacing-form-group {
+  margin-bottom: var(--spacing-form-group);
+}
+
+/* Polish business spacing utilities */
+.spacing-invoice-item {
+  padding: var(--spacing-invoice-item);
+}
+
+.spacing-invoice-section {
+  margin-bottom: var(--spacing-invoice-section);
+}
+
+.spacing-contractor-info {
+  padding: var(--spacing-contractor-info);
+}
+
+.spacing-document-section {
+  margin-bottom: var(--spacing-document-section);
+}
+
+.spacing-dashboard-card {
+  margin-bottom: var(--spacing-dashboard-card);
+}
+
+/* Responsive spacing utilities */
+@media (min-width: 640px) {
+  .sm\:space-y-xs > * + * { margin-top: var(--spacing-1); }
+  .sm\:space-y-sm > * + * { margin-top: var(--spacing-2); }
+  .sm\:space-y-md > * + * { margin-top: var(--spacing-4); }
+  .sm\:space-y-lg > * + * { margin-top: var(--spacing-6); }
+  .sm\:space-y-xl > * + * { margin-top: var(--spacing-8); }
+  
+  .sm\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sm\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .md\:space-y-xs > * + * { margin-top: var(--spacing-1); }
+  .md\:space-y-sm > * + * { margin-top: var(--spacing-2); }
+  .md\:space-y-md > * + * { margin-top: var(--spacing-4); }
+  .md\:space-y-lg > * + * { margin-top: var(--spacing-6); }
+  .md\:space-y-xl > * + * { margin-top: var(--spacing-8); }
+  
+  .md\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .md\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .lg\:space-y-xs > * + * { margin-top: var(--spacing-1); }
+  .lg\:space-y-sm > * + * { margin-top: var(--spacing-2); }
+  .lg\:space-y-md > * + * { margin-top: var(--spacing-4); }
+  .lg\:space-y-lg > * + * { margin-top: var(--spacing-6); }
+  .lg\:space-y-xl > * + * { margin-top: var(--spacing-8); }
+  
+  .lg\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lg\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .lg\:grid-cols-8 { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+}
+
+/* Polish business typography utilities */
+.typography-invoice-title {
+  font-size: var(--typography-invoice-title-size);
+  font-weight: var(--typography-invoice-title-weight);
+  line-height: var(--typography-invoice-title-line-height);
+  letter-spacing: var(--typography-invoice-title-letter-spacing);
+  text-transform: uppercase;
+}
+
+.typography-invoice-number {
+  font-size: var(--typography-invoice-number-size);
+  font-weight: var(--typography-invoice-number-weight);
+  font-family: var(--typography-invoice-number-family);
+  letter-spacing: var(--typography-invoice-number-letter-spacing);
+}
+
+.typography-company-name {
+  font-size: var(--typography-company-name-size);
+  font-weight: var(--typography-company-name-weight);
+  line-height: var(--typography-company-name-line-height);
+}
+
+.typography-currency {
+  font-size: var(--typography-currency-size);
+  font-weight: var(--typography-currency-weight);
+  font-family: var(--typography-currency-family);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.typography-currency-large {
+  font-size: var(--typography-currency-large-size);
+  font-weight: var(--typography-currency-large-weight);
+  font-family: var(--typography-currency-family);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.typography-date {
+  font-size: var(--typography-date-size);
+  font-family: var(--typography-date-family);
+  font-variant-numeric: tabular-nums;
+}
+
+.typography-nip {
+  font-size: var(--typography-nip-size);
+  font-weight: var(--typography-nip-weight);
+  font-family: var(--typography-nip-family);
+  letter-spacing: var(--typography-nip-letter-spacing);
+}
+
+.typography-status-badge {
+  font-size: var(--typography-status-badge-size);
+  font-weight: var(--typography-status-badge-weight);
+  letter-spacing: var(--typography-status-badge-letter-spacing);
+  text-transform: uppercase;
+}
+
+.typography-table-header {
+  font-size: var(--typography-table-header-size);
+  font-weight: var(--typography-table-header-weight);
+  letter-spacing: var(--typography-table-header-letter-spacing);
+  text-transform: uppercase;
+}
+
+.typography-form-label {
+  font-size: var(--typography-form-label-size);
+  font-weight: var(--typography-form-label-weight);
+}
+
+.typography-form-helper {
+  font-size: var(--typography-form-helper-size);
+}
+
+.typography-form-error {
+  font-size: var(--typography-form-error-size);
+  font-weight: var(--typography-form-error-weight);
+}
+
+/* Legacy utilities for backward compatibility */
+.currency {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.currency::after {
+  content: " zł";
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-normal);
+}
+
+.date-polish {
+  font-variant-numeric: tabular-nums;
+}
+
+.nip-format {
+  font-family: var(--font-family-mono);
+  letter-spacing: 0.05em;
+}
+
+.invoice-number {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.025em;
+}
+
+/* Polish text formatting utilities */
+.polish-text {
+  /* Ensure proper rendering of Polish diacritics */
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+}
+
+.polish-quotation::before {
+  content: "\201E";
+}
+
+.polish-quotation::after {
+  content: "\201D";
+}
+
+.polish-decimal {
+  /* Use comma as decimal separator for Polish numbers */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Responsive typography utilities */
+.text-responsive-sm {
+  font-size: var(--font-size-xs);
+}
+
+@media (min-width: 768px) {
+  .text-responsive-sm {
+    font-size: var(--font-size-sm);
+  }
+}
+
+.text-responsive-base {
+  font-size: var(--font-size-sm);
+}
+
+@media (min-width: 768px) {
+  .text-responsive-base {
+    font-size: var(--font-size-base);
+  }
+}
+
+.text-responsive-lg {
+  font-size: var(--font-size-base);
+}
+
+@media (min-width: 768px) {
+  .text-responsive-lg {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* Polish business document typography */
+.document-header {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  text-align: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.document-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  margin-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: var(--spacing-2);
+}
+
+.document-field-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.document-field-value {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-primary);
+}
+
+/* Status badge utilities */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Invoice status badges */
+.status-draft {
+  background-color: var(--color-invoice-draft-background);
+  color: var(--color-invoice-draft);
+  border: 1px solid var(--color-invoice-draft);
+}
+
+.status-sent {
+  background-color: var(--color-invoice-sent-background);
+  color: var(--color-invoice-sent);
+  border: 1px solid var(--color-invoice-sent);
+}
+
+.status-paid {
+  background-color: var(--color-invoice-paid-background);
+  color: var(--color-invoice-paid);
+  border: 1px solid var(--color-invoice-paid);
+}
+
+.status-overdue {
+  background-color: var(--color-invoice-overdue-background);
+  color: var(--color-invoice-overdue);
+  border: 1px solid var(--color-invoice-overdue);
+}
+
+.status-cancelled {
+  background-color: var(--color-invoice-cancelled-background);
+  color: var(--color-invoice-cancelled);
+  border: 1px solid var(--color-invoice-cancelled);
+}
+
+/* VAT rate badges */
+.vat-standard {
+  background-color: var(--color-primary-50);
+  color: var(--color-vat-standard);
+  border: 1px solid var(--color-vat-standard);
+}
+
+.vat-reduced {
+  background-color: var(--color-success-50);
+  color: var(--color-vat-reduced);
+  border: 1px solid var(--color-vat-reduced);
+}
+
+.vat-zero {
+  background-color: var(--color-neutral-50);
+  color: var(--color-vat-zero);
+  border: 1px solid var(--color-vat-zero);
+}
+
+.vat-exempt {
+  background-color: var(--color-warning-50);
+  color: var(--color-vat-exempt);
+  border: 1px solid var(--color-vat-exempt);
+}
+
+/* Currency amount utilities */
+.currency-positive {
+  color: var(--color-currency-positive);
+}
+
+.currency-negative {
+  color: var(--color-currency-negative);
+}
+
+.currency-neutral {
+  color: var(--color-currency-neutral);
+}
+
+/* Form validation utilities */
+.form-valid {
+  border-color: var(--color-form-valid);
+  background-color: var(--color-form-valid-background);
+}
+
+.form-invalid {
+  border-color: var(--color-form-invalid);
+  background-color: var(--color-form-invalid-background);
+}
+
+.form-pending {
+  border-color: var(--color-form-pending);
+  background-color: var(--color-form-pending-background);
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn var(--animation-duration-normal) var(--animation-easing-ease-out);
+}
+
+.animate-slide-up {
+  animation: slideUp var(--animation-duration-normal) var(--animation-easing-ease-out);
+}
+
+.animate-slide-down {
+  animation: slideDown var(--animation-duration-normal) var(--animation-easing-ease-out);
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Print utilities */
+.print-only {
+  display: none;
+}
+
+.no-print {
+  display: block;
+}
+
+@media print {
+  .print-only {
+    display: block !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .invoice-print {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 20mm;
+    font-size: 12pt;
+    line-height: 1.4;
+    color: black;
+    background: white;
+  }
+}
+
+/* Responsive utilities */
+.responsive-text {
+  font-size: var(--font-size-sm);
+}
+
+@media (min-width: 768px) {
+  .responsive-text {
+    font-size: var(--font-size-base);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-text {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* Loading utilities */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Truncate utilities */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.truncate-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.truncate-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}

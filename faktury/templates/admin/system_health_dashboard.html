@@ -1,0 +1,326 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "System Health Dashboard" %} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/system-health-dashboard.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="system-health-dashboard">
+    <div class="dashboard-header">
+        <h1>{% trans "System Health Dashboard" %}</h1>
+        <div class="last-updated">
+            {% trans "Last updated" %}: <span id="last-updated-time">{{ health_report.timestamp|date:"Y-m-d H:i:s" }}</span>
+            <button id="refresh-health" class="btn btn-primary">{% trans "Refresh" %}</button>
+        </div>
+    </div>
+
+    <!-- Overall Status -->
+    <div class="status-overview">
+        <div class="status-card overall-status status-{{ health_report.overall_status }}">
+            <div class="status-icon">
+                {% if health_report.overall_status == 'healthy' %}
+                    <i class="fas fa-check-circle"></i>
+                {% elif health_report.overall_status == 'warning' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                {% else %}
+                    <i class="fas fa-times-circle"></i>
+                {% endif %}
+            </div>
+            <div class="status-info">
+                <h2>{% trans "Overall System Status" %}</h2>
+                <p class="status-text">
+                    {% if health_report.overall_status == 'healthy' %}
+                        {% trans "All systems operational" %}
+                    {% elif health_report.overall_status == 'warning' %}
+                        {% trans "Some issues detected" %}
+                    {% else %}
+                        {% trans "Critical issues require attention" %}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="summary-stats">
+            <div class="stat-item">
+                <span class="stat-number">{{ health_report.summary.healthy_components }}</span>
+                <span class="stat-label">{% trans "Healthy Components" %}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ health_report.summary.warning_components }}</span>
+                <span class="stat-label">{% trans "Warnings" %}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ health_report.summary.error_components }}</span>
+                <span class="stat-label">{% trans "Errors" %}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Component Status Grid -->
+    <div class="components-grid">
+        <!-- Database Health -->
+        <div class="component-card">
+            <div class="component-header">
+                <h3><i class="fas fa-database"></i> {% trans "Database" %}</h3>
+                <span class="status-badge status-{{ health_report.components.database.status }}">
+                    {{ health_report.components.database.status|title }}
+                </span>
+            </div>
+            <div class="component-details">
+                <div class="metric">
+                    <span class="metric-label">{% trans "Response Time" %}:</span>
+                    <span class="metric-value">{{ health_report.components.database.response_time }}ms</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">{% trans "Connections" %}:</span>
+                    <span class="metric-value">{{ health_report.components.database.connection_count }}</span>
+                </div>
+                {% if health_report.components.database.errors %}
+                    <div class="error-list">
+                        {% for error in health_report.components.database.errors %}
+                            <div class="error-item">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- OCR Services Health -->
+        <div class="component-card">
+            <div class="component-header">
+                <h3><i class="fas fa-eye"></i> {% trans "OCR Services" %}</h3>
+                <span class="status-badge status-{{ health_report.components.ocr_services.status }}">
+                    {{ health_report.components.ocr_services.status|title }}
+                </span>
+            </div>
+            <div class="component-details">
+                {% for engine_name, engine_data in health_report.components.ocr_services.engines.items %}
+                    <div class="ocr-engine">
+                        <div class="engine-name">{{ engine_name|title }}</div>
+                        <div class="engine-status">
+                            {% if engine_data.available %}
+                                <span class="available">{% trans "Available" %}</span>
+                                <span class="success-rate">{{ engine_data.success_rate }}% {% trans "success" %}</span>
+                            {% else %}
+                                <span class="unavailable">{% trans "Unavailable" %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                {% if health_report.components.ocr_services.errors %}
+                    <div class="error-list">
+                        {% for error in health_report.components.ocr_services.errors %}
+                            <div class="error-item">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- System Resources -->
+        <div class="component-card">
+            <div class="component-header">
+                <h3><i class="fas fa-server"></i> {% trans "System Resources" %}</h3>
+                <span class="status-badge status-{{ health_report.components.system_resources.status }}">
+                    {{ health_report.components.system_resources.status|title }}
+                </span>
+            </div>
+            <div class="component-details">
+                <div class="resource-meter">
+                    <div class="meter-label">{% trans "CPU Usage" %}</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: {{ health_report.components.system_resources.cpu_usage }}%"></div>
+                    </div>
+                    <div class="meter-value">{{ health_report.components.system_resources.cpu_usage }}%</div>
+                </div>
+                <div class="resource-meter">
+                    <div class="meter-label">{% trans "Memory Usage" %}</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: {{ health_report.components.system_resources.memory_usage.used_percent }}%"></div>
+                    </div>
+                    <div class="meter-value">{{ health_report.components.system_resources.memory_usage.used_percent }}%</div>
+                </div>
+                <div class="resource-meter">
+                    <div class="meter-label">{% trans "Disk Usage" %}</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: {{ health_report.components.system_resources.disk_usage.used_percent }}%"></div>
+                    </div>
+                    <div class="meter-value">{{ health_report.components.system_resources.disk_usage.used_percent }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Static Assets -->
+        <div class="component-card">
+            <div class="component-header">
+                <h3><i class="fas fa-file-code"></i> {% trans "Static Assets" %}</h3>
+                <span class="status-badge status-{{ health_report.components.static_assets.status }}">
+                    {{ health_report.components.static_assets.status|title }}
+                </span>
+            </div>
+            <div class="component-details">
+                {% for asset_path, asset_data in health_report.components.static_assets.critical_assets.items %}
+                    <div class="asset-item">
+                        <span class="asset-name">{{ asset_path }}</span>
+                        {% if asset_data.exists %}
+                            <span class="asset-status available">{% trans "Available" %}</span>
+                        {% else %}
+                            <span class="asset-status missing">{% trans "Missing" %}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                {% if health_report.components.static_assets.errors %}
+                    <div class="error-list">
+                        {% for error in health_report.components.static_assets.errors %}
+                            <div class="error-item">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Cache Health -->
+        <div class="component-card">
+            <div class="component-header">
+                <h3><i class="fas fa-memory"></i> {% trans "Cache System" %}</h3>
+                <span class="status-badge status-{{ health_report.components.cache.status }}">
+                    {{ health_report.components.cache.status|title }}
+                </span>
+            </div>
+            <div class="component-details">
+                <div class="metric">
+                    <span class="metric-label">{% trans "Backend" %}:</span>
+                    <span class="metric-value">{{ health_report.components.cache.cache_backend }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">{% trans "Test Result" %}:</span>
+                    <span class="metric-value">
+                        {% if health_report.components.cache.test_result %}
+                            <span class="success">{% trans "Passed" %}</span>
+                        {% else %}
+                            <span class="error">{% trans "Failed" %}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if health_report.components.cache.errors %}
+                    <div class="error-list">
+                        {% for error in health_report.components.cache.errors %}
+                            <div class="error-item">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="performance-section">
+        <h2>{% trans "Performance Metrics (24h)" %}</h2>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-number">{{ performance_metrics.requests_24h }}</div>
+                <div class="metric-label">{% trans "Total Requests" %}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number">{{ performance_metrics.error_rate_percent }}%</div>
+                <div class="metric-label">{% trans "Error Rate" %}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number">{{ performance_metrics.successful_requests }}</div>
+                <div class="metric-label">{% trans "Successful Requests" %}</div>
+            </div>
+        </div>
+
+        {% if performance_metrics.top_errors %}
+            <div class="top-errors">
+                <h3>{% trans "Top Errors" %}</h3>
+                <div class="error-table">
+                    {% for error in performance_metrics.top_errors %}
+                        <div class="error-row">
+                            <span class="error-message">{{ error.error|truncatechars:80 }}</span>
+                            <span class="error-count">{{ error.count }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Health History Chart -->
+    <div class="chart-section">
+        <h2>{% trans "Health Trends" %}</h2>
+        <canvas id="healthChart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Recommendations -->
+    {% if health_report.recommendations %}
+        <div class="recommendations-section">
+            <h2>{% trans "Recommendations" %}</h2>
+            <ul class="recommendations-list">
+                {% for recommendation in health_report.recommendations %}
+                    <li>{{ recommendation }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh functionality
+    const refreshButton = document.getElementById('refresh-health');
+    const lastUpdatedTime = document.getElementById('last-updated-time');
+    
+    refreshButton.addEventListener('click', function() {
+        location.reload();
+    });
+    
+    // Auto-refresh every 5 minutes
+    setInterval(function() {
+        location.reload();
+    }, 300000);
+    
+    // Health history chart
+    const ctx = document.getElementById('healthChart').getContext('2d');
+    
+    fetch('{% url "admin:health_history_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: '{% trans "Response Time (ms)" %}',
+                        data: data.response_times,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }, {
+                        label: '{% trans "Error Count" %}',
+                        data: data.error_counts,
+                        borderColor: 'rgb(255, 99, 132)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading health history:', error);
+        });
+});
+</script>
+{% endblock %}

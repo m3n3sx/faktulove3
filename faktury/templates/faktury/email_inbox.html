@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="dashboard-main-body">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <h6 class="fw-semibold mb-0">{% trans "Skrzynka e-mail" %}</h6>
+        <ul class="d-flex align-items-center gap-2">
+            <li class="fw-medium">
+                <a href="{% url 'panel_uzytkownika' %}" class="d-flex align-items-center gap-1 hover-text-primary">
+                    <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+                    Dashboard
+                </a>
+            </li>
+            <li>-</li>
+            <li class="fw-medium">{% trans "E-mail" %}</li>
+        </ul>
+    </div>
+
+    <div class="card h-100 p-0 radius-12">
+        <div class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <iconify-icon icon="mdi:email-outline" class="icon text-xl line-height-1"></iconify-icon>
+                <h6 class="text-lg fw-semibold mb-0">{% trans "Skrzynka odbiorcza" %}</h6>
+            </div>
+            <button type="button" class="btn btn-primary text-sm btn-sm px-12 py-6 radius-8 d-flex align-items-center gap-2">
+                <iconify-icon icon="ic:baseline-refresh" class="icon text-xl line-height-1"></iconify-icon>
+                {% trans "Odśwież" %}
+            </button>
+        </div>
+        <div class="card-body p-24">
+            <div class="row gy-4">
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center gap-2" role="alert">
+                        <iconify-icon icon="mdi:information-outline" class="icon text-xl"></iconify-icon>
+                        <div>
+                            <strong>{% trans "Informacja:" %}</strong> 
+                            {% trans "Funkcja e-mail jest obecnie w fazie rozwoju. Tymczasowo możesz sprawdzać powiadomienia w sekcji" %} 
+                            <a href="{% url 'notifications_list' %}" class="alert-link">{% trans "Powiadomienia" %}</a>.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <iconify-icon icon="mdi:email-outline" class="icon text-6xl text-neutral-400 mb-3"></iconify-icon>
+                        <h5 class="text-neutral-600 mb-2">{% trans "Brak nowych wiadomości" %}</h5>
+                        <p class="text-neutral-500">{% trans "Gdy otrzymasz nowe wiadomości e-mail, pojawią się tutaj." %}</p>
+                        
+                        <div class="mt-4">
+                            <a href="{% url 'notifications_list' %}" class="btn btn-outline-primary me-2">
+                                <iconify-icon icon="mdi:bell-outline" class="icon"></iconify-icon>
+                                {% trans "Zobacz powiadomienia" %}
+                            </a>
+                            <a href="{% url 'panel_uzytkownika' %}" class="btn btn-outline-secondary">
+                                <iconify-icon icon="solar:home-smile-angle-outline" class="icon"></iconify-icon>
+                                {% trans "Wróć do dashboard" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

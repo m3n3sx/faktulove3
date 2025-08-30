@@ -1,0 +1,185 @@
+{% load design_system_tags %}
+
+<div class="ds-compliance-indicator ds-compliance-indicator--{{ size }}"
+     data-testid="compliance-indicator">
+  
+  {% comment %} Calculate overall status {% endcomment %}
+  {% with non_compliant_count=rules|length compliant_count=0 warning_count=0 pending_count=0 %}
+    {% for rule in rules %}
+      {% if rule.status == 'compliant' %}
+        {% with compliant_count=compliant_count|add:1 non_compliant_count=non_compliant_count|add:-1 %}{% endwith %}
+      {% elif rule.status == 'warning' %}
+        {% with warning_count=warning_count|add:1 non_compliant_count=non_compliant_count|add:-1 %}{% endwith %}
+      {% elif rule.status == 'pending' %}
+        {% with pending_count=pending_count|add:1 non_compliant_count=non_compliant_count|add:-1 %}{% endwith %}
+      {% endif %}
+    {% endfor %}
+    
+    {% comment %} Determine overall status {% endcomment %}
+    {% if non_compliant_count > 0 %}
+      {% with overall_status='non-compliant' %}
+    {% elif warning_count > 0 %}
+      {% with overall_status='warning' %}
+    {% elif pending_count > 0 %}
+      {% with overall_status='pending' %}
+    {% else %}
+      {% with overall_status='compliant' %}
+    {% endif %}
+    
+    <div class="ds-compliance-indicator__header ds-compliance-indicator__header--{{ overall_status }}">
+      <div class="ds-compliance-indicator__icon">
+        {% if overall_status == 'compliant' %}
+          <svg class="ds-compliance-indicator__icon-svg" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        {% elif overall_status == 'warning' %}
+          <svg class="ds-compliance-indicator__icon-svg" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        {% elif overall_status == 'non-compliant' %}
+          <svg class="ds-compliance-indicator__icon-svg" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        {% else %}
+          <svg class="ds-compliance-indicator__icon-svg" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+          </svg>
+        {% endif %}
+      </div>
+      
+      <div class="ds-compliance-indicator__title">
+        <h3 class="ds-compliance-indicator__heading">Zgodność z przepisami</h3>
+        <span class="ds-compliance-indicator__status">
+          {% if overall_status == 'compliant' %}Zgodne{% endif %}
+          {% if overall_status == 'warning' %}Ostrzeżenie{% endif %}
+          {% if overall_status == 'non-compliant' %}Niezgodne{% endif %}
+          {% if overall_status == 'pending' %}Oczekuje{% endif %}
+        </span>
+      </div>
+    </div>
+    
+    {% comment %} Summary counts {% endcomment %}
+    <div class="ds-compliance-indicator__summary">
+      {% with compliant_count=rules|length %}
+        {% for rule in rules %}
+          {% if rule.status != 'compliant' %}
+            {% with compliant_count=compliant_count|add:-1 %}{% endwith %}
+          {% endif %}
+        {% endfor %}
+        
+        {% if compliant_count > 0 %}
+          <span class="ds-compliance-indicator__count ds-compliance-indicator__count--success">
+            <span class="ds-compliance-indicator__count-dot"></span>
+            {{ compliant_count }} zgodne
+          </span>
+        {% endif %}
+      {% endwith %}
+      
+      {% if warning_count > 0 %}
+        <span class="ds-compliance-indicator__count ds-compliance-indicator__count--warning">
+          <span class="ds-compliance-indicator__count-dot"></span>
+          {{ warning_count }} ostrzeżenia
+        </span>
+      {% endif %}
+      
+      {% if non_compliant_count > 0 %}
+        <span class="ds-compliance-indicator__count ds-compliance-indicator__count--error">
+          <span class="ds-compliance-indicator__count-dot"></span>
+          {{ non_compliant_count }} niezgodne
+        </span>
+      {% endif %}
+      
+      {% if pending_count > 0 %}
+        <span class="ds-compliance-indicator__count ds-compliance-indicator__count--neutral">
+          <span class="ds-compliance-indicator__count-dot"></span>
+          {{ pending_count }} oczekujące
+        </span>
+      {% endif %}
+    </div>
+    
+    {% comment %} Detailed rules (if show_details is True) {% endcomment %}
+    {% if show_details %}
+      <div class="ds-compliance-indicator__details">
+        {% for rule in rules %}
+          <div class="ds-compliance-indicator__rule ds-compliance-indicator__rule--{{ rule.status }}"
+               data-testid="compliance-rule-{{ rule.id }}">
+            <div class="ds-compliance-indicator__rule-icon">
+              {% if rule.status == 'compliant' %}
+                <svg class="ds-compliance-indicator__rule-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+              {% elif rule.status == 'warning' %}
+                <svg class="ds-compliance-indicator__rule-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+              {% elif rule.status == 'non-compliant' %}
+                <svg class="ds-compliance-indicator__rule-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              {% else %}
+                <svg class="ds-compliance-indicator__rule-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                </svg>
+              {% endif %}
+            </div>
+            
+            <div class="ds-compliance-indicator__rule-content">
+              <div class="ds-compliance-indicator__rule-header">
+                <h4 class="ds-compliance-indicator__rule-name">{{ rule.name }}</h4>
+                <span class="ds-compliance-indicator__rule-status">
+                  {% if rule.status == 'compliant' %}Zgodne{% endif %}
+                  {% if rule.status == 'warning' %}Ostrzeżenie{% endif %}
+                  {% if rule.status == 'non-compliant' %}Niezgodne{% endif %}
+                  {% if rule.status == 'pending' %}Oczekuje{% endif %}
+                </span>
+              </div>
+              
+              <p class="ds-compliance-indicator__rule-description">{{ rule.description }}</p>
+              
+              {% if rule.details %}
+                <p class="ds-compliance-indicator__rule-details">{{ rule.details }}</p>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    
+    {% comment %} Progress bar {% endcomment %}
+    <div class="ds-compliance-indicator__progress">
+      <div class="ds-compliance-indicator__progress-header">
+        <span class="ds-compliance-indicator__progress-label">Postęp zgodności</span>
+        <span class="ds-compliance-indicator__progress-value">
+          {% with compliant_count=rules|length %}
+            {% for rule in rules %}
+              {% if rule.status != 'compliant' %}
+                {% with compliant_count=compliant_count|add:-1 %}{% endwith %}
+              {% endif %}
+            {% endfor %}
+            {{ compliant_count }}/{{ rules|length }}
+          {% endwith %}
+        </span>
+      </div>
+      
+      <div class="ds-compliance-indicator__progress-bar">
+        {% with compliant_count=rules|length %}
+          {% for rule in rules %}
+            {% if rule.status != 'compliant' %}
+              {% with compliant_count=compliant_count|add:-1 %}{% endwith %}
+            {% endif %}
+          {% endfor %}
+          {% with progress_percent=compliant_count|floatformat:0 %}
+            {% if rules|length > 0 %}
+              {% with progress_percent=compliant_count|mul:100|div:rules|length %}
+                <div class="ds-compliance-indicator__progress-fill" 
+                     style="width: {{ progress_percent }}%"></div>
+              {% endwith %}
+            {% endif %}
+          {% endwith %}
+        {% endwith %}
+      </div>
+    </div>
+    
+    {% endwith %}
+  {% endwith %}
+</div>

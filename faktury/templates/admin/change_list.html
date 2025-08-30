@@ -1,0 +1,314 @@
+{% extends "admin/change_list.html" %}
+{% load design_system %}
+
+{% block content_title %}
+    <div class="django-design-system">
+        <div class="admin-list-header">
+            <h1>{{ title }}</h1>
+            {% if has_add_permission %}
+                <div class="admin-actions">
+                    {% ds_button "Dodaj nowy" variant="primary" onclick="window.location.href='add/'" %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block search %}
+    <div class="django-design-system">
+        <div class="admin-search-enhanced">
+            {{ block.super }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block date_hierarchy %}
+    {% if cl.date_hierarchy %}
+        <div class="django-design-system">
+            <div class="admin-date-hierarchy">
+                {{ block.super }}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block filters %}
+    {% if cl.has_filters %}
+        <div class="django-design-system">
+            <div class="admin-filters-enhanced">
+                <h3>Filtry</h3>
+                {{ block.super }}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block result_list %}
+    <div class="django-design-system django-polish-business">
+        {% if cl.result_count %}
+            <div class="admin-results-info">
+                <span class="results-count">
+                    {{ cl.result_count }} {% if cl.result_count == 1 %}wynik{% else %}wyników{% endif %}
+                </span>
+                {% if cl.full_result_count != cl.result_count %}
+                    <span class="results-filtered">
+                        (przefiltrowano z {{ cl.full_result_count }})
+                    </span>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <div class="admin-table-container">
+            {{ block.super }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagination %}
+    {% if cl.result_count %}
+        <div class="django-design-system">
+            <div class="admin-pagination">
+                {{ block.super }}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .admin-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-4);
+            padding: var(--spacing-4);
+            background: var(--color-background-secondary);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--color-border-default);
+        }
+        
+        .admin-list-header h1 {
+            margin: 0;
+            color: var(--color-text-primary);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: var(--spacing-2);
+        }
+        
+        .admin-search-enhanced {
+            background: var(--color-background-primary);
+            border: 1px solid var(--color-border-default);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-4);
+        }
+        
+        .admin-search-enhanced #searchbar {
+            border: 1px solid var(--color-border-default) !important;
+            border-radius: var(--border-radius-md) !important;
+            padding: var(--spacing-2) var(--spacing-3) !important;
+            background: var(--color-background-primary) !important;
+            color: var(--color-text-primary) !important;
+            font-size: var(--font-size-base) !important;
+            width: 100% !important;
+            max-width: 400px !important;
+        }
+        
+        .admin-search-enhanced #searchbar:focus {
+            outline: 2px solid transparent !important;
+            outline-offset: 2px !important;
+            border-color: var(--color-interactive) !important;
+            box-shadow: var(--focus-ring-default) !important;
+        }
+        
+        .admin-date-hierarchy {
+            background: var(--color-background-secondary);
+            border: 1px solid var(--color-border-default);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+        }
+        
+        .admin-date-hierarchy a {
+            color: var(--color-interactive) !important;
+            text-decoration: none !important;
+            padding: var(--spacing-1) var(--spacing-2) !important;
+            border-radius: var(--border-radius-sm) !important;
+            transition: all var(--animation-duration-fast) var(--animation-easing-ease-out) !important;
+        }
+        
+        .admin-date-hierarchy a:hover {
+            background: var(--color-background-hover) !important;
+            text-decoration: none !important;
+        }
+        
+        .admin-filters-enhanced {
+            background: var(--color-background-primary);
+            border: 1px solid var(--color-border-default);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-4);
+        }
+        
+        .admin-filters-enhanced h3 {
+            margin: 0 0 var(--spacing-3) 0;
+            color: var(--color-text-primary);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        .admin-filters-enhanced ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .admin-filters-enhanced li {
+            margin-bottom: var(--spacing-1);
+        }
+        
+        .admin-filters-enhanced a {
+            color: var(--color-interactive) !important;
+            text-decoration: none !important;
+            padding: var(--spacing-1) var(--spacing-2) !important;
+            border-radius: var(--border-radius-sm) !important;
+            display: block !important;
+            transition: all var(--animation-duration-fast) var(--animation-easing-ease-out) !important;
+        }
+        
+        .admin-filters-enhanced a:hover {
+            background: var(--color-background-hover) !important;
+            text-decoration: none !important;
+        }
+        
+        .admin-filters-enhanced a.selected {
+            background: var(--color-interactive) !important;
+            color: var(--color-text-inverse) !important;
+        }
+        
+        .admin-results-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+            margin-bottom: var(--spacing-3);
+            padding: var(--spacing-2) var(--spacing-3);
+            background: var(--color-background-secondary);
+            border-radius: var(--border-radius-md);
+            font-size: var(--font-size-sm);
+        }
+        
+        .results-count {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-primary);
+        }
+        
+        .results-filtered {
+            color: var(--color-text-muted);
+        }
+        
+        .admin-table-container {
+            background: var(--color-background-primary);
+            border: 1px solid var(--color-border-default);
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .admin-pagination {
+            margin-top: var(--spacing-4);
+            padding: var(--spacing-3);
+            background: var(--color-background-secondary);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--color-border-default);
+        }
+        
+        .admin-pagination .paginator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-2);
+        }
+        
+        .admin-pagination a {
+            color: var(--color-interactive) !important;
+            text-decoration: none !important;
+            padding: var(--spacing-1) var(--spacing-2) !important;
+            border-radius: var(--border-radius-sm) !important;
+            border: 1px solid var(--color-border-default) !important;
+            background: var(--color-background-primary) !important;
+            transition: all var(--animation-duration-fast) var(--animation-easing-ease-out) !important;
+        }
+        
+        .admin-pagination a:hover {
+            background: var(--color-background-hover) !important;
+            border-color: var(--color-border-strong) !important;
+        }
+        
+        .admin-pagination .this-page {
+            background: var(--color-interactive) !important;
+            color: var(--color-text-inverse) !important;
+            border: 1px solid var(--color-interactive) !important;
+            padding: var(--spacing-1) var(--spacing-2) !important;
+            border-radius: var(--border-radius-sm) !important;
+        }
+        
+        /* Polish business specific table styling */
+        .django-polish-business #result_list .field-nip {
+            font-family: var(--typography-nip-family);
+            font-size: var(--typography-nip-size);
+            font-weight: var(--typography-nip-weight);
+            letter-spacing: var(--typography-nip-letter-spacing);
+        }
+        
+        .django-polish-business #result_list .field-amount,
+        .django-polish-business #result_list .field-total_amount,
+        .django-polish-business #result_list .field-net_amount,
+        .django-polish-business #result_list .field-gross_amount {
+            font-family: var(--typography-currency-family);
+            font-size: var(--typography-currency-size);
+            font-weight: var(--typography-currency-weight);
+            text-align: right;
+            color: var(--color-currency-neutral);
+        }
+        
+        .django-polish-business #result_list .field-date,
+        .django-polish-business #result_list .field-issue_date,
+        .django-polish-business #result_list .field-due_date {
+            font-family: var(--typography-date-family);
+            font-size: var(--typography-date-size);
+        }
+        
+        .django-polish-business #result_list .field-status {
+            text-align: center;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .admin-list-header {
+                flex-direction: column;
+                gap: var(--spacing-2);
+                align-items: stretch;
+            }
+            
+            .admin-search-enhanced #searchbar {
+                max-width: 100% !important;
+            }
+            
+            .admin-results-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-1);
+            }
+            
+            .admin-pagination .paginator {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}

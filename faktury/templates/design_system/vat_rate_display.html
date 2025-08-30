@@ -1,0 +1,14 @@
+{% load design_system_tags %}
+
+<span class="ds-vat-rate-display{% if is_exempt %} ds-vat-rate-display--exempt{% endif %}"
+      data-testid="vat-rate-display"
+      title="{{ rate_description }}">
+  
+  <span class="ds-vat-rate-display__rate">{{ rate_text }}</span>
+  
+  {% if vat_amount %}
+    <span class="ds-vat-rate-display__amount">
+      ({% ds_currency_format vat_amount currency="PLN" %})
+    </span>
+  {% endif %}
+</span>

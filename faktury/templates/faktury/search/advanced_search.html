@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Zaawansowane wyszukiwanie - FaktuLove{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/advanced-search.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Search Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-search"></i>
+                        Zaawansowane wyszukiwanie
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="advanced-search-form">
+                        <!-- Search Query -->
+                        <div class="mb-3">
+                            <label for="search-query" class="form-label">Wyszukaj</label>
+                            <div class="input-group">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="search-query" 
+                                       name="query"
+                                       placeholder="Numer faktury, NIP, nazwa..."
+                                       autocomplete="off">
+                                <button class="btn btn-outline-secondary" type="button" id="clear-search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div id="search-suggestions" class="dropdown-menu w-100" style="display: none;"></div>
+                        </div>
+
+                        <!-- Search Type -->
+                        <div class="mb-3">
+                            <label class="form-label">Typ wyszukiwania</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="search_type" id="search-invoices" value="invoices" checked>
+                                <label class="btn btn-outline-primary" for="search-invoices">Faktury</label>
+                                
+                                <input type="radio" class="btn-check" name="search_type" id="search-companies" value="companies">
+                                <label class="btn btn-outline-primary" for="search-companies">Kontrahenci</label>
+                            </div>
+                        </div>
+
+                        <!-- Invoice Filters -->
+                        <div id="invoice-filters">
+                            <!-- Date Range -->
+                            <div class="mb-3">
+                                <label class="form-label">Zakres dat</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="text" 
+                                               class="form-control datepicker" 
+                                               id="date-from" 
+                                               name="date_from"
+                                               placeholder="Od">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="text" 
+                                               class="form-control datepicker" 
+                                               id="date-to" 
+                                               name="date_to"
+                                               placeholder="Do">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Amount Range -->
+                            <div class="mb-3">
+                                <label class="form-label">Kwota (PLN)</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="amount-from" 
+                                               name="amount_from"
+                                               placeholder="Od"
+                                               step="0.01">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="amount-to" 
+                                               name="amount_to"
+                                               placeholder="Do"
+                                               step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="status-filter" name="status" multiple>
+                                    <option value="wystawiona">Wystawiona</option>
+                                    <option value="oplacona">Opłacona</option>
+                                    <option value="cz_oplacona">Częściowo opłacona</option>
+                                    <option value="anulowana">Anulowana</option>
+                                </select>
+                            </div>
+
+                            <!-- Document Type Filter -->
+                            <div class="mb-3">
+                                <label class="form-label">Typ dokumentu</label>
+                                <select class="form-select" id="doc-type-filter" name="typ_dokumentu" multiple>
+                                    <option value="FV">Faktura VAT</option>
+                                    <option value="FP">Faktura Proforma</option>
+                                    <option value="KOR">Korekta Faktury</option>
+                                    <option value="RC">Rachunek</option>
+                                    <option value="PAR">Paragon</option>
+                                    <option value="KP">KP - Dowód Wpłaty</option>
+                                    <option value="RB">Rachunek Bankowy</option>
+                                </select>
+                            </div>
+
+                            <!-- Invoice Type Filter -->
+                            <div class="mb-3">
+                                <label class="form-label">Typ faktury</label>
+                                <select class="form-select" id="invoice-type-filter" name="typ_faktury">
+                                    <option value="">Wszystkie</option>
+                                    <option value="sprzedaz">Sprzedaż</option>
+                                    <option value="koszt">Koszt</option>
+                                </select>
+                            </div>
+
+                            <!-- OCR Confidence -->
+                            <div class="mb-3">
+                                <label class="form-label">Pewność OCR (min %)</label>
+                                <input type="range" 
+                                       class="form-range" 
+                                       id="ocr-confidence" 
+                                       name="ocr_confidence_min"
+                                       min="0" 
+                                       max="100" 
+                                       step="5"
+                                       value="0">
+                                <div class="d-flex justify-content-between">
+                                    <small>0%</small>
+                                    <small id="ocr-confidence-value">0%</small>
+                                    <small>100%</small>
+                                </div>
+                            </div>
+
+                            <!-- Additional Filters -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="overdue-filter" name="overdue">
+                                    <label class="form-check-label" for="overdue-filter">
+                                        Przeterminowane
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="verification-filter" name="manual_verification_required">
+                                    <label class="form-check-label" for="verification-filter">
+                                        Wymaga weryfikacji
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Filters -->
+                        <div id="company-filters" style="display: none;">
+                            <!-- Company Type -->
+                            <div class="mb-3">
+                                <label class="form-label">Typ</label>
+                                <select class="form-select" id="company-type-filter" name="czy_firma">
+                                    <option value="">Wszystkie</option>
+                                    <option value="true">Firma</option>
+                                    <option value="false">Osoba fizyczna</option>
+                                </select>
+                            </div>
+
+                            <!-- City Filter -->
+                            <div class="mb-3">
+                                <label class="form-label">Miasto</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="city-filter" 
+                                       name="miasto"
+                                       placeholder="Nazwa miasta">
+                            </div>
+
+                            <!-- Additional Company Filters -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="has-nip-filter" name="has_nip">
+                                    <label class="form-check-label" for="has-nip-filter">
+                                        Ma NIP
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="has-email-filter" name="has_email">
+                                    <label class="form-check-label" for="has-email-filter">
+                                        Ma email
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                                Wyszukaj
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="clear-filters">
+                                <i class="fas fa-eraser"></i>
+                                Wyczyść filtry
+                            </button>
+                            <button type="button" class="btn btn-outline-info" id="save-search">
+                                <i class="fas fa-save"></i>
+                                Zapisz wyszukiwanie
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Saved Searches -->
+                    <div class="mt-4">
+                        <h6>Zapisane wyszukiwania</h6>
+                        <div id="saved-searches-list">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Search History -->
+                    <div class="mt-4">
+                        <h6>Historia wyszukiwań</h6>
+                        <div id="search-history-list">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Wyniki wyszukiwania</h5>
+                        <small id="results-count" class="text-muted">Wprowadź kryteria wyszukiwania</small>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm" id="export-results">
+                            <i class="fas fa-download"></i>
+                            Eksportuj
+                        </button>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                    type="button" 
+                                    data-bs-toggle="dropdown">
+                                <i class="fas fa-sort"></i>
+                                Sortuj
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item sort-option" href="#" data-sort="data_wystawienia" data-order="desc">Data wystawienia (najnowsze)</a></li>
+                                <li><a class="dropdown-item sort-option" href="#" data-sort="data_wystawienia" data-order="asc">Data wystawienia (najstarsze)</a></li>
+                                <li><a class="dropdown-item sort-option" href="#" data-sort="numer" data-order="asc">Numer faktury</a></li>
+                                <li><a class="dropdown-item sort-option" href="#" data-sort="nabywca__nazwa" data-order="asc">Nazwa nabywcy</a></li>
+                                <li><a class="dropdown-item sort-option" href="#" data-sort="ocr_confidence" data-order="desc">Pewność OCR</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Loading Indicator -->
+                    <div id="loading-indicator" class="text-center py-5" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Wyszukiwanie...</span>
+                        </div>
+                        <p class="mt-2">Wyszukiwanie...</p>
+                    </div>
+
+                    <!-- Results Container -->
+                    <div id="search-results">
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-search fa-3x mb-3"></i>
+                            <p>Wprowadź kryteria wyszukiwania aby zobaczyć wyniki</p>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav id="pagination-container" style="display: none;">
+                        <ul class="pagination justify-content-center" id="pagination">
+                            <!-- Populated by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Search Modal -->
+<div class="modal fade" id="saveSearchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Zapisz wyszukiwanie</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="save-search-form">
+                    <div class="mb-3">
+                        <label for="search-name" class="form-label">Nazwa wyszukiwania</label>
+                        <input type="text" class="form-control" id="search-name" name="name" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-primary" id="confirm-save-search">Zapisz</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pl.js"></script>
+<script src="{% static 'js/advanced-search.js' %}"></script>
+{% endblock %}

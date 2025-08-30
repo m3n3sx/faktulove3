@@ -100,7 +100,7 @@ def company_settings(request):
         'page_title': 'Ustawienia firmy'
     }
     
-    return render(request, 'faktury/company_settings.html', context)
+    return render(request, 'faktury/simple_company_settings.html', context)
 
 
 def get_company_stats(user):

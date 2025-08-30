@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load design_system_tags %}
+
+{% block title %}Mój profil{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            {% ds_typography variant="heading-xl" element="h1" class="mb-3" %}
+                <iconify-icon icon="solar:user-linear" class="text-primary me-2"></iconify-icon>
+                Mój profil
+            {% end_ds_typography %}
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'panel_uzytkownika' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Profil</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            {% ds_card variant="elevated" class="mb-4" %}
+                <div class="card-header bg-transparent border-bottom">
+                    {% ds_typography variant="heading-md" element="h5" class="mb-0" %}
+                        <iconify-icon icon="solar:id-card-linear" class="text-primary me-2"></iconify-icon>
+                        Informacje o użytkowniku
+                    {% end_ds_typography %}
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                {% ds_typography variant="label-sm" class="text-muted mb-1" %}
+                                    Nazwa użytkownika
+                                {% end_ds_typography %}
+                                {% ds_typography variant="body-md" class="fw-medium" %}
+                                    {{ user.username }}
+                                {% end_ds_typography %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                {% ds_typography variant="label-sm" class="text-muted mb-1" %}
+                                    Email
+                                {% end_ds_typography %}
+                                {% ds_typography variant="body-md" class="fw-medium" %}
+                                    {{ user.email }}
+                                {% end_ds_typography %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                {% ds_typography variant="label-sm" class="text-muted mb-1" %}
+                                    Imię
+                                {% end_ds_typography %}
+                                {% ds_typography variant="body-md" class="fw-medium" %}
+                                    {{ user.first_name|default:"Nie podano" }}
+                                {% end_ds_typography %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                {% ds_typography variant="label-sm" class="text-muted mb-1" %}
+                                    Nazwisko
+                                {% end_ds_typography %}
+                                {% ds_typography variant="body-md" class="fw-medium" %}
+                                    {{ user.last_name|default:"Nie podano" }}
+                                {% end_ds_typography %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                {% ds_typography variant="label-sm" class="text-muted mb-1" %}
+                                    Data dołączenia
+                                {% end_ds_typography %}
+                                {% ds_typography variant="body-md" class="fw-medium" %}
+                                    {% ds_date_format user.date_joined format_type="long" %}
+                                {% end_ds_typography %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="profile-field">
+                                {% ds_typography variant="label-sm" class="text-muted mb-1" %}
+                                    Ostatnie logowanie
+                                {% end_ds_typography %}
+                                {% ds_typography variant="body-md" class="fw-medium" %}
+                                    {% if user.last_login %}
+                                        {% ds_date_format user.last_login format_type="long" %}
+                                    {% else %}
+                                        Nigdy
+                                    {% endif %}
+                                {% end_ds_typography %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <div class="profile-field">
+                                {% ds_typography variant="label-sm" class="text-muted mb-2" %}
+                                    Status konta
+                                {% end_ds_typography %}
+                                {% if user.is_active %}
+                                    {% ds_badge "Aktywne" variant="success" size="md" %}
+                                {% else %}
+                                    {% ds_badge "Nieaktywne" variant="error" size="md" %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{% url 'account_email' %}" class="btn btn-primary">
+                            <iconify-icon icon="solar:pen-linear" class="me-2"></iconify-icon>
+                            Edytuj profil
+                        </a>
+                        
+                        <a href="{% url 'account_change_password' %}" class="btn btn-secondary">
+                            <iconify-icon icon="solar:key-linear" class="me-2"></iconify-icon>
+                            Zmień hasło
+                        </a>
+                    </div>
+                </div>
+            {% end_ds_card %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Theme Settings Card -->
+            {% ds_card variant="outlined" class="mb-4" %}
+                <div class="card-header bg-transparent border-bottom">
+                    {% ds_typography variant="heading-sm" element="h6" class="mb-0" %}
+                        <iconify-icon icon="solar:palette-linear" class="text-primary me-2"></iconify-icon>
+                        Ustawienia motywu
+                    {% end_ds_typography %}
+                </div>
+                <div class="card-body">
+                    {% ds_theme_controls show_advanced=True %}
+                </div>
+            {% end_ds_card %}
+
+            <!-- Activity Card -->
+            {% ds_card variant="outlined" class="mb-4" %}
+                <div class="card-header bg-transparent border-bottom">
+                    {% ds_typography variant="heading-sm" element="h6" class="mb-0" %}
+                        <iconify-icon icon="solar:chart-line-linear" class="text-primary me-2"></iconify-icon>
+                        Aktywność
+                    {% end_ds_typography %}
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <iconify-icon icon="solar:file-text-linear" class="display-4 text-primary"></iconify-icon>
+                    </div>
+                    {% ds_typography variant="body-md" class="text-muted" %}
+                        Statystyki aktywności będą dostępne wkrótce
+                    {% end_ds_typography %}
+                </div>
+            {% end_ds_card %}
+
+            <!-- Quick Actions Card -->
+            {% ds_card variant="outlined" %}
+                <div class="card-header bg-transparent border-bottom">
+                    {% ds_typography variant="heading-sm" element="h6" class="mb-0" %}
+                        <iconify-icon icon="solar:settings-linear" class="text-primary me-2"></iconify-icon>
+                        Szybkie akcje
+                    {% end_ds_typography %}
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'company_settings' %}" class="btn btn-outline-secondary w-100 justify-content-start">
+                            <iconify-icon icon="solar:building-linear" class="me-2"></iconify-icon>
+                            Ustawienia firmy
+                        </a>
+                        
+                        <a href="{% url 'notifications_list' %}" class="btn btn-outline-secondary w-100 justify-content-start">
+                            <iconify-icon icon="solar:bell-linear" class="me-2"></iconify-icon>
+                            Powiadomienia
+                        </a>
+                        
+                        <a href="{% url 'account_logout' %}" class="btn btn-outline-danger w-100 justify-content-start">
+                            <iconify-icon icon="solar:logout-linear" class="me-2"></iconify-icon>
+                            Wyloguj się
+                        </a>
+                    </div>
+                </div>
+            {% end_ds_card %}
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-field {
+    padding: 12px 0;
+}
+
+.profile-field:not(:last-child) {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Theme-aware styles */
+.theme-dark .profile-field:not(:last-child) {
+    border-bottom-color: #334155;
+}
+
+.theme-dark .card-header {
+    background-color: transparent !important;
+    border-bottom-color: #334155 !important;
+}
+
+/* High contrast mode */
+.contrast-high .profile-field {
+    padding: 16px 0;
+}
+
+.contrast-high .profile-field:not(:last-child) {
+    border-bottom-width: 2px;
+}
+
+/* Reduced motion */
+.motion-reduced * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .profile-field {
+        padding: 8px 0;
+    }
+}
+</style>
+{% endblock %}

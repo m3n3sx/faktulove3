@@ -1,0 +1,583 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load static %}
+{% load design_system_tags %}
+{% load socialaccount %}
+
+{% block head_title %}{% trans "Rejestracja" %}{% endblock %}
+
+{% block body %}
+<section class="auth bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="{% static 'assets/images/auth/signup-img.png' %}" alt="Rejestracja FaktuLove">
+            <div class="text-center mt-24">
+                <h4 class="text-white fw-bold">Dołącz do FaktuLove</h4>
+                <p class="text-white-75">Nowoczesne fakturowanie dla Twojego biznesu</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <!-- Header -->
+            <div class="text-center">
+                <a href="/" class="mb-40 max-w-290-px">
+                    <img src="{% static 'assets/images/logo.png' %}" alt="FaktuLove">
+                </a>
+                {% ds_typography variant="heading-lg" element="h1" class="mb-12" %}
+                    Utwórz konto
+                {% end_ds_typography %}
+                {% ds_typography variant="body-lg" class="mb-32 text-secondary-light" %}
+                    Rozpocznij fakturowanie w kilka minut
+                {% end_ds_typography %}
+            </div>
+
+            <!-- Registration Form using Design System -->
+            <div id="registrationFormContainer">
+                <!-- Error Messages -->
+                {% if form.non_field_errors or profile_form.non_field_errors %}
+                <div class="alert alert-danger mb-24" role="alert">
+                    {{ form.non_field_errors }}
+                    {{ profile_form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- User Information Row -->
+                <div class="row mb-16">
+                    <div class="col-md-6">
+                        <!-- First Name -->
+                        {% ds_input 
+                            name="imie"
+                            type="text"
+                            label="Imię"
+                            placeholder="Wprowadź imię"
+                            required=True
+                            icon="mage:user"
+                            icon_position="start"
+                            size="lg"
+                            value=profile_form.imie.value|default:""
+                            error=profile_form.imie.errors.0|default:""
+                        %}
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Last Name -->
+                        {% ds_input 
+                            name="nazwisko"
+                            type="text"
+                            label="Nazwisko"
+                            placeholder="Wprowadź nazwisko"
+                            required=True
+                            icon="mage:user"
+                            icon_position="start"
+                            size="lg"
+                            value=profile_form.nazwisko.value|default:""
+                            error=profile_form.nazwisko.errors.0|default:""
+                        %}
+                    </div>
+                </div>
+
+                <!-- Username -->
+                <div class="mb-16">
+                    {% ds_input 
+                        name="username"
+                        type="text"
+                        label="Nazwa użytkownika"
+                        placeholder="Wybierz nazwę użytkownika"
+                        required=True
+                        icon="mage:user-check"
+                        icon_position="start"
+                        size="lg"
+                        value=form.username.value|default:""
+                        error=form.username.errors.0|default:""
+                        helper_text="Minimum 3 znaki, tylko litery, cyfry i podkreślenia"
+                    %}
+                    <div id="username-feedback" class="text-sm mt-2"></div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-16">
+                    {% ds_input 
+                        name="email"
+                        type="email"
+                        label="Adres email"
+                        placeholder="Wprowadź adres email"
+                        required=True
+                        icon="mage:email"
+                        icon_position="start"
+                        size="lg"
+                        value=form.email.value|default:""
+                        error=form.email.errors.0|default:""
+                    %}
+                    <div id="email-feedback" class="text-sm mt-2"></div>
+                </div>
+
+                <!-- Phone -->
+                <div class="mb-16">
+                    {% ds_input 
+                        name="telefon"
+                        type="tel"
+                        label="Numer telefonu"
+                        placeholder="Numer telefonu (opcjonalnie)"
+                        icon="mage:phone"
+                        icon_position="start"
+                        size="lg"
+                        value=profile_form.telefon.value|default:""
+                        helper_text="Format: +48 123 456 789 lub 123 456 789"
+                    %}
+                </div>
+
+                <!-- Password -->
+                <div class="mb-16">
+                    {% ds_input 
+                        name="password1"
+                        type="password"
+                        label="Hasło"
+                        placeholder="Wprowadź hasło"
+                        required=True
+                        icon="solar:lock-password-outline"
+                        icon_position="start"
+                        size="lg"
+                        show_password_toggle=True
+                        error=form.password1.errors.0|default:""
+                    %}
+                </div>
+                
+                <!-- Password Strength Indicator -->
+                <div class="mb-16">
+                    {% ds_card variant="outlined" class="p-4" %}
+                        {% ds_typography variant="body-sm" class="mb-2 font-medium" %}
+                            Wymagania hasła:
+                        {% end_ds_typography %}
+                        <ul class="list-unstyled space-y-1">
+                            <li id="length-check" class="text-error-600 text-sm flex items-center">
+                                <iconify-icon icon="ri:close-line" class="me-2"></iconify-icon>
+                                Co najmniej 8 znaków
+                            </li>
+                            <li id="lowercase-check" class="text-error-600 text-sm flex items-center">
+                                <iconify-icon icon="ri:close-line" class="me-2"></iconify-icon>
+                                Małą literę
+                            </li>
+                            <li id="uppercase-check" class="text-error-600 text-sm flex items-center">
+                                <iconify-icon icon="ri:close-line" class="me-2"></iconify-icon>
+                                Wielką literę
+                            </li>
+                            <li id="number-check" class="text-error-600 text-sm flex items-center">
+                                <iconify-icon icon="ri:close-line" class="me-2"></iconify-icon>
+                                Cyfrę
+                            </li>
+                        </ul>
+                    {% end_ds_card %}
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-20">
+                    {% ds_input 
+                        name="password2"
+                        type="password"
+                        label="Potwierdź hasło"
+                        placeholder="Wprowadź hasło ponownie"
+                        required=True
+                        icon="solar:lock-password-outline"
+                        icon_position="start"
+                        size="lg"
+                        show_password_toggle=True
+                        error=form.password2.errors.0|default:""
+                    %}
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="mb-24">
+                    {% ds_checkbox 
+                        name="terms"
+                        required=True
+                        label_html='Akceptuję <a href="#" class="text-primary-600 fw-medium">Regulamin</a> i <a href="#" class="text-primary-600 fw-medium">Politykę Prywatności</a>'
+                    %}
+                </div>
+
+                <!-- Submit Button -->
+                {% ds_button 
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    full_width=True
+                    loading_text="Tworzenie konta..."
+                    class="mt-32"
+                    id="submitBtn"
+                %}
+                    Utwórz konto
+                {% end_ds_button %}
+            </div>
+
+            <!-- Theme Controls -->
+            <div class="mt-24 d-flex justify-content-center">
+                {% ds_theme_controls compact=True %}
+            </div>
+
+            <!-- Separator -->
+            <div class="mt-32 center-border-horizontal text-center">
+                <span class="bg-base z-1 px-4">lub zarejestruj się przez</span>
+            </div>
+
+            <!-- Social Login -->
+            <div class="mt-32 d-flex align-items-center gap-3">
+                {% if providers %}
+                    {% for provider in providers %}
+                        {% if provider.id == "google" %}
+                        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-light text-secondary-light border-neutral-200 bg-neutral-50 hover-text-primary-600 hover-bg-primary-50 hover-border-primary-200 flex-fill">
+                            <iconify-icon icon="logos:google-icon" class="text-xl"></iconify-icon>
+                            Google
+                        </a>
+                        {% endif %}
+                        {% if provider.id == "facebook" %}
+                        <a href="{% provider_login_url 'facebook' %}" class="btn btn-outline-light text-secondary-light border-neutral-200 bg-neutral-50 hover-text-primary-600 hover-bg-primary-50 hover-border-primary-200 flex-fill">
+                            <iconify-icon icon="logos:facebook" class="text-xl"></iconify-icon>
+                            Facebook
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Login Link -->
+            <div class="mt-32 text-center text-sm">
+                {% ds_typography variant="body-sm" %}
+                    Masz już konto? 
+                    <a href="{% url 'account_login' %}" class="text-primary-600 fw-semibold">Zaloguj się</a>
+                {% end_ds_typography %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Registration Scripts with Design System Integration -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registrationContainer = document.getElementById('registrationFormContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Create form element and wrap existing form fields
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.id = 'registrationForm';
+    form.enctype = 'multipart/form-data';
+    
+    // Add CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+    
+    // Move form fields into form
+    const formFields = registrationContainer.children;
+    while (formFields.length > 0) {
+        form.appendChild(formFields[0]);
+    }
+    
+    registrationContainer.appendChild(form);
+
+    // Get form inputs
+    const usernameInput = document.querySelector('input[name="username"]');
+    const emailInput = document.querySelector('input[name="email"]');
+    const password1Input = document.querySelector('input[name="password1"]');
+    const password2Input = document.querySelector('input[name="password2"]');
+
+    // Password strength checker with design system styling
+    if (password1Input) {
+        password1Input.addEventListener('input', function() {
+            const password = this.value;
+            
+            // Length check
+            updatePasswordCheck('length-check', password.length >= 8);
+            
+            // Lowercase check
+            updatePasswordCheck('lowercase-check', /[a-z]/.test(password));
+            
+            // Uppercase check
+            updatePasswordCheck('uppercase-check', /[A-Z]/.test(password));
+            
+            // Number check
+            updatePasswordCheck('number-check', /\d/.test(password));
+        });
+    }
+
+    function updatePasswordCheck(checkId, isValid) {
+        const checkElement = document.getElementById(checkId);
+        if (!checkElement) return;
+        
+        const icon = checkElement.querySelector('iconify-icon');
+        
+        if (isValid) {
+            checkElement.className = 'text-success-600 text-sm flex items-center';
+            if (icon) icon.setAttribute('icon', 'ri:check-line');
+        } else {
+            checkElement.className = 'text-error-600 text-sm flex items-center';
+            if (icon) icon.setAttribute('icon', 'ri:close-line');
+        }
+    }
+
+    // Email availability checker with design system feedback
+    let emailTimeout;
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            clearTimeout(emailTimeout);
+            const email = this.value.trim();
+            const feedback = document.getElementById('email-feedback');
+            
+            if (email.length > 3 && email.includes('@')) {
+                emailTimeout = setTimeout(() => {
+                    checkEmailAvailability(email, feedback);
+                }, 500);
+            } else {
+                feedback.innerHTML = '';
+            }
+        });
+    }
+
+    function checkEmailAvailability(email, feedbackElement) {
+        fetch('{% url "check_email_availability" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({email: email})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                feedbackElement.className = 'text-success-600 text-sm mt-2 flex items-center';
+                feedbackElement.innerHTML = '<iconify-icon icon="ri:check-line" class="me-2"></iconify-icon>' + data.message;
+            } else {
+                feedbackElement.className = 'text-error-600 text-sm mt-2 flex items-center';
+                feedbackElement.innerHTML = '<iconify-icon icon="ri:close-line" class="me-2"></iconify-icon>' + data.message;
+            }
+        })
+        .catch(error => {
+            feedbackElement.className = 'text-warning-600 text-sm mt-2 flex items-center';
+            feedbackElement.innerHTML = '<iconify-icon icon="ri:error-warning-line" class="me-2"></iconify-icon>Nie można sprawdzić dostępności';
+        });
+    }
+
+    // Username availability checker with design system feedback
+    let usernameTimeout;
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            clearTimeout(usernameTimeout);
+            const username = this.value.trim();
+            const feedback = document.getElementById('username-feedback');
+            
+            if (username.length >= 3) {
+                usernameTimeout = setTimeout(() => {
+                    checkUsernameAvailability(username, feedback);
+                }, 500);
+            } else if (username.length > 0) {
+                feedback.className = 'text-warning-600 text-sm mt-2 flex items-center';
+                feedback.innerHTML = '<iconify-icon icon="ri:information-line" class="me-2"></iconify-icon>Minimum 3 znaki';
+            } else {
+                feedback.innerHTML = '';
+            }
+        });
+    }
+
+    function checkUsernameAvailability(username, feedbackElement) {
+        fetch('{% url "check_username_availability" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({username: username})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                feedbackElement.className = 'text-success-600 text-sm mt-2 flex items-center';
+                feedbackElement.innerHTML = '<iconify-icon icon="ri:check-line" class="me-2"></iconify-icon>' + data.message;
+            } else {
+                feedbackElement.className = 'text-error-600 text-sm mt-2 flex items-center';
+                feedbackElement.innerHTML = '<iconify-icon icon="ri:close-line" class="me-2"></iconify-icon>' + data.message;
+            }
+        })
+        .catch(error => {
+            feedbackElement.className = 'text-warning-600 text-sm mt-2 flex items-center';
+            feedbackElement.innerHTML = '<iconify-icon icon="ri:error-warning-line" class="me-2"></iconify-icon>Nie można sprawdzić dostępności';
+        });
+    }
+
+    // Form submission with design system loading state
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            // Validate form before submission
+            if (!validateForm()) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Set button to loading state
+            submitBtn.setAttribute('data-loading', 'true');
+            submitBtn.disabled = true;
+            
+            // Add loading spinner
+            const spinner = document.createElement('span');
+            spinner.className = 'spinner-border spinner-border-sm me-8';
+            spinner.setAttribute('aria-hidden', 'true');
+            submitBtn.insertBefore(spinner, submitBtn.firstChild);
+            
+            // Update button text
+            submitBtn.textContent = 'Tworzenie konta...';
+        });
+    }
+
+    // Enhanced form validation
+    function validateForm() {
+        let isValid = true;
+        
+        // Validate required fields
+        const requiredFields = form.querySelectorAll('input[required]');
+        requiredFields.forEach(field => {
+            if (!validateField(field)) {
+                isValid = false;
+            }
+        });
+        
+        // Validate password match
+        if (password1Input && password2Input) {
+            if (password1Input.value !== password2Input.value) {
+                showFieldError(password2Input, 'Hasła nie są identyczne');
+                isValid = false;
+            }
+        }
+        
+        // Validate terms checkbox
+        const termsCheckbox = form.querySelector('input[name="terms"]');
+        if (termsCheckbox && !termsCheckbox.checked) {
+            showFieldError(termsCheckbox, 'Musisz zaakceptować regulamin');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+
+    function validateField(field) {
+        const value = field.value.trim();
+        const fieldContainer = field.closest('.ds-input-container') || field.closest('.form-field');
+        
+        // Clear existing errors
+        clearFieldError(field);
+        
+        // Check if field is required and empty
+        if (field.hasAttribute('required') && !value) {
+            showFieldError(field, 'To pole jest wymagane');
+            return false;
+        }
+        
+        // Email validation
+        if (field.type === 'email' && value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                showFieldError(field, 'Nieprawidłowy format email');
+                return false;
+            }
+        }
+        
+        // Username validation
+        if (field.name === 'username' && value) {
+            if (value.length < 3) {
+                showFieldError(field, 'Nazwa użytkownika musi mieć co najmniej 3 znaki');
+                return false;
+            }
+            if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+                showFieldError(field, 'Nazwa może zawierać tylko litery, cyfry i podkreślenia');
+                return false;
+            }
+        }
+        
+        // Password validation
+        if (field.name === 'password1' && value) {
+            if (value.length < 8) {
+                showFieldError(field, 'Hasło musi mieć co najmniej 8 znaków');
+                return false;
+            }
+            if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
+                showFieldError(field, 'Hasło musi zawierać małą literę, wielką literę i cyfrę');
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    function showFieldError(field, message) {
+        const fieldContainer = field.closest('.ds-input-container') || field.closest('.form-field') || field.parentNode;
+        
+        field.classList.add('error');
+        fieldContainer?.classList.add('error');
+        
+        // Find or create error message element
+        let errorElement = fieldContainer?.querySelector('.field-error');
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.className = 'field-error text-error-600 text-sm mt-1 flex items-center';
+            errorElement.setAttribute('role', 'alert');
+            errorElement.innerHTML = '<iconify-icon icon="ri:error-warning-line" class="me-2"></iconify-icon>';
+            fieldContainer?.appendChild(errorElement);
+        }
+        
+        const textSpan = errorElement.querySelector('span') || document.createElement('span');
+        textSpan.textContent = message;
+        if (!errorElement.querySelector('span')) {
+            errorElement.appendChild(textSpan);
+        }
+    }
+
+    function clearFieldError(field) {
+        const fieldContainer = field.closest('.ds-input-container') || field.closest('.form-field') || field.parentNode;
+        const errorElement = fieldContainer?.querySelector('.field-error');
+        
+        field.classList.remove('error');
+        fieldContainer?.classList.remove('error');
+        
+        if (errorElement) {
+            errorElement.remove();
+        }
+    }
+
+    // Enhanced password toggle functionality
+    document.querySelectorAll('[data-password-toggle]').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-password-toggle');
+            const target = document.querySelector(targetId);
+            const icon = this.querySelector('iconify-icon');
+            
+            if (target && icon) {
+                if (target.type === 'password') {
+                    target.type = 'text';
+                    icon.setAttribute('icon', 'solar:eye-closed-outline');
+                    this.setAttribute('aria-label', 'Ukryj hasło');
+                } else {
+                    target.type = 'password';
+                    icon.setAttribute('icon', 'solar:eye-outline');
+                    this.setAttribute('aria-label', 'Pokaż hasło');
+                }
+            }
+        });
+    });
+
+    // Add real-time validation to inputs
+    const inputs = form.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            validateField(this);
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.classList.contains('error')) {
+                validateField(this);
+            }
+        });
+    });
+});
+</script>
+{% endblock body %}

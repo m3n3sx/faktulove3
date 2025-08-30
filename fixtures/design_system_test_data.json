@@ -1,0 +1,97 @@
+[
+  {
+    "model": "faktury.firma",
+    "pk": 1,
+    "fields": {
+      "nazwa": "Test Company Sp. z o.o.",
+      "nip": "1234567890",
+      "regon": "123456789",
+      "adres": "ul. Testowa 1, 00-001 Warszawa",
+      "telefon": "+48 123 456 789",
+      "email": "test@example.com",
+      "created_at": "2025-08-29T10:00:00Z",
+      "updated_at": "2025-08-29T10:00:00Z"
+    }
+  },
+  {
+    "model": "faktury.kontrahent",
+    "pk": 1,
+    "fields": {
+      "nazwa": "Klient Testowy Sp. z o.o.",
+      "nip": "0987654321",
+      "regon": "987654321",
+      "adres": "ul. Kliencka 2, 00-002 Warszawa",
+      "telefon": "+48 987 654 321",
+      "email": "klient@example.com",
+      "firma": 1,
+      "created_at": "2025-08-29T10:00:00Z",
+      "updated_at": "2025-08-29T10:00:00Z"
+    }
+  },
+  {
+    "model": "faktury.faktura",
+    "pk": 1,
+    "fields": {
+      "numer": "FV/2025/001",
+      "data_wystawienia": "2025-08-29",
+      "data_sprzedazy": "2025-08-29",
+      "data_platnosci": "2025-09-12",
+      "sposob_platnosci": "przelew",
+      "status": "wystawiona",
+      "firma": 1,
+      "kontrahent": 1,
+      "kwota_netto": "1000.00",
+      "kwota_vat": "230.00",
+      "kwota_brutto": "1230.00",
+      "waluta": "PLN",
+      "uwagi": "Faktura testowa dla systemu design system",
+      "created_at": "2025-08-29T10:00:00Z",
+      "updated_at": "2025-08-29T10:00:00Z"
+    }
+  },
+  {
+    "model": "faktury.pozycjafaktury",
+    "pk": 1,
+    "fields": {
+      "faktura": 1,
+      "nazwa": "Usługa konsultingowa IT",
+      "ilosc": "1.00",
+      "jednostka": "szt",
+      "cena_netto": "1000.00",
+      "stawka_vat": 23,
+      "kwota_netto": "1000.00",
+      "kwota_vat": "230.00",
+      "kwota_brutto": "1230.00"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "testuser",
+      "first_name": "Test",
+      "last_name": "User",
+      "email": "testuser@example.com",
+      "is_staff": false,
+      "is_active": true,
+      "is_superuser": false,
+      "date_joined": "2025-08-29T10:00:00Z",
+      "password": "pbkdf2_sha256$600000$test$test"
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "admin",
+      "first_name": "Admin",
+      "last_name": "User",
+      "email": "admin@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": true,
+      "date_joined": "2025-08-29T10:00:00Z",
+      "password": "pbkdf2_sha256$600000$admin$admin"
+    }
+  }
+]

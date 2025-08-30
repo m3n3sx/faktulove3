@@ -1,0 +1,333 @@
+<!-- Design System Theme Controls Component -->
+{% if compact %}
+<div class="ds-theme-controls ds-theme-controls-compact d-flex align-items-center gap-2 {{ class }}">
+    <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary ds-theme-toggle"
+        id="themeToggle"
+        aria-label="Przełącz motyw"
+        title="Przełącz motyw"
+    >
+        <iconify-icon icon="solar:sun-bold" class="theme-icon theme-icon-light"></iconify-icon>
+        <iconify-icon icon="solar:moon-bold" class="theme-icon theme-icon-dark d-none"></iconify-icon>
+    </button>
+    
+    {% if show_advanced %}
+    <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary ds-contrast-toggle"
+        id="contrastToggle"
+        aria-label="Przełącz kontrast"
+        title="Przełącz kontrast"
+    >
+        <iconify-icon icon="solar:contrast-bold"></iconify-icon>
+    </button>
+    {% endif %}
+</div>
+{% else %}
+<div class="ds-theme-controls card p-4 {{ class }}">
+    <div class="mb-3">
+        <h6 class="card-title mb-2">Ustawienia motywu</h6>
+        <p class="card-text text-muted small">Dostosuj wygląd aplikacji do swoich preferencji</p>
+    </div>
+    
+    <div class="mb-3">
+        <label for="themeSelect" class="form-label small fw-medium">Motyw kolorystyczny</label>
+        <select class="form-select form-select-sm" id="themeSelect">
+            <option value="light">Jasny</option>
+            <option value="dark">Ciemny</option>
+            <option value="auto">Automatyczny</option>
+        </select>
+        <div class="form-text">Automatycznie dostosowuje się do ustawień systemu</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="contrastSelect" class="form-label small fw-medium">Kontrast</label>
+        <select class="form-select form-select-sm" id="contrastSelect">
+            <option value="normal">Normalny</option>
+            <option value="high">Wysoki kontrast</option>
+        </select>
+        <div class="form-text">Zwiększony kontrast dla lepszej dostępności</div>
+    </div>
+    
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="reducedMotionToggle">
+        <label class="form-check-label small" for="reducedMotionToggle">
+            Ograniczone animacje
+        </label>
+        <div class="form-text">Wyłącza animacje dla lepszej dostępności</div>
+    </div>
+    
+    {% if show_advanced %}
+    <hr class="my-3">
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-sm btn-outline-primary" id="quickThemeToggle">
+            Przełącz motyw
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="quickContrastToggle">
+            Przełącz kontrast
+        </button>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Theme management
+    const themeToggle = document.getElementById('themeToggle');
+    const themeSelect = document.getElementById('themeSelect');
+    const contrastToggle = document.getElementById('contrastToggle');
+    const contrastSelect = document.getElementById('contrastSelect');
+    const reducedMotionToggle = document.getElementById('reducedMotionToggle');
+    const quickThemeToggle = document.getElementById('quickThemeToggle');
+    const quickContrastToggle = document.getElementById('quickContrastToggle');
+    
+    // Get current theme settings from localStorage or system preferences
+    function getCurrentTheme() {
+        const stored = localStorage.getItem('theme');
+        if (stored) return stored;
+        
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    
+    function getCurrentContrast() {
+        return localStorage.getItem('contrast') || 'normal';
+    }
+    
+    function getReducedMotion() {
+        const stored = localStorage.getItem('reducedMotion');
+        if (stored !== null) return stored === 'true';
+        
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    
+    // Apply theme to document
+    function applyTheme(theme, contrast, reducedMotion) {
+        const html = document.documentElement;
+        
+        // Remove existing theme classes
+        html.classList.remove('theme-light', 'theme-dark', 'theme-auto');
+        html.classList.remove('contrast-normal', 'contrast-high');
+        html.classList.remove('motion-normal', 'motion-reduced');
+        
+        // Apply theme
+        if (theme === 'auto') {
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            html.classList.add(`theme-${systemTheme}`);
+        } else {
+            html.classList.add(`theme-${theme}`);
+        }
+        
+        // Apply contrast
+        html.classList.add(`contrast-${contrast}`);
+        
+        // Apply motion preference
+        html.classList.add(reducedMotion ? 'motion-reduced' : 'motion-normal');
+        
+        // Update Bootstrap theme
+        html.setAttribute('data-bs-theme', theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light');
+    }
+    
+    // Update UI controls
+    function updateControls(theme, contrast, reducedMotion) {
+        // Update compact toggle icons
+        if (themeToggle) {
+            const lightIcon = themeToggle.querySelector('.theme-icon-light');
+            const darkIcon = themeToggle.querySelector('.theme-icon-dark');
+            
+            const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            
+            if (lightIcon && darkIcon) {
+                lightIcon.classList.toggle('d-none', isDark);
+                darkIcon.classList.toggle('d-none', !isDark);
+            }
+        }
+        
+        // Update select controls
+        if (themeSelect) {
+            themeSelect.value = theme;
+        }
+        
+        if (contrastSelect) {
+            contrastSelect.value = contrast;
+        }
+        
+        if (reducedMotionToggle) {
+            reducedMotionToggle.checked = reducedMotion;
+        }
+    }
+    
+    // Save settings
+    function saveSettings(theme, contrast, reducedMotion) {
+        localStorage.setItem('theme', theme);
+        localStorage.setItem('contrast', contrast);
+        localStorage.setItem('reducedMotion', reducedMotion.toString());
+    }
+    
+    // Initialize
+    let currentTheme = getCurrentTheme();
+    let currentContrast = getCurrentContrast();
+    let currentReducedMotion = getReducedMotion();
+    
+    applyTheme(currentTheme, currentContrast, currentReducedMotion);
+    updateControls(currentTheme, currentContrast, currentReducedMotion);
+    
+    // Event listeners
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+            saveSettings(currentTheme, currentContrast, currentReducedMotion);
+        });
+    }
+    
+    if (themeSelect) {
+        themeSelect.addEventListener('change', function() {
+            currentTheme = this.value;
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+            saveSettings(currentTheme, currentContrast, currentReducedMotion);
+        });
+    }
+    
+    if (contrastToggle) {
+        contrastToggle.addEventListener('click', function() {
+            currentContrast = currentContrast === 'normal' ? 'high' : 'normal';
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+            saveSettings(currentTheme, currentContrast, currentReducedMotion);
+        });
+    }
+    
+    if (contrastSelect) {
+        contrastSelect.addEventListener('change', function() {
+            currentContrast = this.value;
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+            saveSettings(currentTheme, currentContrast, currentReducedMotion);
+        });
+    }
+    
+    if (reducedMotionToggle) {
+        reducedMotionToggle.addEventListener('change', function() {
+            currentReducedMotion = this.checked;
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+            saveSettings(currentTheme, currentContrast, currentReducedMotion);
+        });
+    }
+    
+    if (quickThemeToggle) {
+        quickThemeToggle.addEventListener('click', function() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+            saveSettings(currentTheme, currentContrast, currentReducedMotion);
+        });
+    }
+    
+    if (quickContrastToggle) {
+        quickContrastToggle.addEventListener('click', function() {
+            currentContrast = currentContrast === 'normal' ? 'high' : 'normal';
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+            saveSettings(currentTheme, currentContrast, currentReducedMotion);
+        });
+    }
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+        if (currentTheme === 'auto') {
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+        }
+    });
+    
+    // Listen for system motion preference changes
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', function() {
+        if (localStorage.getItem('reducedMotion') === null) {
+            currentReducedMotion = this.matches;
+            applyTheme(currentTheme, currentContrast, currentReducedMotion);
+            updateControls(currentTheme, currentContrast, currentReducedMotion);
+        }
+    });
+});
+</script>
+
+<style>
+.ds-theme-controls {
+    user-select: none;
+}
+
+.ds-theme-controls-compact .btn {
+    border-radius: 6px;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    color: #374151;
+    transition: all 0.2s ease-out;
+}
+
+.ds-theme-controls-compact .btn:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.ds-theme-controls-compact .btn:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+.theme-icon {
+    font-size: 16px;
+    transition: opacity 0.2s ease-out;
+}
+
+/* Theme-specific styles */
+.theme-dark .ds-theme-controls-compact .btn {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+}
+
+.theme-dark .ds-theme-controls-compact .btn:hover {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+.theme-dark .ds-theme-controls .card {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+}
+
+.theme-dark .ds-theme-controls .form-control,
+.theme-dark .ds-theme-controls .form-select {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+.theme-dark .ds-theme-controls .form-text {
+    color: #9ca3af;
+}
+
+/* High contrast styles */
+.contrast-high .ds-theme-controls-compact .btn {
+    border-width: 2px;
+    font-weight: 600;
+}
+
+.contrast-high .ds-theme-controls .form-control,
+.contrast-high .ds-theme-controls .form-select {
+    border-width: 2px;
+}
+
+/* Reduced motion styles */
+.motion-reduced .ds-theme-controls * {
+    transition: none !important;
+    animation: none !important;
+}
+</style>

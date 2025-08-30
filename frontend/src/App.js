@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 
+// Design System
+import { ThemeProvider, DesignSystemProvider } from './design-system';
+import { DesignSystemContextProvider } from './design-system/context/DesignSystemContext';
+
 // Components
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -25,45 +29,55 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/upload" element={<UploadPage />} />
-              <Route path="/documents" element={<DocumentsPage />} />
-              <Route path="/statistics" element={<StatisticsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
-          </Layout>
-          
-          {/* Toast notifications */}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-              success: {
-                duration: 3000,
-                iconTheme: {
-                  primary: '#22c55e',
-                  secondary: '#fff',
-                },
-              },
-              error: {
-                duration: 5000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
-        </div>
-      </Router>
+      <ThemeProvider defaultMode="auto" defaultContrast="normal">
+        <DesignSystemContextProvider>
+          <DesignSystemProvider>
+            <Router>
+              <div className="min-h-screen bg-background-primary text-text-primary polish-business-app design-system-app">
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/upload" element={<UploadPage />} />
+                    <Route path="/documents" element={<DocumentsPage />} />
+                    <Route path="/statistics" element={<StatisticsPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Routes>
+                </Layout>
+                
+                {/* Toast notifications */}
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: 'var(--color-background-inverse)',
+                      color: 'var(--color-text-inverse)',
+                      fontFamily: 'var(--font-family-sans)',
+                      fontSize: 'var(--font-size-sm)',
+                      borderRadius: 'var(--border-radius-md)',
+                      boxShadow: 'var(--shadow-lg)',
+                    },
+                    success: {
+                      duration: 3000,
+                      iconTheme: {
+                        primary: 'var(--color-status-success)',
+                        secondary: 'var(--color-text-inverse)',
+                      },
+                    },
+                    error: {
+                      duration: 5000,
+                      iconTheme: {
+                        primary: 'var(--color-status-error)',
+                        secondary: 'var(--color-text-inverse)',
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </Router>
+          </DesignSystemProvider>
+        </DesignSystemContextProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

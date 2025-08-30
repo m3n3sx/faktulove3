@@ -1,0 +1,134 @@
+{% load design_system %}
+
+<div class="form-group django-form django-polish-business{% if errors %} has-error{% endif %}">
+    {% if label %}
+        <label for="{{ field.id_for_label }}" class="form-label{% if required %} required{% endif %}">
+            {{ label }}
+            {% if required %}<span class="text-error" aria-label="wymagane">*</span>{% endif %}
+        </label>
+    {% endif %}
+    
+    <div class="form-input-wrapper nip-input-wrapper">
+        {{ field|add_class:"form-control nip-input" }}
+        
+        {% if validate %}
+            <div class="nip-validation" id="{{ field.id_for_label }}_validation" aria-live="polite">
+                <span class="validation-icon" aria-hidden="true"></span>
+                <span class="validation-message"></span>
+            </div>
+        {% endif %}
+        
+        {% if errors %}
+            <ul class="errorlist" role="alert" aria-live="polite">
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nipInput = document.getElementById('{{ field.id_for_label }}');
+    const validation = document.getElementById('{{ field.id_for_label }}_validation');
+    
+    if (nipInput && validation) {
+        function validateNIP(nip) {
+            // Remove all non-digit characters
+            const cleanNip = nip.replace(/\D/g, '');
+            
+            // Check if NIP has exactly 10 digits
+            if (cleanNip.length !== 10) {
+                return false;
+            }
+            
+            // Calculate checksum
+            const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+            let sum = 0;
+            
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cleanNip[i]) * weights[i];
+            }
+            
+            const checksum = sum % 11;
+            const lastDigit = parseInt(cleanNip[9]);
+            
+            return checksum === lastDigit;
+        }
+        
+        function formatNIP(nip) {
+            const cleanNip = nip.replace(/\D/g, '');
+            if (cleanNip.length === 10) {
+                return cleanNip.slice(0, 3) + '-' + cleanNip.slice(3, 6) + '-' + cleanNip.slice(6, 8) + '-' + cleanNip.slice(8, 10);
+            }
+            return nip;
+        }
+        
+        function updateValidation() {
+            const value = nipInput.value.trim();
+            const icon = validation.querySelector('.validation-icon');
+            const message = validation.querySelector('.validation-message');
+            
+            if (!value) {
+                validation.className = 'nip-validation';
+                icon.textContent = '';
+                message.textContent = '';
+                return;
+            }
+            
+            const isValid = validateNIP(value);
+            
+            if (isValid) {
+                validation.className = 'nip-validation valid';
+                icon.textContent = '✓';
+                message.textContent = 'NIP jest prawidłowy';
+                nipInput.value = formatNIP(value);
+            } else {
+                validation.className = 'nip-validation invalid';
+                icon.textContent = '✗';
+                message.textContent = 'NIP jest nieprawidłowy';
+            }
+        }
+        
+        nipInput.addEventListener('blur', updateValidation);
+        nipInput.addEventListener('input', function() {
+            // Clear validation while typing
+            const validation = document.getElementById('{{ field.id_for_label }}_validation');
+            validation.className = 'nip-validation';
+            validation.querySelector('.validation-icon').textContent = '';
+            validation.querySelector('.validation-message').textContent = '';
+        });
+    }
+});
+</script>
+
+<style>
+.nip-input-wrapper .nip-input {
+    font-family: var(--typography-nip-family);
+    font-size: var(--typography-nip-size);
+    font-weight: var(--typography-nip-weight);
+    letter-spacing: var(--typography-nip-letter-spacing);
+}
+
+.nip-validation {
+    margin-top: var(--spacing-1);
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+.nip-validation.valid {
+    color: var(--color-status-success);
+}
+
+.nip-validation.invalid {
+    color: var(--color-status-error);
+}
+
+.nip-validation .validation-icon {
+    font-weight: bold;
+    min-width: 16px;
+}
+</style>

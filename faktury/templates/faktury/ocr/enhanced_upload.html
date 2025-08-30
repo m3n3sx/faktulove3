@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load design_system %}
+
+{% block title %}Przesyłanie Faktury OCR - Ulepszone{% endblock %}
+
+{% block extra_head %}
+<!-- Design System CSS -->
+<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+<!-- Enhanced Upload CSS -->
+<link rel="stylesheet" href="{% static 'css/enhanced-ocr-upload.css' %}">
+<!-- React App CSS -->
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto">
+    
+    <!-- Page Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Przesyłanie dokumentów OCR</h1>
+      <p class="text-gray-600">Przeciągnij pliki lub kliknij aby wybrać dokumenty do automatycznego przetwarzania</p>
+    </div>
+
+    <!-- Enhanced React Upload Component Container -->
+    <div id="enhanced-ocr-upload-app" 
+         data-api-base-url="/api/v1"
+         data-csrf-token="{{ csrf_token }}"
+         data-max-file-size="{{ max_file_size_mb }}"
+         data-supported-types="{{ supported_types|safe }}"
+         data-recent-uploads="{{ recent_uploads|safe }}"
+         data-queue-status="{{ queue_status|safe }}">
+      
+      <!-- Loading State -->
+      <div id="enhanced-loading-state" class="text-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+        <p class="mt-4 text-gray-600">Ładowanie ulepszonego interfejsu...</p>
+      </div>
+      
+      <!-- Fallback Form (shown if React fails to load) -->
+      <div id="enhanced-fallback-form" class="hidden">
+        {% ds_card variant="outlined" padding="lg" %}
+          {% ds_stack gap="md" %}
+            <div class="text-center">
+              <h2 class="text-2xl font-bold text-gray-900 mb-2">Przesyłanie dokumentu OCR</h2>
+              <p class="text-gray-600">Wybierz dokument do automatycznego przetwarzania</p>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data" class="space-y-6" id="fallback-upload-form">
+              {% csrf_token %}
+              
+              <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors">
+                <div class="upload-icon text-4xl mb-4">📄</div>
+                <p class="upload-text text-lg text-gray-700 mb-4">Przeciągnij plik tutaj lub kliknij aby wybrać</p>
+                
+                <input 
+                  type="file" 
+                  id="document-fallback" 
+                  name="document" 
+                  accept=".pdf,.jpg,.jpeg,.png,.tiff"
+                  class="hidden"
+                  required
+                  onchange="updateFileName(this)"
+                >
+                <label for="document-fallback" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 cursor-pointer">
+                  Wybierz plik
+                </label>
+                
+                <div id="selected-file" class="mt-4 text-sm text-gray-600 hidden">
+                  <span class="font-medium">Wybrany plik:</span> <span id="file-name"></span>
+                </div>
+              </div>
+              
+              <div class="supported-formats bg-blue-50 border border-blue-200 rounded-md p-4">
+                <h3 class="text-sm font-medium text-blue-900 mb-2">Obsługiwane formaty:</h3>
+                <ul class="text-sm text-blue-800 space-y-1">
+                  <li>• PDF (max {{ max_file_size_mb }}MB)</li>
+                  <li>• JPEG, PNG (max {{ max_file_size_mb }}MB)</li>
+                  <li>• TIFF (max {{ max_file_size_mb }}MB)</li>
+                </ul>
+              </div>
+              
+              {% if recent_uploads %}
+              <div class="recent-uploads bg-gray-50 border border-gray-200 rounded-md p-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Ostatnie przesłane pliki:</h3>
+                <ul class="text-sm text-gray-700 space-y-1">
+                  {% for upload in recent_uploads %}
+                  <li class="flex justify-between items-center">
+                    <span>{{ upload.filename }}</span>
+                    <span class="text-xs text-gray-500">{{ upload.started_at|date:"d.m.Y H:i" }}</span>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+              
+              <div class="flex justify-center">
+                {% ds_button type="submit" variant="primary" size="lg" id="fallback-submit-button" %}
+                  Prześlij dokument
+                {% end_ds_button %}
+              </div>
+            </form>
+          {% end_ds_stack %}
+        {% end_ds_card %}
+      </div>
+      
+      <!-- NoScript Fallback -->
+      <noscript>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-yellow-800">JavaScript wymagany</h3>
+              <p class="mt-1 text-sm text-yellow-700">Ta strona wymaga włączonego JavaScript do prawidłowego działania ulepszonego interfejsu przesyłania plików.</p>
+            </div>
+          </div>
+        </div>
+      </noscript>
+    </div>
+
+    <!-- Queue Status Info -->
+    {% if queue_status %}
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+      <h3 class="text-sm font-medium text-blue-900 mb-2">Status kolejki przesyłania:</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-blue-800">
+        <div>
+          <span class="font-medium">W kolejce:</span> {{ queue_status.queue_length }}
+        </div>
+        <div>
+          <span class="font-medium">Aktywne:</span> {{ queue_status.active_uploads }}/{{ queue_status.max_concurrent }}
+        </div>
+        <div>
+          <span class="font-medium">Max kolejka:</span> {{ queue_status.max_queue_size }}
+        </div>
+        {% if queue_status.estimated_wait_time > 0 %}
+        <div>
+          <span class="font-medium">Czas oczekiwania:</span> ~{{ queue_status.estimated_wait_time }}s
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Help Section -->
+    <div class="mt-8 bg-gray-50 border border-gray-200 rounded-md p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Jak korzystać z przesyłania plików?</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h4 class="font-medium text-gray-900 mb-2">Obsługiwane pliki:</h4>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>• Dokumenty PDF do {{ max_file_size_mb }}MB</li>
+            <li>• Zdjęcia faktur (JPEG, PNG, TIFF)</li>
+            <li>• Skany dokumentów w wysokiej rozdzielczości</li>
+            <li>• Wielostronicowe dokumenty PDF</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-medium text-gray-900 mb-2">Wskazówki dla lepszych wyników:</h4>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>• Używaj zdjęć o dobrej jakości i ostrości</li>
+            <li>• Upewnij się, że tekst jest czytelny</li>
+            <li>• Unikaj cieni i odbić na dokumentach</li>
+            <li>• Skanuj w rozdzielczości co najmniej 300 DPI</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- React and ReactDOM -->
+<script src="{% static 'js/react.production.min.js' %}"></script>
+<script src="{% static 'js/react-dom.production.min.js' %}"></script>
+
+<!-- Enhanced Upload Component -->
+<script src="{% static 'js/enhanced-upload-app.bundle.js' %}"></script>
+
+<script>
+// Fallback form functionality
+function updateFileName(input) {
+    const selectedFile = document.getElementById('selected-file');
+    const fileName = document.getElementById('file-name');
+    
+    if (input.files && input.files[0]) {
+        fileName.textContent = input.files[0].name;
+        selectedFile.classList.remove('hidden');
+    } else {
+        selectedFile.classList.add('hidden');
+    }
+}
+
+// Form submission handling for fallback
+function handleFallbackFormSubmission() {
+    const form = document.getElementById('fallback-upload-form');
+    const submitButton = document.getElementById('fallback-submit-button');
+    
+    if (form && submitButton) {
+        form.addEventListener('submit', function(e) {
+            // Disable submit button to prevent double submission
+            submitButton.disabled = true;
+            submitButton.textContent = 'Przesyłanie...';
+            
+            // Add loading indicator
+            const loadingSpinner = document.createElement('div');
+            loadingSpinner.className = 'inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2';
+            submitButton.insertBefore(loadingSpinner, submitButton.firstChild);
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing enhanced OCR upload...');
+    
+    const container = document.getElementById('enhanced-ocr-upload-app');
+    const loadingState = document.getElementById('enhanced-loading-state');
+    const fallbackForm = document.getElementById('enhanced-fallback-form');
+    
+    // Initialize fallback form enhancements
+    handleFallbackFormSubmission();
+    
+    // Check if React and enhanced component are available
+    const hasReact = typeof React !== 'undefined';
+    const hasReactDOM = typeof ReactDOM !== 'undefined';
+    const hasEnhancedUpload = typeof window.EnhancedOCRUpload !== 'undefined';
+    
+    console.log('Dependencies check:', { hasReact, hasReactDOM, hasEnhancedUpload });
+    
+    if (container && hasReact && hasReactDOM && hasEnhancedUpload) {
+        console.log('All dependencies available, initializing enhanced React app...');
+        
+        try {
+            // Get configuration from data attributes
+            const config = {
+                apiBaseUrl: container.dataset.apiBaseUrl || '/api/v1',
+                csrfToken: container.dataset.csrfToken,
+                maxFileSize: parseInt(container.dataset.maxFileSize) || 10,
+                supportedTypes: JSON.parse(container.dataset.supportedTypes || '{}'),
+                recentUploads: JSON.parse(container.dataset.recentUploads || '[]'),
+                queueStatus: JSON.parse(container.dataset.queueStatus || '{}'),
+                onUploadComplete: function(result) {
+                    console.log('Upload completed:', result);
+                    // Could redirect to results page or show success message
+                },
+                onUploadError: function(error, upload) {
+                    console.error('Upload error:', error, upload);
+                }
+            };
+            
+            // Create React root and render enhanced component
+            const root = ReactDOM.createRoot(container);
+            root.render(React.createElement(window.EnhancedOCRUpload, config));
+            
+            // Hide loading state
+            if (loadingState) loadingState.style.display = 'none';
+            
+            console.log('Enhanced React app initialized successfully');
+            
+        } catch (error) {
+            console.error('Failed to initialize enhanced React app:', error);
+            showFallbackWithError('Nie udało się załadować ulepszonego interfejsu. Używasz podstawowej wersji.');
+        }
+    } else {
+        console.warn('Enhanced React dependencies not available, using fallback form');
+        showFallbackWithError('Używasz podstawowego interfejsu przesyłania plików.');
+    }
+    
+    function showFallbackWithError(message) {
+        // Hide loading state, show fallback form
+        if (loadingState) loadingState.style.display = 'none';
+        if (fallbackForm) fallbackForm.classList.remove('hidden');
+        
+        // Add info message
+        if (container && message) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'bg-blue-50 border border-blue-200 rounded-md p-4 mb-4';
+            infoDiv.innerHTML = `
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700">${message}</p>
+                    </div>
+                </div>
+            `;
+            container.insertBefore(infoDiv, fallbackForm);
+        }
+    }
+});
+</script>
+{% endblock %}

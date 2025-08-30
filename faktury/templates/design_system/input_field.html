@@ -1,0 +1,163 @@
+<!-- Design System Input Field Component -->
+<div class="ds-input-container mb-3">
+    {% if label %}
+    <label for="{{ id }}" class="ds-input-label form-label">
+        {{ label }}
+        {% if required %}
+        <span class="text-danger ms-1" aria-label="wymagane">*</span>
+        {% endif %}
+    </label>
+    {% endif %}
+    
+    <div class="ds-input-wrapper position-relative">
+        {% if icon %}
+        <div class="ds-input-icon position-absolute {{ icon_position }}-0 top-50 translate-middle-y ps-3 pe-3">
+            <iconify-icon icon="{{ icon }}" class="text-muted"></iconify-icon>
+        </div>
+        {% endif %}
+        
+        <input
+            type="{{ type }}"
+            id="{{ id }}"
+            name="{{ name }}"
+            value="{{ value }}"
+            placeholder="{{ placeholder }}"
+            class="form-control ds-input ds-input-{{ size }} {% if icon and icon_position == 'start' %}ps-5{% endif %} {% if icon and icon_position == 'end' %}pe-5{% endif %} {% if show_password_toggle %}pe-5{% endif %} {% if error %}is-invalid{% endif %} {{ class }}"
+            {% if required %}required{% endif %}
+            {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+            {% if pattern %}pattern="{{ pattern }}"{% endif %}
+            {% if minlength %}minlength="{{ minlength }}"{% endif %}
+            {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+            {% if error %}aria-invalid="true" aria-describedby="{{ id }}-error"{% endif %}
+            {% if helper_text %}aria-describedby="{{ id }}-help"{% endif %}
+        />
+        
+        {% if show_password_toggle and type == 'password' %}
+        <button
+            type="button"
+            class="btn btn-link position-absolute end-0 top-50 translate-middle-y pe-3 text-muted"
+            data-password-toggle="#{{ id }}"
+            aria-label="Pokaż hasło"
+            tabindex="-1"
+        >
+            <iconify-icon icon="solar:eye-outline"></iconify-icon>
+        </button>
+        {% endif %}
+    </div>
+    
+    {% if error %}
+    <div id="{{ id }}-error" class="invalid-feedback d-block" role="alert">
+        <iconify-icon icon="ri:error-warning-line" class="me-1"></iconify-icon>
+        {{ error }}
+    </div>
+    {% endif %}
+    
+    {% if helper_text and not error %}
+    <div id="{{ id }}-help" class="form-text text-muted">
+        {{ helper_text }}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.ds-input-container {
+    position: relative;
+}
+
+.ds-input-wrapper {
+    position: relative;
+}
+
+.ds-input {
+    transition: all 0.2s ease-out;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.ds-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.ds-input.is-invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.ds-input-xs {
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.ds-input-sm {
+    height: 36px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.ds-input-md {
+    height: 44px;
+    padding: 10px 16px;
+    font-size: 16px;
+}
+
+.ds-input-lg {
+    height: 52px;
+    padding: 12px 20px;
+    font-size: 18px;
+}
+
+.ds-input-xl {
+    height: 60px;
+    padding: 16px 24px;
+    font-size: 20px;
+}
+
+.ds-input-icon {
+    z-index: 10;
+    pointer-events: none;
+}
+
+.ds-input-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.invalid-feedback {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #ef4444;
+    margin-top: 4px;
+}
+
+.form-text {
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .ds-input {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: #f9fafb;
+    }
+    
+    .ds-input:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    }
+    
+    .ds-input-label {
+        color: #f9fafb;
+    }
+    
+    .form-text {
+        color: #9ca3af;
+    }
+}
+</style>

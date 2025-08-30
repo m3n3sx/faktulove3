@@ -15,6 +15,16 @@ import {
   Settings
 } from 'lucide-react';
 import axios from 'axios';
+import { 
+  Button, 
+  Grid, 
+  Card, 
+  Typography, 
+  Badge, 
+  Container,
+  Stack,
+  Flex
+} from '../design-system';
 
 const Dashboard = () => {
   // Fetch dashboard statistics
@@ -116,275 +126,291 @@ const Dashboard = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
-        return 'text-green-600';
+        return 'text-success-600';
       case 'processing':
-        return 'text-yellow-600';
+        return 'text-warning-600';
       case 'failed':
-        return 'text-red-600';
+        return 'text-error-600';
       default:
         return 'text-gray-600';
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-gray-600">
-          Overview of your OCR processing activity and system performance.
-        </p>
-      </div>
+    <Container size="xl" className="py-6">
+      <Stack gap="lg">
+        {/* Header */}
+        <Stack gap="sm">
+          <Typography variant="h1">Dashboard</Typography>
+          <Typography variant="body" color="secondary">
+            Overview of your OCR processing activity and system performance.
+          </Typography>
+        </Stack>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-primary-100 rounded-lg">
-              <FileText className="h-6 w-6 text-primary-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Documents</p>
-              <p className="text-2xl font-bold text-gray-900">{data.total_documents?.toLocaleString()}</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              <span className="ml-1 text-green-600">+12% from last month</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Success Rate</p>
-              <p className="text-2xl font-bold text-gray-900">{data.success_rate}%</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-center text-sm">
-              <Zap className="h-4 w-4 text-green-500" />
-              <span className="ml-1 text-green-600">+2.3% improvement</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Clock className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Avg Processing Time</p>
-              <p className="text-2xl font-bold text-gray-900">{data.average_processing_time}s</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              <span className="ml-1 text-green-600">-0.5s faster</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <BarChart3 className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Avg Confidence</p>
-              <p className="text-2xl font-bold text-gray-900">{data.average_confidence}%</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              <span className="ml-1 text-green-600">+1.2% improvement</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Processing Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Processing Status</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span className="ml-2 text-sm text-gray-600">Completed</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{data.processed_documents}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Clock className="h-5 w-5 text-yellow-500 animate-spin" />
-                <span className="ml-2 text-sm text-gray-600">Processing</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{data.processing_documents}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-500" />
-                <span className="ml-2 text-sm text-gray-600">Failed</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{data.failed_documents}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Activity Overview</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Calendar className="h-5 w-5 text-blue-500" />
-                <span className="ml-2 text-sm text-gray-600">Today</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{data.documents_today}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Calendar className="h-5 w-5 text-green-500" />
-                <span className="ml-2 text-sm text-gray-600">This Week</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{data.documents_this_week}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Calendar className="h-5 w-5 text-purple-500" />
-                <span className="ml-2 text-sm text-gray-600">This Month</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{data.documents_this_month}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Business Impact</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <DollarSign className="h-5 w-5 text-green-500" />
-                <span className="ml-2 text-sm text-gray-600">Invoices Created</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{data.total_invoices_created}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Users className="h-5 w-5 text-blue-500" />
-                <span className="ml-2 text-sm text-gray-600">Manual Review</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{data.manual_review_required}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Zap className="h-5 w-5 text-yellow-500" />
-                <span className="ml-2 text-sm text-gray-600">Time Saved</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">~{Math.round(data.processed_documents * 2.5)}h</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Recent Documents</h3>
-        </div>
-        <div className="divide-y divide-gray-200">
-          {recentData.map((doc) => (
-            <div key={doc.id} className="px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <FileText className="h-8 w-8 text-gray-400" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{doc.original_filename}</p>
-                    <p className="text-xs text-gray-500">
-                      Uploaded {new Date(doc.upload_timestamp).toLocaleString()}
-                    </p>
-                  </div>
+        {/* Key Metrics */}
+        <Grid cols={4} gap="lg">
+          <Card variant="elevated" padding="md">
+            <Stack gap="md">
+              <Flex align="center" gap="md">
+                <div className="p-2 bg-primary-100 rounded-lg">
+                  <FileText className="h-6 w-6 text-primary-600" />
                 </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    {getStatusIcon(doc.status)}
-                    <span className={`ml-2 text-sm font-medium ${getStatusColor(doc.status)}`}>
-                      {doc.status}
-                    </span>
-                  </div>
+                <Stack gap="xs">
+                  <Typography variant="label" color="muted">Total Documents</Typography>
+                  <Typography variant="h3">{data.total_documents?.toLocaleString()}</Typography>
+                </Stack>
+              </Flex>
+              <Flex align="center" gap="xs">
+                <TrendingUp className="h-4 w-4 text-success-500" />
+                <Typography variant="bodySmall" color="success">+12% from last month</Typography>
+              </Flex>
+            </Stack>
+          </Card>
+
+          <Card variant="elevated" padding="md">
+            <Stack gap="md">
+              <Flex align="center" gap="md">
+                <div className="p-2 bg-success-100 rounded-lg">
+                  <CheckCircle className="h-6 w-6 text-success-600" />
+                </div>
+                <Stack gap="xs">
+                  <Typography variant="label" color="muted">Success Rate</Typography>
+                  <Typography variant="h3">{data.success_rate}%</Typography>
+                </Stack>
+              </Flex>
+              <Flex align="center" gap="xs">
+                <Zap className="h-4 w-4 text-success-500" />
+                <Typography variant="bodySmall" color="success">+2.3% improvement</Typography>
+              </Flex>
+            </Stack>
+          </Card>
+
+          <Card variant="elevated" padding="md">
+            <Stack gap="md">
+              <Flex align="center" gap="md">
+                <div className="p-2 bg-warning-100 rounded-lg">
+                  <Clock className="h-6 w-6 text-warning-600" />
+                </div>
+                <Stack gap="xs">
+                  <Typography variant="label" color="muted">Avg Processing Time</Typography>
+                  <Typography variant="h3">{data.average_processing_time}s</Typography>
+                </Stack>
+              </Flex>
+              <Flex align="center" gap="xs">
+                <TrendingUp className="h-4 w-4 text-success-500" />
+                <Typography variant="bodySmall" color="success">-0.5s faster</Typography>
+              </Flex>
+            </Stack>
+          </Card>
+
+          <Card variant="elevated" padding="md">
+            <Stack gap="md">
+              <Flex align="center" gap="md">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <BarChart3 className="h-6 w-6 text-blue-600" />
+                </div>
+                <Stack gap="xs">
+                  <Typography variant="label" color="muted">Avg Confidence</Typography>
+                  <Typography variant="h3">{data.average_confidence}%</Typography>
+                </Stack>
+              </Flex>
+              <Flex align="center" gap="xs">
+                <TrendingUp className="h-4 w-4 text-success-500" />
+                <Typography variant="bodySmall" color="success">+1.2% improvement</Typography>
+              </Flex>
+            </Stack>
+          </Card>
+        </Grid>
+
+        {/* Processing Status */}
+        <Grid cols={3} gap="lg">
+          <Card variant="elevated" padding="md">
+            <Stack gap="md">
+              <Typography variant="h4">Processing Status</Typography>
+              <Stack gap="sm">
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <CheckCircle className="h-5 w-5 text-success-500" />
+                    <Typography variant="bodySmall" color="secondary">Completed</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">{data.processed_documents}</Typography>
+                </Flex>
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <Clock className="h-5 w-5 text-warning-500 animate-spin" />
+                    <Typography variant="bodySmall" color="secondary">Processing</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">{data.processing_documents}</Typography>
+                </Flex>
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <AlertCircle className="h-5 w-5 text-error-500" />
+                    <Typography variant="bodySmall" color="secondary">Failed</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">{data.failed_documents}</Typography>
+                </Flex>
+              </Stack>
+            </Stack>
+          </Card>
+
+          <Card variant="elevated" padding="md">
+            <Stack gap="md">
+              <Typography variant="h4">Activity Overview</Typography>
+              <Stack gap="sm">
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <Calendar className="h-5 w-5 text-blue-500" />
+                    <Typography variant="bodySmall" color="secondary">Today</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">{data.documents_today}</Typography>
+                </Flex>
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <Calendar className="h-5 w-5 text-success-500" />
+                    <Typography variant="bodySmall" color="secondary">This Week</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">{data.documents_this_week}</Typography>
+                </Flex>
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <Calendar className="h-5 w-5 text-purple-500" />
+                    <Typography variant="bodySmall" color="secondary">This Month</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">{data.documents_this_month}</Typography>
+                </Flex>
+              </Stack>
+            </Stack>
+          </Card>
+
+          <Card variant="elevated" padding="md">
+            <Stack gap="md">
+              <Typography variant="h4">Business Impact</Typography>
+              <Stack gap="sm">
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <DollarSign className="h-5 w-5 text-success-500" />
+                    <Typography variant="bodySmall" color="secondary">Invoices Created</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">{data.total_invoices_created}</Typography>
+                </Flex>
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <Users className="h-5 w-5 text-blue-500" />
+                    <Typography variant="bodySmall" color="secondary">Manual Review</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">{data.manual_review_required}</Typography>
+                </Flex>
+                <Flex justify="between" align="center">
+                  <Flex align="center" gap="sm">
+                    <Zap className="h-5 w-5 text-warning-500" />
+                    <Typography variant="bodySmall" color="secondary">Time Saved</Typography>
+                  </Flex>
+                  <Typography variant="bodySmall">~{Math.round(data.processed_documents * 2.5)}h</Typography>
+                </Flex>
+              </Stack>
+            </Stack>
+          </Card>
+        </Grid>
+
+        {/* Recent Activity */}
+        <Card variant="elevated" padding="none">
+          <Card.Header>
+            <Typography variant="h4">Recent Documents</Typography>
+          </Card.Header>
+          <Card.Body className="p-0">
+            <Stack gap="none">
+              {recentData.map((doc, index) => (
+                <div key={doc.id} className={`px-6 py-4 ${index < recentData.length - 1 ? 'border-b border-neutral-200' : ''}`}>
+                  <Flex justify="between" align="center" className="mb-3">
+                    <Flex align="center" gap="md">
+                      <FileText className="h-8 w-8 text-neutral-400" />
+                      <Stack gap="xs">
+                        <Typography variant="bodySmall">{doc.original_filename}</Typography>
+                        <Typography variant="caption" color="muted">
+                          Uploaded {new Date(doc.upload_timestamp).toLocaleString()}
+                        </Typography>
+                      </Stack>
+                    </Flex>
+                    
+                    <Flex align="center" gap="md">
+                      <Flex align="center" gap="xs">
+                        {getStatusIcon(doc.status)}
+                        <Badge 
+                          variant={
+                            doc.status === 'completed' ? 'success' : 
+                            doc.status === 'processing' ? 'warning' : 
+                            doc.status === 'failed' ? 'error' : 'default'
+                          }
+                          size="sm"
+                        >
+                          {doc.status}
+                        </Badge>
+                      </Flex>
+                      
+                      {doc.confidence_score && (
+                        <Typography variant="caption" color="muted">
+                          {doc.confidence_score.toFixed(1)}% confidence
+                        </Typography>
+                      )}
+                      
+                      {doc.processing_time && (
+                        <Typography variant="caption" color="muted">
+                          {doc.processing_time}s
+                        </Typography>
+                      )}
+                    </Flex>
+                  </Flex>
                   
-                  {doc.confidence_score && (
-                    <div className="text-sm text-gray-500">
-                      {doc.confidence_score.toFixed(1)}% confidence
+                  {/* OCR Results Preview */}
+                  {doc.ocr_result && (
+                    <div className="ml-12">
+                      <Card variant="flat" padding="sm">
+                        <Grid cols={2} gap="md">
+                          <Stack gap="xs">
+                            <Typography variant="caption" color="muted">Invoice #:</Typography>
+                            <Typography variant="bodySmall">{doc.ocr_result.invoice_number || 'N/A'}</Typography>
+                          </Stack>
+                          <Stack gap="xs">
+                            <Typography variant="caption" color="muted">Amount:</Typography>
+                            <Typography variant="currencyAmount">{doc.ocr_result.total_amount || 'N/A'}</Typography>
+                          </Stack>
+                          <Stack gap="xs">
+                            <Typography variant="caption" color="muted">Supplier:</Typography>
+                            <Typography variant="bodySmall" className="truncate">{doc.ocr_result.supplier_name || 'N/A'}</Typography>
+                          </Stack>
+                          <Stack gap="xs">
+                            <Typography variant="caption" color="muted">Date:</Typography>
+                            <Typography variant="dateFormat">{doc.ocr_result.invoice_date || 'N/A'}</Typography>
+                          </Stack>
+                        </Grid>
+                      </Card>
                     </div>
                   )}
-                  
-                  {doc.processing_time && (
-                    <div className="text-sm text-gray-500">
-                      {doc.processing_time}s
-                    </div>
-                  )}
                 </div>
-              </div>
-              
-              {/* OCR Results Preview */}
-              {doc.ocr_result && (
-                <div className="mt-3 pl-12">
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-500">Invoice #:</span>
-                        <p className="font-medium">{doc.ocr_result.invoice_number || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Amount:</span>
-                        <p className="font-medium">{doc.ocr_result.total_amount || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Supplier:</span>
-                        <p className="font-medium truncate">{doc.ocr_result.supplier_name || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Date:</span>
-                        <p className="font-medium">{doc.ocr_result.invoice_date || 'N/A'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+              ))}
+            </Stack>
+          </Card.Body>
+        </Card>
 
-      {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Documents
-          </button>
-          <button className="flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            View Statistics
-          </button>
-          <button className="flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
-          </button>
-        </div>
-      </div>
-    </div>
+        {/* Quick Actions */}
+        <Card variant="elevated" padding="md">
+          <Stack gap="md">
+            <Typography variant="h4">Quick Actions</Typography>
+            <Grid cols={3} gap="md">
+              <Button variant="primary" startIcon={<Upload className="h-4 w-4" />}>
+                Upload Documents
+              </Button>
+              <Button variant="secondary" startIcon={<BarChart3 className="h-4 w-4" />}>
+                View Statistics
+              </Button>
+              <Button variant="secondary" startIcon={<Settings className="h-4 w-4" />}>
+                Settings
+              </Button>
+            </Grid>
+          </Stack>
+        </Card>
+      </Stack>
+    </Container>
   );
 };
 

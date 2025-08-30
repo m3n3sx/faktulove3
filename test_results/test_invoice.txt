@@ -1,0 +1,20 @@
+FAKTURA VAT
+Nr: FV/2025/001
+Data: 29.08.2025
+
+Sprzedawca:
+Test Company Sp. z o.o.
+ul. Testowa 123
+00-001 Warszawa
+NIP: 1234567890
+
+Nabywca:
+Klient Testowy
+ul. Kliencka 456
+00-002 Kraków
+NIP: 0987654321
+
+Pozycje:
+1. Usługa testowa - 1000.00 PLN + 23% VAT = 1230.00 PLN
+
+Razem do zapłaty: 1230.00 PLN

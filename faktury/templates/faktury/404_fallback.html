@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="dashboard-main-body">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <h6 class="fw-semibold mb-0">{% trans "Błąd 404" %}</h6>
+        <ul class="d-flex align-items-center gap-2">
+            <li class="fw-medium">
+                <a href="{% url 'panel_uzytkownika' %}" class="d-flex align-items-center gap-1 hover-text-primary">
+                    <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+                    Dashboard
+                </a>
+            </li>
+            <li>-</li>
+            <li class="fw-medium">{% trans "Błąd" %}</li>
+        </ul>
+    </div>
+
+    <div class="card h-100 p-0 radius-12">
+        <div class="card-body p-24 text-center">
+            <div class="py-5">
+                <iconify-icon icon="mdi:alert-circle-outline" class="icon text-6xl text-warning mb-3"></iconify-icon>
+                <h2 class="text-neutral-800 mb-3">{% trans "Strona nie została znaleziona" %}</h2>
+                <p class="text-neutral-600 mb-4">{{ error_message|default:"Przepraszamy, strona której szukasz nie istnieje lub została przeniesiona." }}</p>
+                
+                {% if fixes_available %}
+                <div class="alert alert-info text-start mb-4">
+                    <h6 class="alert-heading">
+                        <iconify-icon icon="mdi:information-outline" class="icon"></iconify-icon>
+                        {% trans "Sugerowane rozwiązania:" %}
+                    </h6>
+                    <ul class="mb-0">
+                        {% for broken_route, fix_route in fixes_available.items %}
+                        <li>{% trans "Link" %} <code>{{ broken_route }}</code> {% trans "został przekierowany do" %} <code>{{ fix_route }}</code></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <h6 class="mb-3">{% trans "Przydatne linki:" %}</h6>
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                            {% for link in suggested_links %}
+                            <a href="{{ link.url }}" class="btn btn-outline-primary btn-sm">
+                                {{ link.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button onclick="history.back()" class="btn btn-secondary me-2">
+                        <iconify-icon icon="mdi:arrow-left" class="icon"></iconify-icon>
+                        {% trans "Wróć" %}
+                    </button>
+                    <a href="{% url 'panel_uzytkownika' %}" class="btn btn-primary">
+                        <iconify-icon icon="solar:home-smile-angle-outline" class="icon"></iconify-icon>
+                        {% trans "Dashboard" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-redirect after 10 seconds if user doesn't interact
+setTimeout(function() {
+    if (confirm('{% trans "Czy chcesz zostać przekierowany do strony głównej?" %}')) {
+        window.location.href = '{% url "panel_uzytkownika" %}';
+    }
+}, 10000);
+</script>
+{% endblock %}

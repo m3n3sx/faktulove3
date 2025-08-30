@@ -1,0 +1,283 @@
+{% load design_system %}
+
+<div class="table-container django-design-system">
+    {% if title %}
+        <div class="table-header">
+            <h3 class="table-title">{{ title }}</h3>
+            {% if actions %}
+                <div class="table-actions">
+                    {{ actions|safe }}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    {% if data %}
+        <div class="table-responsive">
+            <table class="django-table{% if striped %} table-striped{% endif %}{% if hover %} table-hover{% endif %}">
+                <thead>
+                    <tr>
+                        {% for column in columns %}
+                            <th class="{% if column.sortable %}sortable{% endif %} {% if column.class %}{{ column.class }}{% endif %}"
+                                {% if column.sortable %}data-sort="{{ column.key }}" role="button" tabindex="0"{% endif %}
+                                {% if column.width %}style="width: {{ column.width }}"{% endif %}>
+                                {{ column.header|default:column.key|title }}
+                                {% if column.sortable %}
+                                    <span class="sort-indicator" aria-hidden="true"></span>
+                                {% endif %}
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                        <tr class="{% if row.css_class %}{{ row.css_class }}{% endif %}">
+                            {% for column in columns %}
+                                <td class="{% if column.class %}{{ column.class }}{% endif %}">
+                                    {% if column.template %}
+                                        {% include column.template with value=row|get_item:column.key row=row %}
+                                    {% elif column.filter %}
+                                        {{ row|get_item:column.key|apply_filter:column.filter }}
+                                    {% else %}
+                                        {{ row|get_item:column.key|default:"-" }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="{{ columns|length }}" class="empty-state">
+                                <div class="empty-message">
+                                    <span class="empty-icon">📄</span>
+                                    <p>Brak danych do wyświetlenia</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if pagination %}
+            <div class="table-pagination">
+                {% include "design_system/pagination.html" with page_obj=pagination %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-message">
+                <span class="empty-icon">📄</span>
+                <p>Brak danych do wyświetlenia</p>
+                {% if empty_action %}
+                    <div class="empty-action">
+                        {{ empty_action|safe }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.table-container {
+    background: var(--color-background-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border-default);
+    background: var(--color-background-secondary);
+}
+
+.table-title {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.table-actions {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.django-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-background-primary);
+}
+
+.django-table th {
+    background: var(--color-background-secondary);
+    color: var(--color-text-primary);
+    font-size: var(--typography-table-header-size);
+    font-weight: var(--typography-table-header-weight);
+    letter-spacing: var(--typography-table-header-letter-spacing);
+    padding: var(--spacing-table-cell);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border-default);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.django-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: var(--spacing-6);
+}
+
+.django-table th.sortable:hover {
+    background: var(--color-background-hover);
+}
+
+.django-table th.sortable:focus {
+    outline: 2px solid var(--color-interactive);
+    outline-offset: -2px;
+}
+
+.sort-indicator {
+    position: absolute;
+    right: var(--spacing-2);
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+}
+
+.sort-indicator::after {
+    content: "↕";
+}
+
+.django-table th.sort-asc .sort-indicator::after {
+    content: "↑";
+    opacity: 1;
+}
+
+.django-table th.sort-desc .sort-indicator::after {
+    content: "↓";
+    opacity: 1;
+}
+
+.django-table td {
+    padding: var(--spacing-table-cell);
+    border-bottom: 1px solid var(--color-border-muted);
+    color: var(--color-text-primary);
+    vertical-align: top;
+}
+
+.django-table tbody tr:hover {
+    background: var(--color-background-hover);
+}
+
+.django-table tbody tr:focus-within {
+    background: var(--color-background-hover);
+}
+
+.empty-state {
+    padding: var(--spacing-8);
+    text-align: center;
+}
+
+.empty-message {
+    color: var(--color-text-muted);
+}
+
+.empty-icon {
+    font-size: var(--font-size-3xl);
+    display: block;
+    margin-bottom: var(--spacing-2);
+    opacity: 0.5;
+}
+
+.empty-message p {
+    margin: 0 0 var(--spacing-4) 0;
+    font-size: var(--font-size-base);
+}
+
+.empty-action {
+    margin-top: var(--spacing-4);
+}
+
+.table-pagination {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border-default);
+    background: var(--color-background-secondary);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .table-header {
+        flex-direction: column;
+        gap: var(--spacing-2);
+        align-items: stretch;
+    }
+    
+    .table-actions {
+        justify-content: center;
+    }
+    
+    .django-table {
+        font-size: var(--font-size-sm);
+    }
+    
+    .django-table th,
+    .django-table td {
+        padding: var(--spacing-table-cell-compact);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add sorting functionality
+    const sortableHeaders = document.querySelectorAll('.django-table th.sortable');
+    
+    sortableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const sortKey = this.dataset.sort;
+            const currentSort = this.classList.contains('sort-asc') ? 'asc' : 
+                              this.classList.contains('sort-desc') ? 'desc' : 'none';
+            
+            // Remove sort classes from all headers
+            sortableHeaders.forEach(h => {
+                h.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            // Add appropriate sort class
+            if (currentSort === 'none' || currentSort === 'desc') {
+                this.classList.add('sort-asc');
+            } else {
+                this.classList.add('sort-desc');
+            }
+            
+            // Trigger sort event
+            const event = new CustomEvent('tableSort', {
+                detail: {
+                    key: sortKey,
+                    direction: this.classList.contains('sort-asc') ? 'asc' : 'desc'
+                }
+            });
+            this.closest('.table-container').dispatchEvent(event);
+        });
+        
+        // Add keyboard support
+        header.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+});
+</script>

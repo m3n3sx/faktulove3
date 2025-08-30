@@ -1,0 +1,186 @@
+
+/* Polish Business Admin Theme */
+
+:root {
+    /* Polish Business Colors */
+    --color-invoice-draft: #6b7280;
+    --color-invoice-sent: #3b82f6;
+    --color-invoice-paid: #10b981;
+    --color-invoice-overdue: #ef4444;
+    --color-invoice-cancelled: #6b7280;
+    
+    /* Design System Variables */
+    --color-background-secondary: #f8fafc;
+    --color-border-default: #d1d5db;
+    --color-interactive: #3b82f6;
+    --color-text-secondary: #6b7280;
+    --color-status-success: #10b981;
+    --color-status-error: #ef4444;
+    
+    /* Typography */
+    --typography-currency-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    --typography-currency-size: 14px;
+    --typography-currency-weight: 600;
+    --typography-date-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    --typography-date-size: 14px;
+    --typography-company-name-family: system-ui, -apple-system, sans-serif;
+    --typography-company-name-size: 14px;
+    --typography-company-name-weight: 500;
+    
+    /* Spacing */
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-8: 2rem;
+    
+    /* Border Radius */
+    --border-radius-md: 0.375rem;
+    
+    /* Font Size */
+    --font-size-base: 14px;
+}
+
+/* Polish Business Fieldsets */
+.fieldset.django-polish-business {
+    border-left: 4px solid #3b82f6;
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+}
+
+.fieldset.django-polish-business h2 {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+/* Design System Widgets */
+.django-design-system-widget {
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    transition: border-color 0.2s ease;
+}
+
+.django-design-system-widget:focus {
+    outline: none;
+    border-color: var(--color-interactive);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.draft {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #374151;
+}
+
+.status-badge.sent {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #1e40af;
+}
+
+.status-badge.paid {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #047857;
+}
+
+.status-badge.overdue {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.status-badge.cancelled {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #374151;
+}
+
+/* Enhanced Admin Navigation */
+#nav-sidebar {
+    background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+}
+
+#nav-sidebar .module th {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+#nav-sidebar .module a {
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s ease;
+}
+
+#nav-sidebar .module a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+/* Polish Business Form Enhancements */
+.form-row.django-polish-business {
+    background: rgba(59, 130, 246, 0.02);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* NIP Input Styling */
+.nip-input {
+    font-family: var(--typography-currency-family);
+    letter-spacing: 0.05em;
+}
+
+.nip-input:valid {
+    border-color: var(--color-status-success);
+}
+
+.nip-input:invalid {
+    border-color: var(--color-status-error);
+}
+
+/* Admin Dashboard Enhancements */
+.dashboard .module {
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+}
+
+.dashboard .module:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+    .django-design-system-widget {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .currency-input-wrapper {
+        flex-direction: column;
+    }
+    
+    .currency-input-wrapper .currency-symbol {
+        border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+        border-top: none;
+        border-left: 1px solid var(--color-border-default);
+        text-align: center;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .status-badge {
+        background: transparent !important;
+        border: 1px solid currentColor;
+    }
+    
+    .django-design-system-widget {
+        border: 1px solid #000;
+    }
+}

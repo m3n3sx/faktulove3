@@ -1,0 +1,540 @@
+/**
+ * Keyboard navigation and accessibility styles
+ */
+
+/* Skip links for keyboard navigation */
+.skip-links {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  z-index: 9999;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  padding: 8px 16px;
+  background: var(--ds-color-primary-600);
+  color: var(--ds-color-white);
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+  top: 8px;
+  outline: 2px solid var(--ds-color-primary-300);
+  outline-offset: 2px;
+}
+
+.skip-link:hover {
+  background: var(--ds-color-primary-700);
+}
+
+/* Focus management styles */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap::before,
+.focus-trap::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Enhanced focus indicators */
+.ds-focus-visible {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.ds-focus-visible-inset {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
+/* High contrast focus for better visibility */
+@media (prefers-contrast: high) {
+  .ds-focus-visible,
+  .ds-focus-visible-inset {
+    outline-color: var(--ds-color-contrast-high);
+    outline-width: 3px;
+  }
+}
+
+/* Focus indicators for different component types */
+.ds-button:focus-visible {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: 2px;
+}
+
+.ds-input:focus-visible {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: -1px;
+  border-color: var(--ds-color-primary-500);
+}
+
+.ds-select:focus-visible {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: -1px;
+  border-color: var(--ds-color-primary-500);
+}
+
+.ds-checkbox:focus-visible,
+.ds-radio:focus-visible {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: 2px;
+}
+
+.ds-link:focus-visible {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Keyboard shortcuts help modal */
+.keyboard-shortcuts-help {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.shortcuts-modal {
+  background: var(--ds-color-white);
+  border-radius: 8px;
+  box-shadow: var(--ds-shadow-lg);
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcuts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 0;
+  border-bottom: 1px solid var(--ds-color-gray-200);
+}
+
+.shortcuts-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ds-color-gray-900);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--ds-color-gray-500);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.close-button:hover {
+  background: var(--ds-color-gray-100);
+  color: var(--ds-color-gray-700);
+}
+
+.close-button:focus-visible {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: 2px;
+}
+
+.shortcuts-content {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.shortcut-group {
+  margin-bottom: 32px;
+}
+
+.shortcut-group:last-child {
+  margin-bottom: 0;
+}
+
+.shortcut-group h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-color-gray-800);
+}
+
+.shortcut-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.shortcut-key {
+  font-family: var(--ds-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--ds-color-gray-100);
+  color: var(--ds-color-gray-700);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--ds-color-gray-300);
+  white-space: nowrap;
+  text-align: center;
+  min-width: 60px;
+}
+
+.shortcut-description {
+  font-size: 14px;
+  color: var(--ds-color-gray-600);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-navigation-active {
+  --focus-ring-color: var(--ds-color-primary-500);
+}
+
+.keyboard-navigation-active *:focus {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Hide mouse focus indicators when using keyboard */
+.keyboard-navigation-active *:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Roving tabindex styles */
+.roving-tabindex [tabindex="-1"] {
+  outline: none;
+}
+
+.roving-tabindex [tabindex="0"]:focus {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Polish business form keyboard navigation */
+.polish-form-navigation {
+  position: relative;
+}
+
+.polish-form-navigation .error-summary {
+  background: var(--ds-color-error-50);
+  border: 2px solid var(--ds-color-error-200);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.polish-form-navigation .error-summary:focus {
+  outline: 2px solid var(--ds-color-error-500);
+  outline-offset: 2px;
+}
+
+.polish-form-navigation .error-summary h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-color-error-700);
+}
+
+.polish-form-navigation .error-summary ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.polish-form-navigation .error-summary li {
+  margin-bottom: 4px;
+}
+
+.polish-form-navigation .error-summary a {
+  color: var(--ds-color-error-700);
+  text-decoration: underline;
+}
+
+.polish-form-navigation .error-summary a:hover {
+  color: var(--ds-color-error-800);
+}
+
+.polish-form-navigation .error-summary a:focus {
+  outline: 2px solid var(--ds-color-error-500);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Field focus indicators for Polish forms */
+.polish-form-navigation .field-error {
+  border-color: var(--ds-color-error-500);
+  background-color: var(--ds-color-error-50);
+}
+
+.polish-form-navigation .field-error:focus {
+  outline: 2px solid var(--ds-color-error-500);
+  outline-offset: -1px;
+  border-color: var(--ds-color-error-600);
+}
+
+/* Navigation breadcrumbs keyboard support */
+.breadcrumb-navigation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.breadcrumb-navigation ol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumb-navigation li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.breadcrumb-navigation a {
+  color: var(--ds-color-primary-600);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.breadcrumb-navigation a:hover {
+  background: var(--ds-color-primary-50);
+  color: var(--ds-color-primary-700);
+}
+
+.breadcrumb-navigation a:focus-visible {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: 2px;
+}
+
+.breadcrumb-navigation .separator {
+  color: var(--ds-color-gray-400);
+  font-size: 12px;
+}
+
+/* Table keyboard navigation */
+.table-keyboard-navigation {
+  position: relative;
+}
+
+.table-keyboard-navigation table {
+  border-collapse: collapse;
+}
+
+.table-keyboard-navigation th,
+.table-keyboard-navigation td {
+  position: relative;
+}
+
+.table-keyboard-navigation th:focus,
+.table-keyboard-navigation td:focus {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: -2px;
+  background: var(--ds-color-primary-50);
+}
+
+.table-keyboard-navigation .sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table-keyboard-navigation .sortable-header:focus {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: -2px;
+}
+
+.table-keyboard-navigation .sortable-header::after {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.table-keyboard-navigation .sortable-header[aria-sort="ascending"]::after {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid var(--ds-color-gray-600);
+}
+
+.table-keyboard-navigation .sortable-header[aria-sort="descending"]::after {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid var(--ds-color-gray-600);
+}
+
+/* Modal keyboard navigation */
+.modal-keyboard-navigation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-keyboard-navigation .modal-content {
+  background: var(--ds-color-white);
+  border-radius: 8px;
+  box-shadow: var(--ds-shadow-lg);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.modal-keyboard-navigation .modal-content:focus {
+  outline: none;
+}
+
+/* Dropdown keyboard navigation */
+.dropdown-keyboard-navigation {
+  position: relative;
+}
+
+.dropdown-keyboard-navigation .dropdown-trigger:focus {
+  outline: 2px solid var(--ds-color-primary-500);
+  outline-offset: 2px;
+}
+
+.dropdown-keyboard-navigation .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--ds-color-white);
+  border: 1px solid var(--ds-color-gray-300);
+  border-radius: 4px;
+  box-shadow: var(--ds-shadow-md);
+  z-index: 100;
+  min-width: 200px;
+}
+
+.dropdown-keyboard-navigation .dropdown-menu:focus {
+  outline: none;
+}
+
+.dropdown-keyboard-navigation .dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ds-color-gray-700);
+}
+
+.dropdown-keyboard-navigation .dropdown-item:hover,
+.dropdown-keyboard-navigation .dropdown-item:focus {
+  background: var(--ds-color-primary-50);
+  color: var(--ds-color-primary-700);
+  outline: none;
+}
+
+/* Responsive keyboard navigation */
+@media (max-width: 768px) {
+  .shortcuts-modal {
+    margin: 20px;
+    max-height: calc(100vh - 40px);
+  }
+  
+  .shortcut-list {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .shortcut-key {
+    justify-self: start;
+    margin-bottom: 4px;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .keyboard-shortcuts-help {
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .shortcuts-modal {
+    background: var(--ds-color-gray-800);
+    color: var(--ds-color-gray-100);
+  }
+  
+  .shortcuts-header {
+    border-bottom-color: var(--ds-color-gray-700);
+  }
+  
+  .shortcuts-header h2 {
+    color: var(--ds-color-gray-100);
+  }
+  
+  .close-button {
+    color: var(--ds-color-gray-400);
+  }
+  
+  .close-button:hover {
+    background: var(--ds-color-gray-700);
+    color: var(--ds-color-gray-200);
+  }
+  
+  .shortcut-group h3 {
+    color: var(--ds-color-gray-200);
+  }
+  
+  .shortcut-key {
+    background: var(--ds-color-gray-700);
+    color: var(--ds-color-gray-200);
+    border-color: var(--ds-color-gray-600);
+  }
+  
+  .shortcut-description {
+    color: var(--ds-color-gray-300);
+  }
+}
+
+/* Print styles - hide keyboard navigation elements */
+@media print {
+  .skip-links,
+  .keyboard-shortcuts-help,
+  .focus-trap::before,
+  .focus-trap::after {
+    display: none !important;
+  }
+}

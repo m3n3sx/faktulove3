@@ -1,0 +1,91 @@
+{% load design_system_tags %}
+
+{% if page_obj.has_other_pages %}
+<nav class="ds-pagination" aria-label="Paginacja" data-testid="pagination">
+  <div class="ds-pagination__info">
+    <span class="ds-pagination__info-text">
+      Pokazano {{ page_obj.start_index }}-{{ page_obj.end_index }} z {{ page_obj.paginator.count }} wyników
+    </span>
+  </div>
+  
+  <div class="ds-pagination__controls">
+    {% if page_obj.has_previous %}
+      <a href="?page=1" class="ds-pagination__button ds-pagination__button--first" aria-label="Pierwsza strona">
+        <svg class="ds-pagination__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+        </svg>
+      </a>
+      
+      <a href="?page={{ page_obj.previous_page_number }}" class="ds-pagination__button ds-pagination__button--prev" aria-label="Poprzednia strona">
+        <svg class="ds-pagination__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </a>
+    {% else %}
+      <span class="ds-pagination__button ds-pagination__button--first ds-pagination__button--disabled" aria-label="Pierwsza strona">
+        <svg class="ds-pagination__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+        </svg>
+      </span>
+      
+      <span class="ds-pagination__button ds-pagination__button--prev ds-pagination__button--disabled" aria-label="Poprzednia strona">
+        <svg class="ds-pagination__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </span>
+    {% endif %}
+    
+    <div class="ds-pagination__pages">
+      {% if show_first %}
+        <a href="?page=1" class="ds-pagination__page">1</a>
+      {% endif %}
+      
+      {% if show_prev_ellipsis %}
+        <span class="ds-pagination__ellipsis">…</span>
+      {% endif %}
+      
+      {% for page_num in page_range %}
+        {% if page_num == page_obj.number %}
+          <span class="ds-pagination__page ds-pagination__page--current" aria-current="page">{{ page_num }}</span>
+        {% else %}
+          <a href="?page={{ page_num }}" class="ds-pagination__page">{{ page_num }}</a>
+        {% endif %}
+      {% endfor %}
+      
+      {% if show_next_ellipsis %}
+        <span class="ds-pagination__ellipsis">…</span>
+      {% endif %}
+      
+      {% if show_last %}
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="ds-pagination__page">{{ page_obj.paginator.num_pages }}</a>
+      {% endif %}
+    </div>
+    
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="ds-pagination__button ds-pagination__button--next" aria-label="Następna strona">
+        <svg class="ds-pagination__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+      
+      <a href="?page={{ page_obj.paginator.num_pages }}" class="ds-pagination__button ds-pagination__button--last" aria-label="Ostatnia strona">
+        <svg class="ds-pagination__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        </svg>
+      </a>
+    {% else %}
+      <span class="ds-pagination__button ds-pagination__button--next ds-pagination__button--disabled" aria-label="Następna strona">
+        <svg class="ds-pagination__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </span>
+      
+      <span class="ds-pagination__button ds-pagination__button--last ds-pagination__button--disabled" aria-label="Ostatnia strona">
+        <svg class="ds-pagination__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        </svg>
+      </span>
+    {% endif %}
+  </div>
+</nav>
+{% endif %}

@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Błąd walidacji - FaktuLove{% endblock %}
+
+{% block extra_css %}
+<style>
+.error-container {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.error-content {
+    max-width: 700px;
+    background: white;
+    border-radius: 12px;
+    padding: 3rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-top: 4px solid #dc3545;
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: #dc3545;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.validation-errors {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.validation-errors h5 {
+    color: #721c24;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.validation-errors ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.validation-errors li {
+    margin-bottom: 0.5rem;
+    color: #721c24;
+}
+
+.suggestions-section {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.suggestions-section h5 {
+    color: #0c5460;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.suggestions-section ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.suggestions-section li {
+    margin-bottom: 0.5rem;
+    color: #0c5460;
+}
+
+.validation-tips {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.validation-tips h5 {
+    color: #856404;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.tip-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #ffc107;
+}
+
+.tip-item strong {
+    color: #856404;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.action-buttons {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .error-content {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+    
+    .error-title {
+        font-size: 1.5rem;
+    }
+    
+    .tip-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        
+        <h1 class="error-title">{{ title }}</h1>
+        <p class="error-message">{{ message }}</p>
+        
+        {% if validation_errors %}
+        <div class="validation-errors">
+            <h5><i class="fas fa-times-circle"></i> Błędy walidacji:</h5>
+            <ul>
+                {% for error in validation_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if suggestions %}
+        <div class="suggestions-section">
+            <h5><i class="fas fa-lightbulb"></i> Jak naprawić błędy:</h5>
+            <ul>
+                {% for suggestion in suggestions %}
+                <li>{{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="validation-tips">
+            <h5><i class="fas fa-info-circle"></i> Wskazówki dotyczące walidacji:</h5>
+            <div class="tip-grid">
+                <div class="tip-item">
+                    <strong>NIP:</strong>
+                    Musi mieć 10 cyfr, bez spacji i myślników. Przykład: 1234567890
+                </div>
+                <div class="tip-item">
+                    <strong>REGON:</strong>
+                    9 lub 14 cyfr. Sprawdź w bazie REGON GUS.
+                </div>
+                <div class="tip-item">
+                    <strong>Email:</strong>
+                    Poprawny format: nazwa@domena.pl
+                </div>
+                <div class="tip-item">
+                    <strong>Daty:</strong>
+                    Format DD.MM.RRRR lub RRRR-MM-DD
+                </div>
+                <div class="tip-item">
+                    <strong>Kwoty:</strong>
+                    Używaj kropki jako separatora dziesiętnego
+                </div>
+                <div class="tip-item">
+                    <strong>Pola wymagane:</strong>
+                    Wszystkie pola oznaczone * muszą być wypełnione
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button onclick="history.back()" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Wróć i popraw
+            </button>
+            <button onclick="location.reload()" class="btn btn-primary">
+                <i class="fas fa-redo"></i> Spróbuj ponownie
+            </button>
+        </div>
+        
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #dee2e6; text-align: center;">
+            <p class="text-muted">
+                <small>
+                    <i class="fas fa-question-circle"></i>
+                    Potrzebujesz pomocy? 
+                    <a href="mailto:support@faktulove.pl">Skontaktuj się z pomocą techniczną</a>
+                </small>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-focus on first invalid field when going back
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        // Page was loaded from cache (back button)
+        setTimeout(function() {
+            const firstInvalidField = document.querySelector('.is-invalid, [aria-invalid="true"]');
+            if (firstInvalidField) {
+                firstInvalidField.focus();
+                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    }
+});
+
+// Track validation errors for analytics
+if (typeof gtag !== 'undefined') {
+    gtag('event', 'validation_error', {
+        'page_location': window.location.href,
+        'error_count': {{ validation_errors|length|default:0 }}
+    });
+}
+</script>
+{% endblock %}

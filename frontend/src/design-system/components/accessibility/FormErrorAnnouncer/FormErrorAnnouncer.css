@@ -1,0 +1,292 @@
+/* Form Error Announcer Styles */
+.form-error-summary {
+  background: var(--ds-color-error-50);
+  border: 2px solid var(--ds-color-error-200);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.form-error-summary:focus {
+  outline: 2px solid var(--ds-color-error-500);
+  outline-offset: 2px;
+}
+
+.error-summary-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ds-color-error-700);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-summary-title::before {
+  content: '⚠';
+  font-size: 20px;
+  color: var(--ds-color-error-600);
+}
+
+.error-summary-list {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.error-summary-item {
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.error-summary-item::before {
+  content: '•';
+  color: var(--ds-color-error-600);
+  font-weight: bold;
+  position: absolute;
+  left: -16px;
+}
+
+.error-summary-link {
+  color: var(--ds-color-error-700);
+  text-decoration: underline;
+  font-weight: 500;
+  display: inline-block;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.error-summary-link:hover {
+  background: var(--ds-color-error-100);
+  color: var(--ds-color-error-800);
+  text-decoration: none;
+}
+
+.error-summary-link:focus {
+  outline: 2px solid var(--ds-color-error-500);
+  outline-offset: 2px;
+  background: var(--ds-color-error-100);
+  text-decoration: none;
+}
+
+.error-summary-link:active {
+  background: var(--ds-color-error-200);
+}
+
+.error-type-label {
+  font-size: 12px;
+  color: var(--ds-color-error-600);
+  font-weight: normal;
+}
+
+.error-summary-help {
+  border-top: 1px solid var(--ds-color-error-200);
+  padding-top: 12px;
+  margin-top: 16px;
+}
+
+.error-summary-help p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ds-color-error-600);
+  line-height: 1.4;
+}
+
+/* Polish business form errors */
+.polish-business-errors {
+  border-left: 4px solid var(--ds-color-error-500);
+}
+
+.polish-business-errors .error-summary-title::before {
+  content: '🏢';
+}
+
+/* Field error announcements (hidden) */
+.field-error-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Screen reader only class */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .form-error-summary {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .error-summary-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .error-summary-list {
+    padding-left: 16px;
+  }
+  
+  .error-summary-item {
+    margin-bottom: 6px;
+  }
+  
+  .error-summary-link {
+    font-size: 14px;
+  }
+  
+  .error-summary-help p {
+    font-size: 13px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .form-error-summary {
+    border-width: 3px;
+    background: var(--ds-color-white);
+  }
+  
+  .error-summary-title {
+    font-weight: 700;
+  }
+  
+  .error-summary-link {
+    font-weight: 600;
+    text-decoration-thickness: 2px;
+  }
+  
+  .error-summary-link:focus {
+    outline-width: 3px;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .form-error-summary {
+    background: var(--ds-color-error-900);
+    border-color: var(--ds-color-error-700);
+  }
+  
+  .error-summary-title {
+    color: var(--ds-color-error-200);
+  }
+  
+  .error-summary-title::before {
+    color: var(--ds-color-error-400);
+  }
+  
+  .error-summary-item::before {
+    color: var(--ds-color-error-400);
+  }
+  
+  .error-summary-link {
+    color: var(--ds-color-error-300);
+  }
+  
+  .error-summary-link:hover {
+    background: var(--ds-color-error-800);
+    color: var(--ds-color-error-200);
+  }
+  
+  .error-summary-link:focus {
+    background: var(--ds-color-error-800);
+    outline-color: var(--ds-color-error-400);
+  }
+  
+  .error-summary-link:active {
+    background: var(--ds-color-error-700);
+  }
+  
+  .error-type-label {
+    color: var(--ds-color-error-400);
+  }
+  
+  .error-summary-help {
+    border-top-color: var(--ds-color-error-700);
+  }
+  
+  .error-summary-help p {
+    color: var(--ds-color-error-300);
+  }
+  
+  .polish-business-errors {
+    border-left-color: var(--ds-color-error-400);
+  }
+}
+
+/* Print styles */
+@media print {
+  .form-error-summary {
+    background: transparent;
+    border: 2px solid #000;
+    color: #000;
+  }
+  
+  .error-summary-title::before {
+    content: '[BŁĄD]';
+    font-size: inherit;
+  }
+  
+  .error-summary-link {
+    color: #000;
+    text-decoration: underline;
+  }
+  
+  .field-error-announcement,
+  .sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    font-size: 10px;
+    color: #666;
+  }
+}
+
+/* Animation for error appearance */
+@keyframes errorSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-error-summary {
+  animation: errorSlideIn 0.3s ease-out;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .form-error-summary {
+    animation: none;
+  }
+  
+  .error-summary-link {
+    transition: none;
+  }
+}

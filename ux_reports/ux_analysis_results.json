@@ -1,0 +1,109 @@
+{
+  "workflows_analyzed": 3,
+  "optimization_opportunities": [
+    {
+      "workflow": "invoice_creation",
+      "current_clicks": 8,
+      "optimal_clicks": 5,
+      "reduction_potential": 3,
+      "pain_points": [
+        "Too many form fields visible at once",
+        "No auto-save functionality",
+        "Manual contractor selection"
+      ]
+    },
+    {
+      "workflow": "ocr_upload",
+      "current_clicks": 6,
+      "optimal_clicks": 4,
+      "reduction_potential": 2,
+      "pain_points": [
+        "No drag-and-drop support",
+        "No batch upload",
+        "Limited progress feedback"
+      ]
+    },
+    {
+      "workflow": "contractor_management",
+      "current_clicks": 5,
+      "optimal_clicks": 3,
+      "reduction_potential": 2,
+      "pain_points": [
+        "No quick add from invoice form",
+        "Manual NIP validation",
+        "No duplicate detection"
+      ]
+    }
+  ],
+  "click_reduction_potential": 7,
+  "pain_points": [
+    {
+      "workflow": "invoice_creation",
+      "issue": "Too many form fields visible at once"
+    },
+    {
+      "workflow": "invoice_creation",
+      "issue": "No auto-save functionality"
+    },
+    {
+      "workflow": "invoice_creation",
+      "issue": "Manual contractor selection"
+    },
+    {
+      "workflow": "ocr_upload",
+      "issue": "No drag-and-drop support"
+    },
+    {
+      "workflow": "ocr_upload",
+      "issue": "No batch upload"
+    },
+    {
+      "workflow": "ocr_upload",
+      "issue": "Limited progress feedback"
+    },
+    {
+      "workflow": "contractor_management",
+      "issue": "No quick add from invoice form"
+    },
+    {
+      "workflow": "contractor_management",
+      "issue": "Manual NIP validation"
+    },
+    {
+      "workflow": "contractor_management",
+      "issue": "No duplicate detection"
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Click Reduction",
+      "priority": "high",
+      "description": "Reduce total clicks by 7 across all workflows",
+      "actions": [
+        "Implement quick actions and shortcuts",
+        "Add auto-save functionality",
+        "Create workflow wizards for complex tasks"
+      ]
+    },
+    {
+      "category": "Form Optimization",
+      "priority": "medium",
+      "description": "Optimize form interactions and data entry",
+      "actions": [
+        "Add progressive form disclosure",
+        "Implement smart defaults and auto-completion",
+        "Add inline validation and error prevention"
+      ]
+    },
+    {
+      "category": "Upload Experience",
+      "priority": "high",
+      "description": "Improve file upload and processing experience",
+      "actions": [
+        "Add drag-and-drop file upload",
+        "Implement batch processing",
+        "Enhance progress feedback and status updates"
+      ]
+    }
+  ]
+}

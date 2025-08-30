@@ -1,0 +1,333 @@
+/* Icon Fallbacks for Iconify Icons */
+
+/* Fallback for iconify-icon elements when Iconify is not loaded */
+iconify-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Specific icon fallbacks */
+iconify-icon[icon="radix-icons:cross-2"]::before,
+iconify-icon[icon="radix-icons:cross-1"]::before {
+  content: "✕";
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="solar:home-smile-angle-outline"]::before {
+  content: "\ea18"; /* ri-home-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:permanent-job"]::before {
+  content: "\f25f"; /* ri-user-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:calendar-03"]::before {
+  content: "\eb26"; /* ri-calendar-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:delivery-box-01"]::before {
+  content: "\ead7"; /* ri-box-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:ai-brain-04"]::before {
+  content: "\f2f7"; /* ri-brain-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:pencil-edit-02"]::before {
+  content: "\ec86"; /* ri-edit-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:add-02"]::before {
+  content: "\ea13"; /* ri-add-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:clapping-01"]::before {
+  content: "\f1ee"; /* ri-team-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:workout-run"]::before {
+  content: "\eed8"; /* ri-logout-box-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="hugeicons:invoice-03"]::before {
+  content: "\ed0f"; /* ri-file-text-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="icon-park-outline:setting-two"]::before {
+  content: "\f0ee"; /* ri-settings-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="heroicons:bars-3-solid"]::before {
+  content: "\ef3e"; /* ri-menu-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="iconoir:arrow-right"]::before {
+  content: "\ea6c"; /* ri-arrow-right-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="ion:search-outline"]::before {
+  content: "\f0d1"; /* ri-search-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="mage:email"]::before {
+  content: "\eef6"; /* ri-mail-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="solar:mail-line"]::before {
+  content: "\eef6"; /* ri-mail-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="iconoir:bell"]::before {
+  content: "\eabc"; /* ri-bell-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="solar:alert-circle-line"]::before {
+  content: "\ea21"; /* ri-alert-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="solar:user-linear"]::before {
+  content: "\f264"; /* ri-user-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="tabler:message-check"]::before {
+  content: "\eef6"; /* ri-mail-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+iconify-icon[icon="lucide:power"]::before {
+  content: "\eed8"; /* ri-logout-box-line */
+  font-family: 'remixicon', sans-serif;
+}
+
+/* Menu icons in sidebar */
+.menu-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Circle icons for submenu */
+.ri-circle-fill {
+  font-size: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+/* Ensure icons are visible */
+iconify-icon:not([data-icon]) {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Loading state for icons */
+iconify-icon[data-loading="true"]::before {
+  content: "⟳";
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Text fallbacks for critical navigation when icons fail */
+.sidebar-menu a[href*="panel_uzytkownika"]::after {
+  content: " (Faktury)";
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.sidebar-menu a[href*="kontrahenci"]::after {
+  content: " (Kontrahenci)";
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.sidebar-menu a[href*="ocr_upload"]::after {
+  content: " (OCR)";
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* Hide text fallbacks when icons are working */
+iconify-icon:not(:empty) + span + .sidebar-menu a::after {
+  display: none;
+}
+
+/* Additional fallback mechanisms */
+
+/* When font fails to load, show text alternatives */
+@font-face {
+  font-family: 'remixicon-fallback';
+  src: local('Arial'), local('sans-serif');
+  font-display: swap;
+}
+
+/* Fallback for when remixicon font fails */
+.ri-home-line:not([data-icon])::before,
+.ri-home-line.font-fallback::before {
+  content: "🏠";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-user-line:not([data-icon])::before,
+.ri-user-line.font-fallback::before {
+  content: "👤";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-calendar-line:not([data-icon])::before,
+.ri-calendar-line.font-fallback::before {
+  content: "📅";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-menu-line:not([data-icon])::before,
+.ri-menu-line.font-fallback::before {
+  content: "☰";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-search-line:not([data-icon])::before,
+.ri-search-line.font-fallback::before {
+  content: "🔍";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-bell-line:not([data-icon])::before,
+.ri-bell-line.font-fallback::before {
+  content: "🔔";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-mail-line:not([data-icon])::before,
+.ri-mail-line.font-fallback::before {
+  content: "✉️";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-settings-line:not([data-icon])::before,
+.ri-settings-line.font-fallback::before {
+  content: "⚙️";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-logout-box-line:not([data-icon])::before,
+.ri-logout-box-line.font-fallback::before {
+  content: "🚪";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-add-line:not([data-icon])::before,
+.ri-add-line.font-fallback::before {
+  content: "➕";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-edit-line:not([data-icon])::before,
+.ri-edit-line.font-fallback::before {
+  content: "✏️";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-team-line:not([data-icon])::before,
+.ri-team-line.font-fallback::before {
+  content: "👥";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-file-text-line:not([data-icon])::before,
+.ri-file-text-line.font-fallback::before {
+  content: "📄";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-arrow-right-line:not([data-icon])::before,
+.ri-arrow-right-line.font-fallback::before {
+  content: "→";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+.ri-close-line:not([data-icon])::before,
+.ri-close-line.font-fallback::before {
+  content: "✕";
+  font-family: 'remixicon-fallback', Arial, sans-serif;
+}
+
+/* Error state styling */
+.icon-error {
+  color: #dc3545;
+  opacity: 0.7;
+}
+
+.icon-error::after {
+  content: " (!)";
+  font-size: 0.8em;
+  color: #dc3545;
+}
+
+/* Loading state for icons */
+.icon-loading {
+  opacity: 0.5;
+}
+
+.icon-loading::before {
+  content: "⟳";
+  animation: spin 1s linear infinite;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  iconify-icon,
+  [class^="ri-"],
+  [class*=" ri-"] {
+    filter: contrast(2);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .icon-loading::before,
+  iconify-icon[data-loading="true"]::before {
+    animation: none;
+  }
+}
+
+/* Print styles - hide decorative icons, keep functional ones */
+@media print {
+  iconify-icon:not([aria-label]),
+  [class^="ri-"]:not([aria-label]) {
+    display: none;
+  }
+  
+  iconify-icon[aria-label]::after,
+  [class^="ri-"][aria-label]::after {
+    content: " (" attr(aria-label) ")";
+    font-size: 0.8em;
+  }
+}

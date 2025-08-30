@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}OCR Progress{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-3">
+                <iconify-icon icon="solar:clock-circle-linear" class="text-primary me-2"></iconify-icon>
+                Status przesyłania
+            </h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'panel_uzytkownika' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'ocr_upload' %}">OCR Upload</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Status</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">ID przesyłania: {{ upload_id }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <iconify-icon icon="solar:info-circle-linear" class="me-2"></iconify-icon>
+                        Przetwarzanie dokumentu w toku...
+                    </div>
+                    
+                    <a href="{% url 'ocr_upload' %}" class="btn btn-primary">
+                        <iconify-icon icon="solar:arrow-left-linear" class="me-2"></iconify-icon>
+                        Powrót do przesyłania
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

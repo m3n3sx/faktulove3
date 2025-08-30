@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+{% load design_system_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+<style>
+.contractor-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #1f2937;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.business-info {
+  display: none;
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f0f9ff;
+  border-radius: 8px;
+  border: 1px solid #0ea5e9;
+}
+
+.business-info.active {
+  display: block;
+}
+
+.correspondence-address {
+  display: none;
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.correspondence-address.active {
+  display: block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contractor-form-container">
+  {% if not request.headers.X-Requested-With %}
+    {% ds_breadcrumb items="Faktury,Lista faktur,enhanced_invoice_list;Kontrahenci,#;Nowy kontrahent,#" %}
+    
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+      <p class="text-gray-600 mt-1">Dodaj nowego kontrahenta do swojej bazy</p>
+    </div>
+  {% endif %}
+
+  <form method="post" id="contractor-form" class="space-y-6">
+    {% csrf_token %}
+    
+    <!-- Basic Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Podstawowe informacje</h2>
+      
+      <div class="space-y-4">
+        <div>
+          {% ds_form_field form.nazwa %}
+        </div>
+        
+        <div>
+          {% ds_form_field form.czy_firma %}
+        </div>
+        
+        <!-- Business Information (shown when czy_firma is checked) -->
+        <div id="business-info" class="business-info">
+          <h3 class="font-medium text-gray-900 mb-3">Informacje o firmie</h3>
+          
+          <div class="form-grid">
+            <div>
+              {% ds_form_field form.nip %}
+            </div>
+            <div>
+              {% ds_form_field form.regon %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Adres</h2>
+      
+      <div class="space-y-4">
+        <div>
+          {% ds_form_field form.ulica %}
+        </div>
+        
+        <div class="form-grid-2">
+          <div>
+            {% ds_form_field form.numer_domu %}
+          </div>
+          <div>
+            {% ds_form_field form.numer_mieszkania %}
+          </div>
+        </div>
+        
+        <div class="form-grid-2">
+          <div>
+            {% ds_form_field form.kod_pocztowy %}
+          </div>
+          <div>
+            {% ds_form_field form.miejscowosc %}
+          </div>
+        </div>
+        
+        <div>
+          {% ds_form_field form.kraj %}
+        </div>
+        
+        <!-- Correspondence Address Toggle -->
+        <div class="mt-4">
+          <label class="flex items-center">
+            <input type="checkbox" id="different-correspondence" class="ds-checkbox mr-2">
+            <span class="text-sm font-medium text-gray-700">Inny adres korespondencyjny</span>
+          </label>
+        </div>
+        
+        <!-- Correspondence Address Fields -->
+        <div id="correspondence-address" class="correspondence-address">
+          <h3 class="font-medium text-gray-900 mb-3">Adres korespondencyjny</h3>
+          
+          <div class="space-y-4">
+            <div>
+              {% ds_form_field form.adres_korespondencyjny_ulica %}
+            </div>
+            
+            <div class="form-grid-2">
+              <div>
+                {% ds_form_field form.adres_korespondencyjny_numer_domu %}
+              </div>
+              <div>
+                {% ds_form_field form.adres_korespondencyjny_numer_mieszkania %}
+              </div>
+            </div>
+            
+            <div class="form-grid-2">
+              <div>
+                {% ds_form_field form.adres_korespondencyjny_kod_pocztowy %}
+              </div>
+              <div>
+                {% ds_form_field form.adres_korespondencyjny_miejscowosc %}
+              </div>
+            </div>
+            
+            <div>
+              {% ds_form_field form.adres_korespondencyjny_kraj %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Dane kontaktowe</h2>
+      
+      <div class="form-grid">
+        <div>
+          {% ds_form_field form.email %}
+        </div>
+        <div>
+          {% ds_form_field form.telefon %}
+        </div>
+        <div>
+          {% ds_form_field form.telefon_komorkowy %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Information Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Dodatkowe informacje</h2>
+      
+      <div>
+        {% ds_form_field form.dodatkowy_opis %}
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-section">
+      <div class="flex justify-end space-x-4">
+        {% if request.headers.X-Requested-With %}
+          {% ds_button variant="secondary" type="button" onclick="closeContractorModal()" %}
+            Anuluj
+          {% end_ds_button %}
+        {% else %}
+          {% ds_button variant="secondary" type="button" onclick="window.history.back()" %}
+            Anuluj
+          {% end_ds_button %}
+        {% endif %}
+        
+        {% ds_button variant="primary" type="submit" %}
+          Zapisz kontrahenta
+        {% end_ds_button %}
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Success Message Template (for AJAX) -->
+<div id="success-message" class="hidden">
+  <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium text-green-800">
+          Kontrahent został pomyślnie dodany!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Business information toggle
+document.getElementById('id_czy_firma').addEventListener('change', function() {
+  const businessInfo = document.getElementById('business-info');
+  const nipField = document.getElementById('id_nip');
+  
+  if (this.checked) {
+    businessInfo.classList.add('active');
+    nipField.required = true;
+  } else {
+    businessInfo.classList.remove('active');
+    nipField.required = false;
+    nipField.value = '';
+  }
+});
+
+// Correspondence address toggle
+document.getElementById('different-correspondence').addEventListener('change', function() {
+  const correspondenceAddress = document.getElementById('correspondence-address');
+  
+  if (this.checked) {
+    correspondenceAddress.classList.add('active');
+  } else {
+    correspondenceAddress.classList.remove('active');
+    
+    // Clear correspondence address fields
+    const fields = correspondenceAddress.querySelectorAll('input');
+    fields.forEach(field => field.value = '');
+  }
+});
+
+// Form submission handling
+document.getElementById('contractor-form').addEventListener('submit', function(e) {
+  // Check if this is an AJAX request (modal form)
+  if (window.parent && window.parent.closeContractorModal) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action || window.location.href, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Add new contractor to the select field in parent window
+        const parentSelect = window.parent.document.getElementById('id_nabywca');
+        if (parentSelect) {
+          const option = new Option(data.kontrahent.nazwa, data.kontrahent.id, true, true);
+          parentSelect.add(option);
+          
+          // Update NIP field if available
+          const nipField = window.parent.document.getElementById('id_nabywca_nip');
+          if (nipField && data.kontrahent.nip) {
+            nipField.value = data.kontrahent.nip;
+          }
+        }
+        
+        // Show success message
+        const successMessage = document.getElementById('success-message');
+        successMessage.classList.remove('hidden');
+        
+        // Close modal after delay
+        setTimeout(() => {
+          window.parent.closeContractorModal();
+        }, 1500);
+      } else {
+        // Handle form errors
+        alert('Wystąpiły błędy w formularzu. Sprawdź wprowadzone dane.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Wystąpił błąd podczas zapisywania kontrahenta.');
+    });
+  }
+});
+
+// Auto-fill correspondence address from main address
+function copyMainAddress() {
+  const mainFields = {
+    'id_ulica': 'id_adres_korespondencyjny_ulica',
+    'id_numer_domu': 'id_adres_korespondencyjny_numer_domu',
+    'id_numer_mieszkania': 'id_adres_korespondencyjny_numer_mieszkania',
+    'id_kod_pocztowy': 'id_adres_korespondencyjny_kod_pocztowy',
+    'id_miejscowosc': 'id_adres_korespondencyjny_miejscowosc',
+    'id_kraj': 'id_adres_korespondencyjny_kraj'
+  };
+  
+  Object.entries(mainFields).forEach(([mainId, corrId]) => {
+    const mainField = document.getElementById(mainId);
+    const corrField = document.getElementById(corrId);
+    
+    if (mainField && corrField) {
+      corrField.value = mainField.value;
+    }
+  });
+}
+
+// Add copy button to correspondence address section
+document.addEventListener('DOMContentLoaded', function() {
+  const correspondenceSection = document.getElementById('correspondence-address');
+  if (correspondenceSection) {
+    const copyButton = document.createElement('button');
+    copyButton.type = 'button';
+    copyButton.className = 'ds-button ds-button--secondary ds-button--sm mb-3';
+    copyButton.textContent = 'Skopiuj z adresu głównego';
+    copyButton.onclick = copyMainAddress;
+    
+    const title = correspondenceSection.querySelector('h3');
+    if (title) {
+      title.parentNode.insertBefore(copyButton, title.nextSibling);
+    }
+  }
+  
+  // Initialize form state
+  const czyFirmaField = document.getElementById('id_czy_firma');
+  if (czyFirmaField && czyFirmaField.checked) {
+    document.getElementById('business-info').classList.add('active');
+  }
+});
+
+// NIP validation feedback
+document.getElementById('id_nip').addEventListener('input', function() {
+  // The NIPValidator component will handle validation
+  // This is just for additional UI feedback if needed
+});
+
+// Modal-specific functions (available to parent window)
+if (window.parent && window.parent !== window) {
+  window.closeContractorModal = function() {
+    if (window.parent.closeContractorModal) {
+      window.parent.closeContractorModal();
+    }
+  };
+}
+</script>
+{% endblock %}

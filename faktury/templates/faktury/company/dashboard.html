@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panel Zarządzania Firmami{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/company-dashboard.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Panel Zarządzania Firmami</h1>
+                
+                {% if user_companies|length > 1 %}
+                <div class="company-context-switcher">
+                    <form method="post" action="{% url 'switch_company_context' %}" class="d-flex align-items-center">
+                        {% csrf_token %}
+                        <label for="{{ context_form.company.id_for_label }}" class="form-label me-2 mb-0">
+                            Aktywna firma:
+                        </label>
+                        {{ context_form.company }}
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if current_company %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        {{ current_company.nazwa }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>NIP:</strong> {{ current_company.nip }}</p>
+                            <p class="mb-1"><strong>REGON:</strong> {{ current_company.regon|default:"Brak" }}</p>
+                            <p class="mb-0">
+                                <strong>Adres:</strong> 
+                                {{ current_company.ulica }} {{ current_company.numer_domu }}{% if current_company.numer_mieszkania %}/{{ current_company.numer_mieszkania }}{% endif %},
+                                {{ current_company.kod_pocztowy }} {{ current_company.miejscowosc }}
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="{% url 'company_detail' current_company.id %}" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-eye me-1"></i>Szczegóły
+                            </a>
+                            {% if current_company.user == user %}
+                            <a href="{% url 'edit_company' current_company.id %}" class="btn btn-primary">
+                                <i class="fas fa-edit me-1"></i>Edytuj
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ company_stats.total_invoices|default:0 }}</h4>
+                            <p class="card-text">Wszystkie faktury</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-invoice fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ company_stats.total_sales|default:0 }}</h4>
+                            <p class="card-text">Faktury sprzedaży</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-arrow-up fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ company_stats.active_partnerships|default:0 }}</h4>
+                            <p class="card-text">Aktywne partnerstwa</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-handshake fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ company_stats.total_revenue|floatformat:2|default:"0.00" }} zł</h4>
+                            <p class="card-text">Przychody</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Ostatnie faktury
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_invoices %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Numer</th>
+                                    <th>Kontrahent</th>
+                                    <th>Data</th>
+                                    <th>Kwota</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in recent_invoices %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'szczegoly_faktury' invoice.id %}" class="text-decoration-none">
+                                            {{ invoice.numer }}
+                                        </a>
+                                    </td>
+                                    <td>{{ invoice.nabywca.nazwa }}</td>
+                                    <td>{{ invoice.data_wystawienia|date:"d.m.Y" }}</td>
+                                    <td>{{ invoice.suma_brutto|floatformat:2 }} zł</td>
+                                    <td>
+                                        <span class="badge bg-{% if invoice.status == 'oplacona' %}success{% elif invoice.status == 'wystawiona' %}warning{% else %}secondary{% endif %}">
+                                            {{ invoice.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Brak ostatnich faktur</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Szybkie akcje
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'dodaj_fakture' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Nowa faktura
+                        </a>
+                        
+                        <a href="{% url 'partnership_management' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-handshake me-2"></i>Zarządzaj partnerstwami
+                        </a>
+                        
+                        <a href="{% url 'company_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>Wszystkie firmy
+                        </a>
+                        
+                        <form method="post" action="{% url 'create_test_companies' %}" class="mt-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-info w-100">
+                                <i class="fas fa-database me-2"></i>Utwórz firmy testowe
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- No Company State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-building fa-4x text-muted mb-3"></i>
+                    <h4>Brak danych firmy</h4>
+                    <p class="text-muted mb-4">
+                        Aby korzystać z systemu zarządzania firmami, najpierw dodaj dane swojej firmy.
+                    </p>
+                    <a href="{% url 'dodaj_firme' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Dodaj firmę
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit company context form on change
+    const companySelect = document.querySelector('select[name="company"]');
+    if (companySelect) {
+        companySelect.addEventListener('change', function() {
+            this.form.submit();
+        });
+    }
+});
+</script>
+{% endblock %}

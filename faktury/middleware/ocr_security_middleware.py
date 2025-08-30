@@ -54,7 +54,7 @@ class OCRSecurityMiddleware(MiddlewareMixin):
             'X-Frame-Options': 'DENY',
             'X-XSS-Protection': '1; mode=block',
             'Referrer-Policy': 'strict-origin-when-cross-origin',
-            'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';",
+            'Content-Security-Policy': self._get_csp_policy(),
             'X-OCR-Processing': 'on-premises',
             'X-Data-Location': 'local'
         }
@@ -460,6 +460,63 @@ class OCRSecurityMiddleware(MiddlewareMixin):
         
         # Try query parameters
         return request.GET.get('document_id')
+    
+    def _get_csp_policy(self) -> str:
+        """Generate Content Security Policy for FaktuLove application"""
+        
+        # Check if we're in debug mode for more permissive policies
+        debug_mode = getattr(settings, 'DEBUG', False)
+        
+        # Base policy - restrictive by default
+        policy_parts = [
+            "default-src 'self'",
+            
+            # Scripts: Allow self, inline scripts, and trusted CDNs
+            # In production, we should use nonces instead of 'unsafe-inline'
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' " +
+            ("cdn.jsdelivr.net cdnjs.cloudflare.com code.iconify.design " +
+             "cdn.datatables.net" if debug_mode else ""),
+            
+            # Styles: Allow self, inline styles, and trusted CDNs
+            "style-src 'self' 'unsafe-inline' " +
+            "fonts.googleapis.com cdn.jsdelivr.net cdnjs.cloudflare.com " +
+            "code.iconify.design cdn.datatables.net",
+            
+            # Fonts: Allow Google Fonts and other font CDNs
+            "font-src 'self' fonts.gstatic.com fonts.googleapis.com " +
+            "cdn.jsdelivr.net cdnjs.cloudflare.com",
+            
+            # Images: Allow self, data URLs, and common image CDNs
+            "img-src 'self' data: blob: " +
+            "cdn.jsdelivr.net cdnjs.cloudflare.com",
+            
+            # Connect: Allow self and API endpoints
+            "connect-src 'self' " +
+            ("cdn.jsdelivr.net cdnjs.cloudflare.com" if debug_mode else ""),
+            
+            # Media: Allow self and data URLs
+            "media-src 'self' data: blob:",
+            
+            # Objects: Restrict to self only
+            "object-src 'self'",
+            
+            # Base URI: Restrict to self
+            "base-uri 'self'",
+            
+            # Form actions: Allow self
+            "form-action 'self'",
+            
+            # Frame ancestors: Deny (prevent clickjacking)
+            "frame-ancestors 'none'",
+            
+            # Upgrade insecure requests in production
+            "upgrade-insecure-requests" if not debug_mode else ""
+        ]
+        
+        # Filter out empty parts and join
+        policy = "; ".join(part.strip() for part in policy_parts if part.strip())
+        
+        return policy
 
 
 class OCRFileSecurityMiddleware(MiddlewareMixin):

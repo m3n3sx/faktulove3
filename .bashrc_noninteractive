@@ -1,0 +1,5 @@
+export PS1='$ '
+export DEBIAN_FRONTEND=noninteractive
+set +o vi
+set +o emacs
+unset HISTFILE

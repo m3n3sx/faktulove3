@@ -1,0 +1,175 @@
+{% extends "admin/index.html" %}
+{% load design_system %}
+
+{% block content %}
+    <div class="django-design-system">
+        {% if design_system_enabled %}
+            <div class="admin-welcome">
+                <h1>Witaj w panelu administracyjnym FaktuLove</h1>
+                <p>System zarządzania fakturami z integracją design system i narzędziami dla polskiego biznesu.</p>
+            </div>
+            
+            {% if quick_actions %}
+                <section class="quick-actions-section">
+                    <h2>Szybkie akcje</h2>
+                    {% ds_grid cols=4 gap="md" %}
+                        {% for action in quick_actions %}
+                            <div class="quick-action-card">
+                                <div class="action-icon">{{ action.icon }}</div>
+                                <h3>{{ action.name }}</h3>
+                                <p>{{ action.description }}</p>
+                                {% ds_button "Przejdź" variant="primary" onclick="window.location.href='{{ action.url }}'" %}
+                            </div>
+                        {% endfor %}
+                    {% ds_grid_end %}
+                </section>
+            {% endif %}
+        {% endif %}
+        
+        {{ block.super }}
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .admin-welcome {
+            background: linear-gradient(135deg, var(--color-interactive), var(--color-interactive-hover));
+            color: var(--color-text-inverse);
+            padding: var(--spacing-6);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: var(--spacing-6);
+            text-align: center;
+        }
+        
+        .admin-welcome h1 {
+            margin: 0 0 var(--spacing-2) 0;
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+        }
+        
+        .admin-welcome p {
+            margin: 0;
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+        }
+        
+        .quick-actions-section {
+            margin-bottom: var(--spacing-8);
+        }
+        
+        .quick-actions-section h2 {
+            color: var(--color-text-primary);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-4);
+        }
+        
+        .quick-action-card {
+            background: var(--color-background-primary);
+            border: 1px solid var(--color-border-default);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-4);
+            text-align: center;
+            transition: all var(--animation-duration-fast) var(--animation-easing-ease-out);
+        }
+        
+        .quick-action-card:hover {
+            border-color: var(--color-interactive);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .action-icon {
+            font-size: var(--font-size-3xl);
+            margin-bottom: var(--spacing-2);
+        }
+        
+        .quick-action-card h3 {
+            color: var(--color-text-primary);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            margin: 0 0 var(--spacing-2) 0;
+        }
+        
+        .quick-action-card p {
+            color: var(--color-text-muted);
+            font-size: var(--font-size-sm);
+            margin: 0 0 var(--spacing-3) 0;
+        }
+        
+        /* Enhanced app list styling */
+        .app-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-4);
+            margin-top: var(--spacing-6);
+        }
+        
+        .app-list .section {
+            background: var(--color-background-primary);
+            border: 1px solid var(--color-border-default);
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+        }
+        
+        .app-list .section h2 {
+            background: var(--color-background-secondary);
+            color: var(--color-text-primary);
+            padding: var(--spacing-3) var(--spacing-4);
+            margin: 0;
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            border-bottom: 1px solid var(--color-border-default);
+        }
+        
+        .app-list .section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .app-list .section td {
+            padding: var(--spacing-2) var(--spacing-4);
+            border-bottom: 1px solid var(--color-border-muted);
+        }
+        
+        .app-list .section td:last-child {
+            border-bottom: none;
+        }
+        
+        .app-list .section a {
+            color: var(--color-interactive);
+            text-decoration: none;
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .app-list .section a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .admin-welcome {
+                padding: var(--spacing-4);
+            }
+            
+            .admin-welcome h1 {
+                font-size: var(--font-size-xl);
+            }
+            
+            .admin-welcome p {
+                font-size: var(--font-size-base);
+            }
+            
+            .quick-actions-section .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .quick-actions-section .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}

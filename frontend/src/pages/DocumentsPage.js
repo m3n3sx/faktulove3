@@ -14,6 +14,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import axios from 'axios';
+import { Button, Grid, Select, Input } from '../design-system';
 
 const DocumentsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -136,11 +137,11 @@ const DocumentsPage = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
-        return 'text-green-600';
+        return 'text-success-600';
       case 'processing':
-        return 'text-yellow-600';
+        return 'text-warning-600';
       case 'failed':
-        return 'text-red-600';
+        return 'text-error-600';
       default:
         return 'text-gray-600';
     }
@@ -180,55 +181,55 @@ const DocumentsPage = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-white p-6 rounded-md-lg shadow-sm">
+        <Grid cols={4} gap="md">
           {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search documents..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-            />
-          </div>
+          <Input
+            type="text"
+            placeholder="Search documents..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            icon={<Search className="h-4 w-4" />}
+            iconPosition="start"
+          />
 
           {/* Status Filter */}
-          <select
+          <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-          >
-            <option value="all">All Status</option>
-            <option value="completed">Completed</option>
-            <option value="processing">Processing</option>
-            <option value="failed">Failed</option>
-            <option value="pending">Pending</option>
-          </select>
+            onChange={(value) => setStatusFilter(value)}
+            placeholder="All Status"
+            options={[
+              { value: 'all', label: 'All Status' },
+              { value: 'completed', label: 'Completed' },
+              { value: 'processing', label: 'Processing' },
+              { value: 'failed', label: 'Failed' },
+              { value: 'pending', label: 'Pending' }
+            ]}
+          />
 
           {/* Date Filter */}
-          <select
+          <Select
             value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-          >
-            <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </select>
+            onChange={(value) => setDateFilter(value)}
+            placeholder="All Time"
+            options={[
+              { value: 'all', label: 'All Time' },
+              { value: 'today', label: 'Today' },
+              { value: 'week', label: 'This Week' },
+              { value: 'month', label: 'This Month' },
+              { value: 'year', label: 'This Year' }
+            ]}
+          />
 
           {/* Results Count */}
           <div className="flex items-center justify-end text-sm text-gray-500">
             {data.count} document{data.count !== 1 ? 's' : ''} found
           </div>
-        </div>
+        </Grid>
       </div>
 
       {/* Documents List */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-md-lg shadow-sm">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Document List</h3>
         </div>
@@ -276,9 +277,9 @@ const DocumentsPage = () => {
 
                       {/* OCR Results Summary */}
                       {doc.ocr_result && (
-                        <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                        <div className="mt-4 bg-gray-50 rounded-md-lg p-4">
                           <h5 className="text-sm font-medium text-gray-900 mb-3">Extracted Data</h5>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <Grid cols={2} gap="md">
                             <div>
                               <span className="text-gray-500">Invoice #:</span>
                               <p className="font-medium">{doc.ocr_result.invoice_number || 'N/A'}</p>
@@ -295,10 +296,10 @@ const DocumentsPage = () => {
                               <span className="text-gray-500">Date:</span>
                               <p className="font-medium">{doc.ocr_result.invoice_date || 'N/A'}</p>
                             </div>
-                          </div>
+                          </Grid>
                           
                           {/* Detailed Information */}
-                          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <Grid cols={4} gap="sm">
                             <div>
                               <span className="text-gray-500">Supplier NIP:</span>
                               <p className="font-medium">{doc.ocr_result.supplier_nip || 'N/A'}</p>
@@ -315,13 +316,13 @@ const DocumentsPage = () => {
                               <span className="text-gray-500">VAT Amount:</span>
                               <p className="font-medium">{doc.ocr_result.vat_amount} {doc.ocr_result.currency}</p>
                             </div>
-                          </div>
+                          </Grid>
 
                           {/* Line Items */}
                           {doc.ocr_result.line_items && doc.ocr_result.line_items.length > 0 && (
                             <div className="mt-4">
                               <h6 className="text-sm font-medium text-gray-900 mb-2">Line Items</h6>
-                              <div className="bg-white rounded border">
+                              <div className="bg-white rounded-md border">
                                 {doc.ocr_result.line_items.map((item, index) => (
                                   <div key={index} className="p-3 border-b last:border-b-0">
                                     <div className="flex justify-between items-start">
@@ -348,29 +349,32 @@ const DocumentsPage = () => {
 
                   {/* Actions */}
                   <div className="flex items-center space-x-2">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => viewDocument(doc)}
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                      title="View details"
+                      aria-label="View details"
                     >
                       <Eye className="h-4 w-4" />
-                    </button>
+                    </Button>
                     
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => downloadDocument(doc)}
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                      title="Download"
+                      aria-label="Download"
                     >
                       <Download className="h-4 w-4" />
-                    </button>
+                    </Button>
                     
-                    <button
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={() => deleteDocument(doc.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                      title="Delete"
+                      aria-label="Delete"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -381,24 +385,24 @@ const DocumentsPage = () => {
 
       {/* Pagination */}
       {(data.next || data.previous) && (
-        <div className="bg-white px-6 py-3 rounded-lg shadow">
+        <div className="bg-white px-6 py-3 rounded-md-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
               Showing {data.results.length} of {data.count} documents
             </div>
             <div className="flex space-x-2">
-              <button
+              <Button
                 disabled={!data.previous}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                variant="secondary"
               >
                 Previous
-              </button>
-              <button
+              </Button>
+              <Button
                 disabled={!data.next}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                variant="secondary"
               >
                 Next
-              </button>
+              </Button>
             </div>
           </div>
         </div>
